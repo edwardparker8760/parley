@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Parley - Checkpoint 2 Deck</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0d1117;
+    --panel: #161b27;
+    --panel2: #1c2333;
+    --ink: #e6edf3;
+    --muted: #8b98ab;
+    --accent: #4da3ff;
+    --accent2: #3fb68b;
+    --warn: #e5a83b;
+    --line: #2a3448;
+  }
+  html, body { background: #000; }
+  .slide {
+    width: 1280px;
+    height: 720px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", -apple-system, Arial, sans-serif;
+    padding: 64px 80px;
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .slide::after {
+    content: attr(data-num) " / 6";
+    position: absolute;
+    bottom: 28px;
+    right: 40px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .brand {
+    position: absolute;
+    bottom: 28px;
+    left: 40px;
+    font-size: 14px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+  .kicker {
+    font-size: 16px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+  h1 { font-size: 88px; font-weight: 700; letter-spacing: -0.01em; }
+  h2 { font-size: 44px; font-weight: 700; margin-bottom: 30px; letter-spacing: -0.01em; }
+  .sub { font-size: 30px; color: var(--muted); margin-top: 18px; line-height: 1.4; }
+  .tag {
+    display: inline-block;
+    background: var(--panel2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 22px;
+    font-size: 19px;
+    color: var(--accent);
+    margin-right: 12px;
+  }
+  .big { font-size: 26px; line-height: 1.55; }
+  .muted { color: var(--muted); }
+  .accent { color: var(--accent); }
+  .green { color: var(--accent2); }
+  .warn { color: var(--warn); }
+  .cols { display: flex; gap: 32px; flex: 1; }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 28px 30px;
+    flex: 1;
+  }
+  .card h3 { font-size: 23px; margin-bottom: 12px; color: var(--accent); font-weight: 650; }
+  .card.green h3 { color: var(--accent2); }
+  .card.warn h3 { color: var(--warn); }
+  .card p, .card li { font-size: 19px; line-height: 1.5; color: var(--ink); }
+  .card ul { margin-left: 20px; }
+  .card li { margin-bottom: 8px; }
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 26px 0;
+  }
+  .flow .step {
+    background: var(--panel2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 19px;
+    text-align: center;
+    flex: 1;
+    line-height: 1.35;
+  }
+  .flow .arrow { color: var(--accent); font-size: 26px; flex: 0; }
+  .quote {
+    border-left: 4px solid var(--accent);
+    padding: 14px 24px;
+    font-size: 25px;
+    font-style: italic;
+    color: var(--ink);
+    background: var(--panel);
+    border-radius: 0 12px 12px 0;
+    margin-top: auto;
+  }
+  table.roadmap { width: 100%; border-collapse: collapse; font-size: 19px; }
+  table.roadmap td, table.roadmap th {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+  }
+  table.roadmap th { color: var(--muted); font-weight: 600; font-size: 16px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .check { color: var(--accent2); font-weight: 700; }
+  .titleWrap { margin: auto 0; }
+  @page { size: 1280px 720px; margin: 0; }
+  @media print { html, body { background: none; } .slide { page-break-after: always; } }
+</style>
+</head>
+<body>
+
+<!-- Slide 1: Title -->
+<section class="slide" data-num="1">
+  <div class="titleWrap">
+    <div class="kicker">Encode &times; Arc - Programmable Money Hackathon · Checkpoint 2</div>
+    <h1>Parley</h1>
+    <p class="sub">Agents that <span class="accent">negotiate the price</span> - then pay it.<br>
+    Autonomous buyer &amp; seller agents strike deals inside owner-set guardrails and settle in USDC on Arc.</p>
+    <div style="margin-top:44px">
+      <span class="tag">Track: Agentic Economy</span>
+      <span class="tag">github.com/edwardparker8760/parley</span>
+    </div>
+  </div>
+  <div class="brand">PARLEY</div>
+</section>
+
+<!-- Slide 2: Problem -->
+<section class="slide" data-num="2">
+  <div class="kicker">The gap</div>
+  <h2>Agent payments exist. Agent <em>pricing</em> doesn't.</h2>
+  <div class="cols">
+    <div class="card warn">
+      <h3>Today: fixed-price payments</h3>
+      <p>Existing agentic-payment demos (e.g. Circle's nanopayments starter) show an agent paying a <b>fixed, posted price</b>. The economically interesting step - deciding <i>what the price should be</i> - never happens.</p>
+    </div>
+    <div class="card green">
+      <h3>Parley: price discovery</h3>
+      <p>Two agents with <b>opposing interests</b> negotiate price, quantity and terms on behalf of their owners. Settlement is the <b>last step, not the product</b>.</p>
+    </div>
+  </div>
+  <p class="quote">If agents are going to transact for us, they must be able to disagree, concede, and walk away - without ever breaking their owner's limits.</p>
+  <div class="brand">PARLEY</div>
+</section>
+
+<!-- Slide 3: How it works -->
+<section class="slide" data-num="3">
+  <div class="kicker">Protocol</div>
+  <h2>Negotiate within guardrails → settle or walk away</h2>
+  <div class="flow">
+    <div class="step">Owners set <b>guardrails</b><br><span class="muted">max price · min margin · walk-away threshold</span></div>
+    <div class="arrow">→</div>
+    <div class="step"><b>OFFER / COUNTEROFFER</b> loop<br><span class="muted">every move logged with rationale</span></div>
+    <div class="arrow">→</div>
+    <div class="step"><b>ACCEPT</b><br><span class="muted">auto-settle USDC on Arc via x402 / Gateway</span></div>
+  </div>
+  <div class="cols">
+    <div class="card">
+      <h3>Converge</h3>
+      <p>Deal auto-settles <span class="green"><b>price &times; quantity in USDC</b></span> on Arc Testnet; terms hashed into the payment reference.</p>
+    </div>
+    <div class="card">
+      <h3>No overlap (no ZOPA)</h3>
+      <p>Both agents <b>walk away</b> - no payment - and each reports <i>why</i> in a structured post-mortem. Failing safely is a feature.</p>
+    </div>
+    <div class="card">
+      <h3>Full transparency</h3>
+      <p>Live transcript: every offer carries a one-sentence rationale, visible on the dashboard as it happens.</p>
+    </div>
+  </div>
+  <div class="brand">PARLEY</div>
+</section>
+
+<!-- Slide 4: Architecture -->
+<section class="slide" data-num="4">
+  <div class="kicker">Architecture</div>
+  <h2>Hybrid engine: arithmetic owns safety, LLM owns judgement</h2>
+  <div class="cols">
+    <div class="card">
+      <h3>Deterministic layer - correctness</h3>
+      <ul>
+        <li>Utility functions &amp; concession schedule</li>
+        <li>ZOPA detection with early walk-away</li>
+        <li><b>Hard guardrail clamp</b>: computes the feasible offer band - nothing outside it can ever be sent</li>
+        <li>Property-tested: no message can leave a side's band</li>
+      </ul>
+    </div>
+    <div class="card green">
+      <h3>LLM layer - judgement &amp; legibility</h3>
+      <ul>
+        <li>Chooses <i>where inside the band</i> to land</li>
+        <li>Writes the rationale attached to every offer</li>
+        <li>Schema-validated; out-of-band proposals rejected</li>
+        <li>Timeout → deterministic fallback</li>
+      </ul>
+    </div>
+  </div>
+  <p class="quote" style="font-size:22px">Owner limits are enforced in arithmetic, not in a prompt - no prompt injection can talk an agent past its owner's limits.</p>
+  <p class="muted" style="margin-top:14px;font-size:18px;line-height:1.45">TypeScript pnpm monorepo · Circle Developer-Controlled Wallets (buyer / seller / payout) · SQLite transcript ledger · Next.js dashboard · Arc Testnet (eip155:5042002) via Circle's x402 facilitator</p>
+  <div class="brand">PARLEY</div>
+</section>
+
+<!-- Slide 5: Demo scenarios -->
+<section class="slide" data-num="5">
+  <div class="kicker">Demo plan</div>
+  <h2>Three scenarios, one proof</h2>
+  <div class="cols">
+    <div class="card green">
+      <h3>A - Wide ZOPA</h3>
+      <p><b>Fast convergence.</b> Agents find the overlap quickly; deal settles on-chain in USDC. Baseline happy path.</p>
+    </div>
+    <div class="card">
+      <h3>B - Narrow ZOPA</h3>
+      <p><b>Late convergence.</b> Tight overlap forces real, visible concessions over many rounds before the deal lands.</p>
+    </div>
+    <div class="card warn">
+      <h3>C - No ZOPA</h3>
+      <p><b>Both walk away. No payment.</b> The proof the guardrails genuinely bind - agents cannot be pushed into a bad deal.</p>
+    </div>
+  </div>
+  <p class="big" style="margin-top:26px">Dashboard shows the <b>live offer ladder</b> and a convergence chart where each side's private reservation price is visible to the audience - but never to the counterparty - with guardrail-clamp markers and Arc explorer links on settlement.</p>
+  <div class="brand">PARLEY</div>
+</section>
+
+<!-- Slide 6: Status & roadmap -->
+<section class="slide" data-num="6">
+  <div class="kicker">Where we are</div>
+  <h2>Research verified · spec &amp; plan complete · build starts now</h2>
+  <div class="cols">
+    <div class="card" style="flex:1.2">
+      <h3>Done</h3>
+      <ul>
+        <li><span class="check">✓</span> Arc Testnet x402 feasibility verified against primary sources - Circle runs its own facilitator; no custom contracts needed</li>
+        <li><span class="check">✓</span> SDK (<code>@circle-fin/x402-batching</code>) and three-wallet topology confirmed from Circle's reference repo</li>
+        <li><span class="check">✓</span> Full protocol spec + phased implementation plan</li>
+        <li><span class="check">✓</span> Public repo live</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Next (→ 9 Aug)</h3>
+      <table class="roadmap">
+        <tr><td>Scaffold, wallets, SDK spike</td><td class="muted">Jul 27–28</td></tr>
+        <tr><td>Protocol + agent skeletons</td><td class="muted">Jul 28–29</td></tr>
+        <tr><td>Guardrail engine + negotiation core</td><td class="muted">Jul 30–Aug 2</td></tr>
+        <tr><td>LLM layer + settlement</td><td class="muted">Aug 2–5</td></tr>
+        <tr><td>Dashboard + submission</td><td class="muted">Aug 5–9</td></tr>
+      </table>
+    </div>
+  </div>
+  <p class="quote">Final submission target: <b>8 Aug</b> - one day early. Demo Day: 20 Aug.</p>
+  <div class="brand">PARLEY</div>
+</section>
+
+</body>
+</html>
