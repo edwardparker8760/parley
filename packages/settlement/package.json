@@ -1,0 +1,21 @@
+{
+  "name": "@parley/settlement",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "smoke": "node ./dist/settle-fake-deal-smoke-script.js"
+  },
+  "dependencies": {
+    "@parley/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

@@ -2,11 +2,13 @@
 .claude/
 CLAUDE.md
 AGENTS.md
+HKT-01-parley-context.md
 
 # Secrets: never commit
 .env
 .env.*
 !.env.example
+.env.local.generated
 *.pem
 *.key
 

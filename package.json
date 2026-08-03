@@ -1,0 +1,21 @@
+{
+  "name": "parley",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agents that haggle, with human-set limits and instant USDC settlement on Arc.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "clean": "pnpm -r exec rm -rf dist tsconfig.tsbuildinfo",
+    "test": "pnpm -r test",
+    "provision-wallets": "pnpm --filter @parley/wallets provision"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2"
+  }
+}

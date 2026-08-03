@@ -1,0 +1,22 @@
+{
+  "name": "@parley/wallets",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "provision": "node ./dist/provision-wallets-script.js"
+  },
+  "dependencies": {
+    "@parley/shared": "workspace:*",
+    "viem": "^2.55.10"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

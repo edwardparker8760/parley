@@ -1,7 +1,18 @@
+---
+title: "Parley: negotiating agents with hard guardrails on Arc"
+description: "Buyer and seller agents haggle over bulk inference capacity inside deterministic owner limits, then settle in USDC on Arc."
+status: pending
+priority: P1
+effort: 6d
+branch: main
+tags: [hackathon, arc, x402, negotiation, agents]
+created: 2026-08-03
+---
+
 # Parley Implementation Plan
 
 **Spec:** [`spec.md`](../../spec.md) · **Track:** Agentic Economy
-**Window:** Mon 13 Jul → Sun 9 Aug 2026 (4 weeks, AoE). Plan written day 14.
+**Replanned:** 2026-08-03 against the real remaining budget: **6 days, zero code written.**
 **Supersedes:** `plans/260726-2047-pay-per-answer-implementation/` (multi-provider router idea)
 **Mode:** GATED: pause for owner review at every phase boundary.
 
@@ -9,80 +20,77 @@
 
 | | |
 |---|---|
-| **Checkpoint 2 (mid)** | **Mon 27 Jul, 18:59 GMT+7**: repo link + progress summary + track. WIP fine. |
-| Registration closes | Sat 8 Aug |
-| **Final submission** | **Sun 9 Aug (AoE)**: MVP on Arc, public repo, 3-min video, deck |
+| Checkpoint 2 (mid) | Submitted Mon 27 Jul |
+| Registration closes | 8 Aug |
+| **Target submit** | **Sat 8 Aug**, one day early. Platform locks at the deadline. |
+| Final deadline | Sun 9 Aug (AoE) |
 | Demo Day | Thu 20 Aug |
 
-## Effort split
+> **Calendar note for the owner:** 3 Aug 2026 is a Monday, so **8 Aug is a Saturday, not a Friday.** Earlier drafts said "Fri 8 Aug". The target is unchanged (submit 8 Aug); only the weekday label was wrong.
 
-~25% plumbing (x402, wallets, settlement) / ~75% negotiation engine + dashboard.
-The engine and the guardrail clamp are the submission. Everything else is scaffolding for them.
+## Scope decision (2026-08-03)
+
+Six days remain with zero application code. Scope is cut to the **critical path**:
+
+- **Phase 09 (reputation layer) is CUT.** Reason: spec section 13's own gate is "may only start if phases 01-07 are complete and on schedule". On day one of six, with nothing built, that gate is already unmet. Scenario D goes with it. The concept survives as a "future work" line in the README.
+- **Phase 06 (settlement) folded to minimum viable form:** settle on ACCEPT, post-mortems on WALK_AWAY. No batch-flush UI, no settlement state machine beyond three states.
+- **Phase 07 (dashboard) minimal:** six panels, one screen, no polish.
+- **Phase 08 (submission) thin:** deploy or document, README, 3-min video, deck.
+
+**Effort split:** roughly 20% plumbing, 80% negotiation engine plus dashboard. Phases 03 to 05 are the submission.
 
 ## Phases
 
-| # | Phase | Days | Gate | Status |
-|---|---|---|---|---|
-| 00 | Checkpoint 2 package | **Jul 26-27** | before submit | ⏳ In progress |
-| 01 | Scaffold, wallets, SDK spike | Jul 27-28 | ☐ | ☐ |
-| 02 | Negotiation protocol + agent skeletons | Jul 28-29 | ☐ | ☐ |
-| 03 | Guardrail engine (hard clamps) | Jul 30-31 | ☐ | ☐ |
-| 04 | Deterministic negotiation: utility, concession, ZOPA | Jul 31-Aug 2 | ☐ | ☐ |
-| 05 | LLM layer + rationale log | Aug 2-3 | ☐ | ☐ |
-| 06 | Settlement on accept + walk-away reporting | Aug 4-5 | ☐ | ☐ |
-| 07 | Dashboard: transcript + convergence ladder | Aug 5-6 | ☐ | ☐ |
-| 08 | Submission: video, deck, hardening | Aug 7-9 | ☐ | ☐ |
-| 09 | **CONDITIONAL**: Reputation layer (spec §13) | only if 01-07 done on schedule | ☐ | ☐ |
+| # | Phase | Day | Status |
+|---|---|---|---|
+| 01 | [Scaffold, wallets, SDK spike](phase-01-scaffold-wallets-sdk-spike.md) | Mon 3 Aug | Not started |
+| 02 | [Negotiation protocol + agent skeletons](phase-02-negotiation-protocol-agent-skeletons.md) | Tue 4 Aug | Not started |
+| 03 | [Guardrail engine (hard clamps)](phase-03-guardrail-engine-hard-clamps.md) | Wed 5 Aug | Not started |
+| 04 | [Deterministic negotiation: utility, concession, ZOPA](phase-04-deterministic-negotiation-utility-concession-zopa.md) | Thu 6 Aug | Not started |
+| 05 | [LLM layer + rationale log](phase-05-llm-layer-rationale-log.md) | Fri 7 Aug am | Not started |
+| 06 | [Settlement + walk-away reporting](phase-06-settlement-and-walkaway-reporting.md) | Fri 7 Aug pm | Not started |
+| 07 | [Dashboard (minimal)](phase-07-dashboard-minimal.md) | Sat 8 Aug am | Not started |
+| 08 | [Submission hardening (thin)](phase-08-submission-hardening.md) | Sat 8 Aug pm | Not started |
+| ~~09~~ | ~~Reputation layer (spec section 13)~~ | | **CUT 2026-08-03** |
 
-### Phase intents
+## Honest fit assessment
 
-- **00**: git init, `.gitignore`, README, public repo, pasteable progress summary. Nothing else.
-- **01**: pnpm monorepo, 3 wallets (buyer / seller / payout), and a throwaway 402 spike that
-  **verifies the real `@circle-fin/x402-batching` API**. Research read it off a blog post, not
-  the package; everything downstream depends on this being true.
-- **02**: message envelope (`OFFER`/`COUNTEROFFER`/`ACCEPT`/`WALK_AWAY`), turn loop, round cap,
-  SQLite transcript store. Two agents talking, with dumb fixed-concession logic.
-- **03**: owner guardrails as **deterministic hard clamps**. Feasible-band computation. Property
-  tests proving no message can ever leave a side's band. This is the safety claim; it gets tests.
-- **04**: utility functions, concession schedule, ZOPA detection with early walk-away. The
-  engine's brain. Benchmarked against a fixed-concession baseline on the three scenarios.
-- **05**: LLM picks inside the feasible band and writes the rationale on every offer. Bounded:
-  schema-validated, out-of-band proposals rejected, timeout → deterministic fallback.
-- **06**: on ACCEPT settle `price × quantity` in USDC on Arc, terms hashed into the payment ref;
-  on WALK_AWAY emit structured post-mortems. **Measure real settlement latency here**, before the
-  video is scripted.
-- **07**: one screen: live transcript, convergence chart with audience-visible reservation prices,
-  guardrail-clamp markers, settlement panel, scenario A/B/C launchers.
-- **08**: deploy, README, 3-min video, deck. **Submit Fri 8 Aug**, a day early; the platform locks.
-- **09 (conditional)**: reputation layer per spec §13: post-deal seller reviews (1-5 + LLM
-  comment) in the SQLite ledger; trust score deterministically scales the buyer's opening offer,
-  concession schedule, and walk-away round cap; scenario D on the dashboard. **Gate: starts only
-  if 01-07 are complete and on schedule.** Realistic slot: Aug 6-7, between dashboard and
-  submission, compressing 08's slack.
+**This does not comfortably fit.** Eight phases in six days, zero code written, an unverified payment SDK, and no Circle credentials in the repo. It fits only if every timebox in the phase files is respected and the gates below are answered fast.
 
-## Scope discipline
+**Cut order if anything slips** (apply in order, do not improvise):
 
-Phases 03-05 are the differentiator. Cut order when anything slips:
-**09 (reputation) first → then 07 dashboard polish → then 06 manual settle flush.**
-Never cut 03-05. Scenario C (no ZOPA → both walk away) is non-negotiable; it is the proof the
-guardrails bind. Scenario D exists only if 09 survives.
+1. Phase 07 degrades to the phase 02 terminal transcript renderer; shoot the video against it.
+2. Phase 06 ships stub-only settlement with a visible `SIMULATED` badge.
+3. Phase 05 ships `LLM_MODE=rationale-only`, then `off` with templated rationales.
+4. Phase 04 drops the terms-for-price trade heuristic; price-only negotiation.
+
+**Never cut:** phase 03's property tests (the safety claim), and **scenario C** (no ZOPA, both walk away, no payment). Scenario C is the proof the guardrails bind.
+
+## Key architectural decisions
+
+| Decision | Choice | Rationale |
+|---|---|---|
+| One process or two services (spec open question 2) | **Recommend ONE process** with a transport-agnostic `MessageBus` boundary | Two services costs ~half a day of six. The bus interface plus per-party private guardrail stores buys most of the "independent parties" credibility, and an HTTP bus implementation can be added later without touching agent code. **Owner may override at the phase 02 gate.** |
+| Settlement coupling | Behind a `SettlementAdapter` interface with a deterministic local stub, from phase 01 | No `.env`, no `CIRCLE_API_KEY`, no entity secret exists in the repo. Real settlement is blocked. This keeps phases 02 to 05, the actual differentiator, buildable and demoable while credentials are pending. |
+| SDK trust | Phase 01 runs a 90-minute spike reading the **installed package**, not the blog post | The assumed `@circle-fin/x402-batching` surface is unverified. **If it diverges, re-plan 02 and 06 rather than push through.** |
+| ZOPA detection | Two detectors: agent-side inference from revealed offers only, plus an observer-side oracle for the dashboard | Preserves the information asymmetry the spec requires. No agent may import the oracle; enforced by test. |
 
 ## Key risks
 
-| Risk | Mitigation |
-|---|---|
-| **Git not installed on this machine** | Blocks phase 00 entirely. Resolve today. |
-| SDK surface unverified | Phase 01 spike. If it diverges, re-plan 02/06 rather than push through. |
-| Faucet ~1 USDC/day, no backfill | Request daily from phase 01. Settlement demos need funded wallets. |
-| LLM negotiates past guardrails | Impossible by construction: clamp is deterministic and tested (phase 03). |
-| Negotiations converge trivially | Scenario B tuned for a narrow ZOPA so concessions are visibly earned. |
-| Two-service split eats a day | Open question 2 below; decide before phase 02. |
+| Risk | Likelihood | Impact | Mitigation |
+|---|---|---|---|
+| **No Circle credentials all week** | High | Medium | Settlement adapter plus stub (phase 01). Phases 02 to 05 unaffected. Ship with an honest `SIMULATED` badge. |
+| Schedule does not fit | High | High | Timeboxes in every phase file; the cut order above; submit Sat not Sun. |
+| SDK surface diverges from research | Medium | High | Phase 01 spike, with an explicit stop-and-re-plan instruction. |
+| LLM negotiates past guardrails | Low | Critical | Impossible by construction: deterministic clamp plus an independent bus-egress guard, both property-tested (phase 03). |
+| Scenario B converges trivially and the engine looks pointless | Medium | Medium | Tuned narrow ZOPA, benchmarked against the phase 02 fixed-concession baseline. |
+| ~~Faucet drip ~1 USDC/day~~ **RETIRED 2026-08-03** | Low | Low | Real rate is ~20 USDC per request, every 2 hours, per address. Funding is not a constraint. |
+| A stubbed settlement presented as real | Low | Critical | `isStub` badge in the UI, adapter factory fails loudly instead of downgrading, checklist item in phase 08. |
 
 ## Open questions
 
-1. **What is being traded?** Spec §9 assumes bulk inference capacity. Blocks phase 04's utility
-   function. Needs an answer before Jul 31.
-2. **One process or two services?** Two services is more credible as "independent parties" and
-   costs ~half a day. Leaning two. Decide before phase 02.
-3. Judging weights unpublished; assuming equal.
-4. Does the SDK expose settlement status / manual flush? Unknown until phase 01.
+1. **One process or two services?** Recommendation above. Must be answered at the **phase 02 entry gate**.
+2. **Will Circle credentials (`CIRCLE_API_KEY`, entity secret) exist by Fri 7 Aug?** Determines whether phase 06 ships real or stubbed settlement.
+3. **Does `@circle-fin/x402-batching` expose settlement status or a manual flush?** Answered by the phase 01 spike.
+4. **Is a plain USDC transfer on Arc an acceptable settlement fallback** if Nanopayments is unusable on testnet from this SDK version? Owner call, needed before phase 06 step 9.
+5. Judging weights unpublished; assuming equal.

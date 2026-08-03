@@ -1,4 +1,4 @@
-# Checkpoint 2 Progress Summary (pasteable)
+# Checkpoint 2: Progress Summary (pasteable)
 
 **Due:** Mon 27 Jul 2026, 18:59 GMT+7 · **Project:** Parley · **Track:** Agentic Economy
 
@@ -19,13 +19,13 @@ auto-settles in USDC on Arc via x402/Gateway. On failure to converge, both agent
 each reports why.
 
 The distinction from a payments demo: Circle's nanopayments starter shows an agent paying a
-*fixed* price. Parley's agents *discover* the price; settlement is the last step, not the product.
+*fixed* price. Parley's agents *discover* the price. Settlement is the last step, not the product.
 
 **Research completed**
 
 - Verified Arc Testnet (`eip155:5042002`) x402 feasibility against primary sources. Confirmed
-  Circle operates its own facilitator at `gateway-api-testnet.circle.com`; settlement path is
-  viable with no custom on-chain contracts.
+  Circle operates its own facilitator at `gateway-api-testnet.circle.com`, so the settlement path
+  is viable with no custom on-chain contracts.
 - Verified `@circle-fin/x402-batching` as the seller-middleware / buyer-client SDK, and Circle's
   three-wallet topology, from `circlefin/arc-nanopayments`.
 - Corrected an earlier research error that had wrongly concluded no facilitator supports Arc.
@@ -53,8 +53,8 @@ protocol, guardrail engine, deterministic negotiation logic, LLM rationale layer
 walk-away reporting, dashboard, submission package. Target for final submission: 9 August.
 
 Three demo scenarios are planned: wide ZOPA (fast convergence and settlement), narrow ZOPA
-(late convergence after real concessions), and no ZOPA (both walk away, no payment); the last
-being the proof that the guardrails genuinely bind.
+(late convergence after real concessions), and no ZOPA (both walk away, no payment). The last is
+the proof that the guardrails genuinely bind.
 
 ---
 
