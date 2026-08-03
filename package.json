@@ -12,7 +12,9 @@
     "build": "pnpm -r build",
     "clean": "pnpm -r exec rm -rf dist tsconfig.tsbuildinfo",
     "test": "pnpm -r test",
-    "provision-wallets": "pnpm --filter @parley/wallets provision"
+    "provision-wallets": "pnpm --filter @parley/wallets provision",
+    "run:scenario": "pnpm --filter @parley/orchestrator scenario",
+    "replay": "pnpm --filter @parley/orchestrator replay"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

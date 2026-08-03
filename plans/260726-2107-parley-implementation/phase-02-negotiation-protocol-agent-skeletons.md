@@ -10,7 +10,7 @@
 ## Overview
 
 - **Priority:** P0
-- **Status:** Not started
+- **Status:** COMPLETE 2026-08-03. All five success criteria met. Phase 03 unblocked.
 - **Day:** Tue 4 Aug
 - **Brief:** Message envelope, alternating turn loop with a hard round cap, message bus boundary, SQLite transcript store, and two agent skeletons that talk using deliberately dumb fixed-concession logic. No guardrails and no LLM yet. The point is a running conversation that terminates.
 
@@ -169,22 +169,61 @@ Splitting `decision_states` out keeps `messages` cheap to read for the dashboard
 
 ## Todo List
 
-- [ ] Owner decision on one process versus two services recorded in `plan.md`
-- [ ] Envelope schema with zod, four message types, refinements
-- [ ] Walk-away reason codes enumerated
-- [ ] `MessageBus` interface plus in-process implementation with ordered delivery
-- [ ] SQLite connection, migrations, three tables
-- [ ] Negotiation and message repositories
-- [ ] Agent interface with guardrails held privately at construction
-- [ ] Fixed-concession baseline strategy (retained as phase 04 benchmark)
-- [ ] Buyer and seller agents
-- [ ] Turn loop owning alternation, seq, round cap, termination
-- [ ] Scenario A/B/C definitions with concrete numbers
-- [ ] `run:scenario` CLI prints the ladder
-- [ ] `replay` reconstructs the ladder from SQLite cold
-- [ ] Five unit tests green
-- [ ] `spike/` deleted
-- [ ] Build clean, committed
+- [x] Owner decision recorded in `plan.md`: **ONE process** with a bus boundary
+- [x] Envelope schema with zod, four message types, refinements
+- [x] Walk-away reason codes enumerated
+- [x] `MessageBus` interface plus in-process implementation with ordered delivery
+- [x] SQLite connection, migrations, three tables
+- [x] Negotiation and message repositories
+- [x] Agent interface with guardrails held privately at construction
+- [x] Fixed-concession baseline strategy (retained as phase 04 benchmark)
+- [x] Buyer and seller agents
+- [x] Turn loop owning alternation, seq, round cap, termination
+- [x] Scenario A/B/C definitions with concrete numbers
+- [x] `run:scenario` CLI prints the ladder
+- [x] `replay` reconstructs the ladder from SQLite cold
+- [x] Seven unit tests green (five required)
+- [x] `spike/` deleted
+- [x] Build clean, committed
+
+## Outcome (2026-08-03)
+
+**All five success criteria met.** A settles at round 10 (1045 micro-USDC,
+inside the [700, 1200] band), B settles at round 12 at exactly the buyer's 900
+limit after the limit visibly binds for eight rounds, C walks away with both
+sides pinned at their limits. Each scenario runs in about 0.8s against a 5s
+budget. Replay is byte-identical to the live ladder, verified both by test and
+by CLI diff. No cross-agent imports.
+
+**Deviation: `node:sqlite` instead of `better-sqlite3`.** The risk table
+predicted a native-build problem on Windows and it happened: pnpm refused the
+build script and a native compile was required. Node 24 ships `node:sqlite`
+with prepared statements, parameterised queries and constraint enforcement,
+which is everything the ledger needs, at zero dependencies and zero build step.
+This was the documented fallback; taken inside the first 20 minutes as planned.
+
+**Two real defects found by running the scenarios, both fixed:**
+
+1. **Neither A nor B could ever settle.** Two sides each conceding a fixed
+   fraction of the gap converge geometrically but never cross, so an
+   acceptance rule of "at least as good as my next offer" alone can never
+   fire. Fixed by adding two further acceptance paths: a negligible-gap
+   threshold (2%) and last-round acceptance when the price clears our own
+   limit. The limit check stays absolute and first, which is why C still walks
+   away rather than taking a bad deal on the final round.
+2. **The seller counteroffered its entire capacity** (20,000) rather than the
+   10,000 the buyer asked for, so the two sides quoted totals for different
+   amounts of goods and the ladder was incoherent. Fixed with an explicit
+   `quantityRole`: the buyer REQUESTS, the seller SUPPLIES `min(request,
+   capacity)`.
+
+**Usability fix:** re-running a scenario against a persisted database collided
+on the negotiation primary key. An implicit id now takes the next free
+suffix; an explicit id is still used verbatim so tests stay deterministic.
+
+**Note for phase 04:** the baseline converges late (round 10 of 12 on the wide
+ZOPA). That is correct and useful. It is the number the real engine has to
+beat.
 
 ## Success Criteria
 

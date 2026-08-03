@@ -1,0 +1,26 @@
+{
+  "name": "@parley/orchestrator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "scenario": "node ./dist/run-scenario-cli.js",
+    "replay": "node ./dist/replay-cli.js",
+    "test": "node --test ./dist/*.test.js"
+  },
+  "dependencies": {
+    "@parley/agents": "workspace:*",
+    "@parley/ledger": "workspace:*",
+    "@parley/protocol": "workspace:*",
+    "@parley/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

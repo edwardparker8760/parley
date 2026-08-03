@@ -70,7 +70,7 @@ Six days remain with zero application code. Scope is cut to the **critical path*
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| One process or two services (spec open question 2) | **Recommend ONE process** with a transport-agnostic `MessageBus` boundary | Two services costs ~half a day of six. The bus interface plus per-party private guardrail stores buys most of the "independent parties" credibility, and an HTTP bus implementation can be added later without touching agent code. **Owner may override at the phase 02 gate.** |
+| One process or two services (spec open question 2) | **DECIDED 2026-08-03 by owner: ONE process** with a transport-agnostic `MessageBus` boundary | Two services costs ~half a day of six. The bus interface plus per-party private guardrail stores buys most of the "independent parties" credibility, and an HTTP bus implementation can be added later without touching agent code. **Owner may override at the phase 02 gate.** |
 | Settlement coupling | Behind a `SettlementAdapter` interface with a deterministic local stub, from phase 01 | No `.env`, no `CIRCLE_API_KEY`, no entity secret exists in the repo. Real settlement is blocked. This keeps phases 02 to 05, the actual differentiator, buildable and demoable while credentials are pending. |
 | SDK trust | Phase 01 runs a 90-minute spike reading the **installed package**, not the blog post | The assumed `@circle-fin/x402-batching` surface is unverified. **If it diverges, re-plan 02 and 06 rather than push through.** |
 | ZOPA detection | Two detectors: agent-side inference from revealed offers only, plus an observer-side oracle for the dashboard | Preserves the information asymmetry the spec requires. No agent may import the oracle; enforced by test. |
