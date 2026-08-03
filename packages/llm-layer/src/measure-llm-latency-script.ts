@@ -27,7 +27,16 @@ import type { LlmClient } from "./llm-client-interface.js";
 
 /** Scenario A settles at round 9: two agents, nine rounds, eighteen calls. */
 const TURNS = 18;
-const TIMEOUT_MS = 4000;
+/**
+ * Per-call timeout, read from config rather than hardcoded.
+ *
+ * This used to be a fixed 4000ms, which made the harness unable to measure the
+ * very thing it exists to measure: if real latency exceeds the production
+ * timeout, every call aborts and you learn only "everything failed", not "how
+ * slow is it actually". Raise LLM_TIMEOUT_MS to characterise a slow provider,
+ * then set the production value from what you find.
+ */
+const DEFAULT_TIMEOUT_MS = 4000;
 
 function promptForTurn(index: number): string {
   const round = Math.floor(index / 2) + 1;
@@ -57,6 +66,7 @@ function percentile(sorted: readonly number[], fraction: number): number {
 
 async function main(): Promise<void> {
   const config = loadConfigFromEnv();
+  const timeoutMs = config.llmTimeoutMs || DEFAULT_TIMEOUT_MS;
   const tapeIndex = process.argv.indexOf("--tape");
   const tapePath = tapeIndex >= 0 ? process.argv[tapeIndex + 1] : undefined;
 
@@ -113,7 +123,7 @@ async function main(): Promise<void> {
     try {
       const response = await client.complete({
         prompt: promptForTurn(index),
-        timeoutMs: TIMEOUT_MS,
+        timeoutMs,
       });
       latencies.push(response.latencyMs);
       process.stdout.write(`  turn ${index + 1}/${TURNS}: ${response.latencyMs}ms\n`);
@@ -161,7 +171,7 @@ async function main(): Promise<void> {
     "",
     `Mode: ${mode}`,
     `Turns measured: ${TURNS} (one LLM call per agent turn; scenario A settles at round 9, so 18 calls)`,
-    `Per-call timeout: ${TIMEOUT_MS}ms`,
+    `Per-call timeout: ${timeoutMs}ms`,
     "",
     "## Results",
     "",
