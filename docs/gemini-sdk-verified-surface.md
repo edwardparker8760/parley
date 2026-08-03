@@ -115,9 +115,14 @@ the minute budget and mask the original error behind rate-limit errors.
 
 ## Blocker observed 2026-08-03: project denied access
 
-A valid key on this project returns `403 PERMISSION_DENIED`, *"Your project has
-been denied access. Please contact support."*, on **every** `generateContent`
-call. Diagnosis, so the cause is not misattributed:
+**Reproduced on a second, freshly created project the same day.** A new key on a
+new project returns the identical `403 PERMISSION_DENIED`. So this is not a
+per-project accident and not something a key rotation fixes; treat Gemini as
+unavailable for this account until Google support resolves it.
+
+A valid key returns `403 PERMISSION_DENIED`, *"Your project has been denied
+access. Please contact support."*, on **every** `generateContent` call.
+Diagnosis, so the cause is not misattributed:
 
 - `models.list()` **succeeds** and returns 58 models, so the key authenticates
   and the SDK wiring is correct.

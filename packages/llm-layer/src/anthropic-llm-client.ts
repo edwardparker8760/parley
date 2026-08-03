@@ -38,6 +38,36 @@ import type { LlmClient, OfferSelectionRawResponse, OfferSelectionRequest } from
 import { LlmTransportError } from "./llm-client-interface.js";
 import { OFFER_SELECTION_JSON_SCHEMA } from "./llm-offer-response-schema.js";
 
+/**
+ * Model families that accept `output_config.effort`.
+ *
+ * This is an ALLOWLIST on purpose, and the direction matters. Sending `effort`
+ * to a model that does not support it is a hard 400 that breaks every call;
+ * omitting it on a model that does support it merely loses a latency
+ * optimisation and still returns a correct answer. So the fail-safe default is
+ * to omit unless the model is known to accept it.
+ *
+ * Concretely: `effort` errors on Haiku 4.5 and Sonnet 4.5. Without this check,
+ * flipping the provider to Anthropic with a Haiku model would 400 on every
+ * request, which would make the documented "config change, not a rewrite"
+ * rollback untrue.
+ */
+const EFFORT_SUPPORTED_PREFIXES: readonly string[] = [
+  "claude-opus-5",
+  "claude-opus-4-8",
+  "claude-opus-4-7",
+  "claude-opus-4-6",
+  "claude-opus-4-5",
+  "claude-sonnet-5",
+  "claude-sonnet-4-6",
+  "claude-fable-5",
+  "claude-mythos-5",
+];
+
+function modelAcceptsEffort(model: string): boolean {
+  return EFFORT_SUPPORTED_PREFIXES.some((prefix) => model.startsWith(prefix));
+}
+
 export interface AnthropicLlmClientOptions {
   readonly apiKey: string;
   readonly model: string;
@@ -71,7 +101,9 @@ export class AnthropicLlmClient implements LlmClient {
           model: this.#model,
           max_tokens: 512,
           output_config: {
-            effort: "low",
+            // Structured output is supported across the current models,
+            // including Haiku 4.5. Effort is not, hence the capability check.
+            ...(modelAcceptsEffort(this.#model) ? { effort: "low" } : {}),
             format: {
               type: "json_schema",
               schema: OFFER_SELECTION_JSON_SCHEMA,
