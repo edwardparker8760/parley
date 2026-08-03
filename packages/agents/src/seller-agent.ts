@@ -12,16 +12,25 @@
 import type { MicroUsdc, Terms } from "@parley/shared";
 import { deriveSellerMinUnitPrice } from "@parley/guardrails";
 import type { SellerGuardrails } from "@parley/guardrails";
+import type { ConcessionMode } from "@parley/negotiation-engine";
 import { BaselineNegotiatingAgent } from "./baseline-negotiating-agent.js";
-import type { Agent } from "./agent-interface.js";
+import { EngineNegotiatingAgent } from "./engine-negotiating-agent.js";
+import type { Agent, StrategyName } from "./agent-interface.js";
 
 /** Strategy knobs. These are NOT limits; the limits live in SellerGuardrails. */
 export interface SellerStrategyOptions {
   /** Where the seller starts. Above the floor, or there is nothing to concede. */
   readonly openingUnitPriceMicroUsdc: MicroUsdc;
   readonly terms: Terms;
+  /** "engine" (default) or "baseline", the phase 02 benchmark. */
+  readonly strategy?: StrategyName;
   /** Fraction of the gap conceded per round, in basis points. 2000 = 20%. */
   readonly concessionBasisPoints?: number;
+  /** Back-loading exponent for the engine. Higher concedes later. */
+  readonly beta?: number;
+  readonly minAcceptableUtility?: number;
+  /** Exposed so the exploitability test can run the vulnerable form. */
+  readonly concessionMode?: ConcessionMode;
 }
 
 export function createSellerAgent(
@@ -39,6 +48,18 @@ export function createSellerAgent(
         `own derived floor ${floor}. The opening offer would already breach ` +
         `the owner's margin requirement.`,
     );
+  }
+
+  if ((options.strategy ?? "engine") === "engine") {
+    return new EngineNegotiatingAgent("SELLER", guardrails, {
+      aspirationMicroUsdc: options.openingUnitPriceMicroUsdc,
+      terms: options.terms,
+      quantity: guardrails.availableQuantity,
+      beta: options.beta ?? 2,
+      minAcceptableUtility: options.minAcceptableUtility ?? 0,
+      concessionMode: options.concessionMode ?? "DEFENDED",
+      privateSalt: "seller-private-salt",
+    });
   }
 
   return new BaselineNegotiatingAgent("SELLER", guardrails, {

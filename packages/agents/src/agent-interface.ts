@@ -22,6 +22,8 @@ export interface DecisionInput {
   readonly history: readonly Envelope[];
   /** Full exchanges left before the cap. The loop owns the cap, not the agent. */
   readonly roundsRemaining: number;
+  /** Total rounds allowed. Read-only to the agent; the loop enforces it. */
+  readonly roundCap: number;
   /** 1-based round this message belongs to. Assigned by the loop. */
   readonly round: number;
   /** Sequence number the loop has reserved for this message. */
@@ -50,3 +52,12 @@ export interface Agent {
   readonly party: EnvelopeParty;
   decide(input: DecisionInput): Promise<DecisionOutput>;
 }
+
+/**
+ * Which brain an agent runs.
+ *
+ * "baseline" is the phase 02 fixed-concession strategy, retained as the
+ * benchmark the engine must beat and as a one-env-var rollback if the engine
+ * misbehaves on demo day.
+ */
+export type StrategyName = "engine" | "baseline";

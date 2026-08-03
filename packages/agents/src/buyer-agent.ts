@@ -12,16 +12,25 @@
 
 import type { MicroUsdc, Terms } from "@parley/shared";
 import type { BuyerGuardrails } from "@parley/guardrails";
+import type { ConcessionMode } from "@parley/negotiation-engine";
 import { BaselineNegotiatingAgent } from "./baseline-negotiating-agent.js";
-import type { Agent } from "./agent-interface.js";
+import { EngineNegotiatingAgent } from "./engine-negotiating-agent.js";
+import type { Agent, StrategyName } from "./agent-interface.js";
 
 /** Strategy knobs. These are NOT limits; the limits live in BuyerGuardrails. */
 export interface BuyerStrategyOptions {
   /** Where the buyer starts. Below the ceiling, or there is nothing to talk about. */
   readonly openingUnitPriceMicroUsdc: MicroUsdc;
   readonly terms: Terms;
+  /** "engine" (default) or "baseline", the phase 02 benchmark. */
+  readonly strategy?: StrategyName;
   /** Fraction of the gap conceded per round, in basis points. 2000 = 20%. */
   readonly concessionBasisPoints?: number;
+  /** Back-loading exponent for the engine. Higher concedes later. */
+  readonly beta?: number;
+  readonly minAcceptableUtility?: number;
+  /** Exposed so the exploitability test can run the vulnerable form. */
+  readonly concessionMode?: ConcessionMode;
 }
 
 export function createBuyerAgent(
@@ -33,6 +42,21 @@ export function createBuyerAgent(
       "Buyer opening price is above its own maximum. The opening offer would " +
         "already breach the owner's limit.",
     );
+  }
+
+  // STRATEGY=baseline reverts to the phase 02 behaviour with no code change.
+  // This is the cheapest rollback in the plan and is deliberate: if the engine
+  // misbehaves on demo day, one env var restores a working negotiation.
+  if ((options.strategy ?? "engine") === "engine") {
+    return new EngineNegotiatingAgent("BUYER", guardrails, {
+      aspirationMicroUsdc: options.openingUnitPriceMicroUsdc,
+      terms: options.terms,
+      quantity: guardrails.targetQuantity,
+      beta: options.beta ?? 2,
+      minAcceptableUtility: options.minAcceptableUtility ?? 0,
+      concessionMode: options.concessionMode ?? "DEFENDED",
+      privateSalt: "buyer-private-salt",
+    });
   }
 
   return new BaselineNegotiatingAgent("BUYER", guardrails, {

@@ -102,6 +102,7 @@ export async function runNegotiation(
         inbound,
         history: transcript,
         roundsRemaining: roundCap - round,
+        roundCap,
         round,
         seq,
         now,

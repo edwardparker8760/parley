@@ -305,3 +305,34 @@ test("renderLadder is stable for the same transcript", async () => {
   );
   assert.equal(rerendered, first.ladder);
 });
+
+test("determinism: same scenario and seed produce byte-identical ladders", async () => {
+  // The demo is recorded on camera. If a rerun differs, the video and the
+  // repo disagree. The engine adds seeded jitter, so this guards the seeding
+  // as much as the logic.
+  for (const scenario of ["A", "B", "C"] as const) {
+    const runs = [
+      await runScenario({ scenario }),
+      await runScenario({ scenario }),
+      await runScenario({ scenario }),
+    ];
+    assert.equal(runs[0]?.ladder, runs[1]?.ladder, `${scenario} run 1 vs 2`);
+    assert.equal(runs[1]?.ladder, runs[2]?.ladder, `${scenario} run 2 vs 3`);
+    for (const run of runs) run?.db.close();
+  }
+});
+
+test("scenario C never settles, under either strategy", async () => {
+  // Non-negotiable: scenario C is the proof the guardrails bind. It is an
+  // assertion on every commit, not a manual check.
+  for (const strategy of ["engine", "baseline"] as const) {
+    const result = await runScenario({ scenario: "C", strategy });
+    assert.equal(result.outcome, "WALKED_AWAY", `strategy ${strategy}`);
+    assert.equal(
+      result.transcript.filter((e) => e.type === "ACCEPT").length,
+      0,
+      `strategy ${strategy}: scenario C contained an ACCEPT`,
+    );
+    result.db.close();
+  }
+});

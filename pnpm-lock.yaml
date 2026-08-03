@@ -20,6 +20,9 @@ importers:
       '@parley/guardrails':
         specifier: workspace:*
         version: link:../guardrails
+      '@parley/negotiation-engine':
+        specifier: workspace:*
+        version: link:../negotiation-engine
       '@parley/protocol':
         specifier: workspace:*
         version: link:../protocol
@@ -60,6 +63,25 @@ importers:
         specifier: ^5.7.2
         version: 5.9.3
 
+  packages/negotiation-engine:
+    dependencies:
+      '@parley/guardrails':
+        specifier: workspace:*
+        version: link:../guardrails
+      '@parley/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+      '@parley/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      fast-check:
+        specifier: ^3.23.2
+        version: 3.23.2
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
   packages/orchestrator:
     dependencies:
       '@parley/agents':
@@ -71,6 +93,9 @@ importers:
       '@parley/ledger':
         specifier: workspace:*
         version: link:../ledger
+      '@parley/negotiation-engine':
+        specifier: workspace:*
+        version: link:../negotiation-engine
       '@parley/protocol':
         specifier: workspace:*
         version: link:../protocol

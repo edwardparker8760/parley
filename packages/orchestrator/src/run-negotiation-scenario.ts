@@ -11,6 +11,7 @@
  */
 
 import { createBuyerAgent, createSellerAgent } from "@parley/agents";
+import type { StrategyName } from "@parley/agents";
 import { InProcessMessageBus } from "@parley/protocol";
 import {
   ClampEventRepository,
@@ -27,6 +28,11 @@ import type { ScenarioName } from "./scenario-definitions.js";
 
 export interface RunScenarioOptions {
   readonly scenario: ScenarioName;
+  /**
+   * "engine" (default) or "baseline". The baseline is the phase 02 strategy,
+   * kept as both the benchmark and a one-flag rollback.
+   */
+  readonly strategy?: StrategyName;
   /** Database location. ":memory:" for tests. */
   readonly location?: string;
   readonly negotiationId?: string;
@@ -93,10 +99,14 @@ export async function runScenario(
     buyer: createBuyerAgent(definition.buyerGuardrails, {
       openingUnitPriceMicroUsdc: definition.buyerOpeningMicroUsdc,
       terms: definition.terms,
+      strategy: options.strategy ?? "engine",
+      beta: definition.beta,
     }),
     seller: createSellerAgent(definition.sellerGuardrails, {
       openingUnitPriceMicroUsdc: definition.sellerOpeningMicroUsdc,
       terms: definition.terms,
+      strategy: options.strategy ?? "engine",
+      beta: definition.beta,
     }),
     bus: new InProcessMessageBus(),
     negotiations,

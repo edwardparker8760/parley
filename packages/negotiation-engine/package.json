@@ -1,23 +1,25 @@
 {
-  "name": "@parley/agents",
+  "name": "@parley/negotiation-engine",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/index.js",
+    "./oracle": "./dist/zopa-oracle-for-observers.js"
   },
   "scripts": {
-    "build": "tsc -b"
+    "build": "tsc -b",
+    "test": "node --test ./dist/*.test.js"
   },
   "dependencies": {
     "@parley/guardrails": "workspace:*",
     "@parley/protocol": "workspace:*",
-    "@parley/shared": "workspace:*",
-    "@parley/negotiation-engine": "workspace:*"
+    "@parley/shared": "workspace:*"
   },
   "devDependencies": {
+    "fast-check": "^3.23.2",
     "typescript": "^5.7.2"
   }
 }

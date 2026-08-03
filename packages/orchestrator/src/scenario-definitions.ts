@@ -32,6 +32,8 @@ export interface ScenarioDefinition {
   readonly buyerOpeningMicroUsdc: MicroUsdc;
   readonly sellerOpeningMicroUsdc: MicroUsdc;
   readonly terms: Terms;
+  /** Concession back-loading exponent for the engine. Higher concedes later. */
+  readonly beta: number;
   readonly expectation: string;
 }
 
@@ -74,6 +76,7 @@ export const SCENARIOS: Record<ScenarioName, ScenarioDefinition> = {
     buyerOpeningMicroUsdc: 500n,
     sellerOpeningMicroUsdc: 1500n,
     terms: STANDARD_TERMS,
+    beta: 1.2,
     expectation: "Converges and settles",
   },
   B: {
@@ -106,6 +109,7 @@ export const SCENARIOS: Record<ScenarioName, ScenarioDefinition> = {
     buyerOpeningMicroUsdc: 500n,
     sellerOpeningMicroUsdc: 1500n,
     terms: STANDARD_TERMS,
+    beta: 1.5,
     expectation: "Converges late, after real concessions",
   },
   C: {
@@ -138,6 +142,7 @@ export const SCENARIOS: Record<ScenarioName, ScenarioDefinition> = {
     buyerOpeningMicroUsdc: 400n,
     sellerOpeningMicroUsdc: 1500n,
     terms: STANDARD_TERMS,
+    beta: 2,
     expectation: "Both walk away, no payment",
   },
 };

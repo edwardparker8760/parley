@@ -4,10 +4,21 @@
     "outDir": "./dist",
     "rootDir": "./src"
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts"
+  ],
   "references": [
-    { "path": "../shared" },
-    { "path": "../protocol" },
-    { "path": "../guardrails" }
+    {
+      "path": "../shared"
+    },
+    {
+      "path": "../protocol"
+    },
+    {
+      "path": "../guardrails"
+    },
+    {
+      "path": "../negotiation-engine"
+    }
   ]
 }

@@ -70,7 +70,7 @@ export class MessageRepository {
         .prepare(
           `INSERT INTO decision_states (message_id, state_json) VALUES (?, ?)`,
         )
-        .run(messageId, JSON.stringify(decisionState ?? null));
+        .run(messageId, serialiseDecisionState(decisionState));
 
       this.#db.exec("COMMIT");
       return messageId;
@@ -102,6 +102,20 @@ export class MessageRepository {
       .get(messageId) as { state_json: string } | undefined;
     return row === undefined ? undefined : JSON.parse(row.state_json);
   }
+}
+
+/**
+ * Serialise an agent's decision-state snapshot.
+ *
+ * Decision states are deliberately opaque to the ledger: each strategy decides
+ * what to record. They routinely contain bigint money values, which plain
+ * JSON.stringify throws on, so bigints become decimal strings exactly as they
+ * do on the wire.
+ */
+function serialiseDecisionState(decisionState: unknown): string {
+  return JSON.stringify(decisionState ?? null, (_key, value: unknown) =>
+    typeof value === "bigint" ? value.toString() : value,
+  );
 }
 
 /** Rebuild the wire shape a row came from, so it can be re-validated. */

@@ -4,12 +4,27 @@
     "outDir": "./dist",
     "rootDir": "./src"
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts"
+  ],
   "references": [
-    { "path": "../shared" },
-    { "path": "../protocol" },
-    { "path": "../ledger" },
-    { "path": "../agents" },
-    { "path": "../guardrails" }
+    {
+      "path": "../shared"
+    },
+    {
+      "path": "../protocol"
+    },
+    {
+      "path": "../ledger"
+    },
+    {
+      "path": "../agents"
+    },
+    {
+      "path": "../guardrails"
+    },
+    {
+      "path": "../negotiation-engine"
+    }
   ]
 }
