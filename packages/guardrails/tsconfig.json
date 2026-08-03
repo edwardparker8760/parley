@@ -5,9 +5,5 @@
     "rootDir": "./src"
   },
   "include": ["src/**/*.ts"],
-  "references": [
-    { "path": "../shared" },
-    { "path": "../protocol" },
-    { "path": "../guardrails" }
-  ]
+  "references": [{ "path": "../shared" }, { "path": "../protocol" }]
 }

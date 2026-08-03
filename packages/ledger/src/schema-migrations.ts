@@ -57,4 +57,32 @@ export const MIGRATIONS: readonly Migration[] = [
          ON messages(negotiation_id, seq)`,
     ],
   },
+  {
+    version: 2,
+    name: "clamp-events",
+    statements: [
+      // Every time an owner-set limit overrode what a strategy or an LLM
+      // proposed. These are demo material: the dashboard renders them as
+      // markers and the transcript prints them inline, so the audience sees
+      // the guardrail fire rather than being told it exists.
+      //
+      // `severity` distinguishes a routine clamp (the system working) from a
+      // CLAMP_BREACH (the system catching a bug in itself).
+      `CREATE TABLE IF NOT EXISTS clamp_events (
+         id INTEGER PRIMARY KEY AUTOINCREMENT,
+         negotiation_id TEXT NOT NULL REFERENCES negotiations(id),
+         seq INTEGER NOT NULL,
+         party TEXT NOT NULL,
+         severity TEXT NOT NULL,
+         bound TEXT NOT NULL,
+         field TEXT NOT NULL,
+         proposed TEXT NOT NULL,
+         clamped TEXT NOT NULL,
+         explanation TEXT NOT NULL,
+         created_at TEXT NOT NULL
+       )`,
+      `CREATE INDEX IF NOT EXISTS idx_clamp_events_negotiation_seq
+         ON clamp_events(negotiation_id, seq)`,
+    ],
+  },
 ];

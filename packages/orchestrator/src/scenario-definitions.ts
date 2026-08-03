@@ -1,18 +1,25 @@
 /**
- * The three demo scenarios (spec section 8).
+ * The three demo scenarios (spec section 8), now carrying REAL owner guardrails.
  *
  * The traded good is bulk inference capacity: the buyer needs N model calls,
  * the seller sells capacity at a unit price in micro-USDC per call. Circle's
  * own worked example prices an API call at $0.001, which is 1000 micro-USDC,
  * so these anchors sit either side of a realistic figure.
  *
+ * The seller's floor is NOT written here. It is derived from cost basis,
+ * minimum margin, and the terms on the table, which is what makes the
+ * non-price terms genuinely negotiable. The comments record the derived value
+ * at standard terms so the bands are readable, but the arithmetic is the
+ * authority.
+ *
  * Scenario C is the important one. It is the proof that the guardrails
- * genuinely bind: the two limits cannot overlap, so no agreement is possible
- * and both sides must walk away with no payment. It is non-negotiable and must
- * never be tuned into converging.
+ * genuinely bind: the two bands cannot intersect, so no agreement is possible
+ * and both sides must walk away with no payment. Never tune it into
+ * converging.
  */
 
 import type { MicroUsdc, Terms } from "@parley/shared";
+import type { BuyerGuardrails, SellerGuardrails } from "@parley/guardrails";
 
 export type ScenarioName = "A" | "B" | "C";
 
@@ -20,83 +27,117 @@ export interface ScenarioDefinition {
   readonly name: ScenarioName;
   readonly label: string;
   readonly roundCap: number;
-  readonly buyer: {
-    readonly maxUnitPriceMicroUsdc: MicroUsdc;
-    readonly openingUnitPriceMicroUsdc: MicroUsdc;
-    readonly quantity: number;
-    readonly terms: Terms;
-  };
-  readonly seller: {
-    readonly minUnitPriceMicroUsdc: MicroUsdc;
-    readonly openingUnitPriceMicroUsdc: MicroUsdc;
-    readonly availableQuantity: number;
-    readonly terms: Terms;
-  };
+  readonly buyerGuardrails: BuyerGuardrails;
+  readonly sellerGuardrails: SellerGuardrails;
+  readonly buyerOpeningMicroUsdc: MicroUsdc;
+  readonly sellerOpeningMicroUsdc: MicroUsdc;
+  readonly terms: Terms;
   readonly expectation: string;
 }
 
+/** Standard terms: 24h window, standard SLA. No cost uplift at these terms. */
 const STANDARD_TERMS: Terms = {
   deliveryWindowHours: 24,
   slaTier: "standard",
 };
+
+const QUANTITY = 10_000;
 
 export const SCENARIOS: Record<ScenarioName, ScenarioDefinition> = {
   A: {
     name: "A",
     label: "Wide ZOPA",
     roundCap: 12,
-    buyer: {
+    // Buyer band [0, 1200]. Seller floor at standard terms:
+    // ceil(500 * 10800/10000 * 140/100) = ceil(756) = 756.
+    // Overlap [756, 1200] is roughly 444 wide. Should close comfortably.
+    buyerGuardrails: {
+      party: "BUYER",
       maxUnitPriceMicroUsdc: 1200n,
-      openingUnitPriceMicroUsdc: 500n,
-      quantity: 10_000,
-      terms: STANDARD_TERMS,
+      maxTotalSpendMicroUsdc: 12_000_000n,
+      minQuantity: 1_000,
+      targetQuantity: QUANTITY,
+      minSlaTier: "basic",
+      maxDeliveryWindowHours: 72,
+      maxRounds: 12,
     },
-    seller: {
-      minUnitPriceMicroUsdc: 700n,
-      openingUnitPriceMicroUsdc: 1500n,
+    sellerGuardrails: {
+      party: "SELLER",
+      costBasisMicroUsdc: 500n,
+      minMarginPct: 40,
+      minQuantity: 1_000,
       availableQuantity: 20_000,
-      terms: STANDARD_TERMS,
+      maxSlaTier: "premium",
+      minDeliveryWindowHours: 12,
+      maxRounds: 12,
     },
-    // Overlap is [700, 1200], 500 wide. Should close comfortably.
-    expectation: "Converges in a few rounds and settles",
+    buyerOpeningMicroUsdc: 500n,
+    sellerOpeningMicroUsdc: 1500n,
+    terms: STANDARD_TERMS,
+    expectation: "Converges and settles",
   },
   B: {
     name: "B",
     label: "Narrow ZOPA",
     roundCap: 12,
-    buyer: {
+    // Buyer band [0, 900]. Seller floor: ceil(700 * 10800/10000 * 113/100)
+    // = ceil(854.3) = 855. Overlap [855, 900] is only 45 wide, so every
+    // concession has to be earned.
+    buyerGuardrails: {
+      party: "BUYER",
       maxUnitPriceMicroUsdc: 900n,
-      openingUnitPriceMicroUsdc: 500n,
-      quantity: 10_000,
-      terms: STANDARD_TERMS,
+      maxTotalSpendMicroUsdc: 9_000_000n,
+      minQuantity: 1_000,
+      targetQuantity: QUANTITY,
+      minSlaTier: "basic",
+      maxDeliveryWindowHours: 72,
+      maxRounds: 12,
     },
-    seller: {
-      minUnitPriceMicroUsdc: 860n,
-      openingUnitPriceMicroUsdc: 1500n,
+    sellerGuardrails: {
+      party: "SELLER",
+      costBasisMicroUsdc: 700n,
+      minMarginPct: 13,
+      minQuantity: 1_000,
       availableQuantity: 11_000,
-      terms: STANDARD_TERMS,
+      maxSlaTier: "premium",
+      minDeliveryWindowHours: 12,
+      maxRounds: 12,
     },
-    // Overlap is [860, 900], only 40 wide. Concessions have to be earned.
+    buyerOpeningMicroUsdc: 500n,
+    sellerOpeningMicroUsdc: 1500n,
+    terms: STANDARD_TERMS,
     expectation: "Converges late, after real concessions",
   },
   C: {
     name: "C",
     label: "No ZOPA",
     roundCap: 12,
-    buyer: {
+    // Buyer band [0, 600]. Seller floor: ceil(800 * 10800/10000 * 110/100)
+    // = ceil(950.4) = 951. The bands CANNOT intersect: 951 > 600. No price
+    // satisfies both owners, so both sides must walk away with no payment.
+    buyerGuardrails: {
+      party: "BUYER",
       maxUnitPriceMicroUsdc: 600n,
-      openingUnitPriceMicroUsdc: 400n,
-      quantity: 10_000,
-      terms: STANDARD_TERMS,
+      maxTotalSpendMicroUsdc: 6_000_000n,
+      minQuantity: 1_000,
+      targetQuantity: QUANTITY,
+      minSlaTier: "basic",
+      maxDeliveryWindowHours: 72,
+      maxRounds: 12,
     },
-    seller: {
-      minUnitPriceMicroUsdc: 950n,
-      openingUnitPriceMicroUsdc: 1500n,
+    sellerGuardrails: {
+      party: "SELLER",
+      costBasisMicroUsdc: 800n,
+      minMarginPct: 10,
+      minQuantity: 1_000,
       availableQuantity: 20_000,
-      terms: STANDARD_TERMS,
+      maxSlaTier: "premium",
+      minDeliveryWindowHours: 12,
+      maxRounds: 12,
     },
-    // Buyer cannot go above 600, seller cannot go below 950. No overlap
-    // exists, so no price can ever satisfy both. Both must walk away.
+    buyerOpeningMicroUsdc: 400n,
+    sellerOpeningMicroUsdc: 1500n,
+    terms: STANDARD_TERMS,
     expectation: "Both walk away, no payment",
   },
 };

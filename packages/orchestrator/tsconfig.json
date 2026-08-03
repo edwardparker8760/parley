@@ -9,6 +9,7 @@
     { "path": "../shared" },
     { "path": "../protocol" },
     { "path": "../ledger" },
-    { "path": "../agents" }
+    { "path": "../agents" },
+    { "path": "../guardrails" }
   ]
 }

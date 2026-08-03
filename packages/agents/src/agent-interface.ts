@@ -12,6 +12,7 @@
  */
 
 import type { Envelope, EnvelopeParty } from "@parley/protocol";
+import type { ClampEvent } from "@parley/guardrails";
 
 export interface DecisionInput {
   readonly negotiationId: string;
@@ -31,6 +32,12 @@ export interface DecisionInput {
 
 export interface DecisionOutput {
   readonly outbound: Envelope;
+  /**
+   * Guardrail clamps that bit while producing this message. Empty most turns.
+   * The turn loop persists these so the transcript can show the owner's limits
+   * overriding the strategy, rather than merely claiming that they would.
+   */
+  readonly clampEvents: readonly ClampEvent[];
   /**
    * Snapshot of the deterministic state that produced this message. Persisted
    * alongside the envelope so the transcript is auditable after the fact

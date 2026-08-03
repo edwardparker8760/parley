@@ -17,6 +17,9 @@ importers:
 
   packages/agents:
     dependencies:
+      '@parley/guardrails':
+        specifier: workspace:*
+        version: link:../guardrails
       '@parley/protocol':
         specifier: workspace:*
         version: link:../protocol
@@ -24,6 +27,22 @@ importers:
         specifier: workspace:*
         version: link:../shared
     devDependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/guardrails:
+    dependencies:
+      '@parley/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+      '@parley/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      fast-check:
+        specifier: ^3.23.2
+        version: 3.23.2
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
@@ -46,6 +65,9 @@ importers:
       '@parley/agents':
         specifier: workspace:*
         version: link:../agents
+      '@parley/guardrails':
+        specifier: workspace:*
+        version: link:../guardrails
       '@parley/ledger':
         specifier: workspace:*
         version: link:../ledger
@@ -145,6 +167,10 @@ packages:
   eventemitter3@5.0.1:
     resolution: {integrity: sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==}
 
+  fast-check@3.23.2:
+    resolution: {integrity: sha512-h5+1OzzfCC3Ef7VbtKdcv7zsstUQwUDlYpUTvjeUsJAssPgLn7QzbboPtL5ro04Mq0rPOsMzl7q5hIbRs2wD1A==}
+    engines: {node: '>=8.0.0'}
+
   isows@1.0.7:
     resolution: {integrity: sha512-I1fSfDCZL5P0v33sVqeTDSpcstAg/N+wF5HS033mogOVIp4B+oHC7oOCsA3axAbBSGTJ8QubbNmnIRN/h8U7hg==}
     peerDependencies:
@@ -157,6 +183,9 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
+
+  pure-rand@6.1.0:
+    resolution: {integrity: sha512-bVWawvoZoBYpp6yIoQtQXHZjmz35RSVHnUOTefl8Vcjr8snTPY1wnpSPMWekcFwbxI6gtmT7rSYPFvz71ldiOA==}
 
   typescript@5.9.3:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
@@ -225,6 +254,10 @@ snapshots:
 
   eventemitter3@5.0.1: {}
 
+  fast-check@3.23.2:
+    dependencies:
+      pure-rand: 6.1.0
+
   isows@1.0.7(ws@8.21.0):
     dependencies:
       ws: 8.21.0
@@ -243,6 +276,8 @@ snapshots:
       typescript: 5.9.3
     transitivePeerDependencies:
       - zod
+
+  pure-rand@6.1.0: {}
 
   typescript@5.9.3: {}
 

@@ -16,6 +16,7 @@ import test from "node:test";
 import { InProcessMessageBus, parseEnvelope } from "@parley/protocol";
 import type { Envelope } from "@parley/protocol";
 import {
+  ClampEventRepository,
   MessageRepository,
   NegotiationRepository,
   openLedger,
@@ -23,6 +24,7 @@ import {
   replayNegotiation,
 } from "@parley/ledger";
 import type { Agent, DecisionInput, DecisionOutput } from "@parley/agents";
+import { deriveSellerMinUnitPrice } from "@parley/guardrails";
 
 import { runNegotiation } from "./negotiation-turn-loop.js";
 import {
@@ -134,12 +136,15 @@ test("round cap always terminates, even against a hostile agent", async () => {
         rationale: "Never conceding.",
         createdAt: input.now().toISOString(),
       };
-      return { outbound, decisionState: { hostile: true } };
+      return { outbound, clampEvents: [], decisionState: { hostile: true } };
     },
   });
 
   const db = openLedger({ location: ":memory:" });
   const roundCap = 6;
+  // Guardrails wide enough that the egress guard permits the hostile prices;
+  // this test is about TERMINATION, not about the clamp. The clamp gets its
+  // own adversarial suite in packages/guardrails.
   const result = await runNegotiation({
     negotiationId: "hostile",
     scenario: "HOSTILE",
@@ -149,6 +154,29 @@ test("round cap always terminates, even against a hostile agent", async () => {
     bus: new InProcessMessageBus(),
     negotiations: new NegotiationRepository(db),
     messages: new MessageRepository(db),
+    clampEvents: new ClampEventRepository(db),
+    guardrails: {
+      BUYER: {
+        party: "BUYER",
+        maxUnitPriceMicroUsdc: 10_000_000n,
+        maxTotalSpendMicroUsdc: 10_000_000_000n,
+        minQuantity: 1,
+        targetQuantity: 1,
+        minSlaTier: "basic",
+        maxDeliveryWindowHours: 168,
+        maxRounds: roundCap,
+      },
+      SELLER: {
+        party: "SELLER",
+        costBasisMicroUsdc: 0n,
+        minMarginPct: 0,
+        minQuantity: 1,
+        availableQuantity: 1_000_000,
+        maxSlaTier: "premium",
+        minDeliveryWindowHours: 1,
+        maxRounds: roundCap,
+      },
+    },
     now: createDeterministicClock(),
   });
 
@@ -236,12 +264,18 @@ test("scenario outcomes match their stated expectations", async () => {
   ) {
     const price = acceptedOffer.offer.unitPriceMicroUsdc;
     assert.ok(
-      price <= SCENARIOS.A.buyer.maxUnitPriceMicroUsdc,
+      price <= SCENARIOS.A.buyerGuardrails.maxUnitPriceMicroUsdc,
       "settled above the buyer's maximum",
     );
+    // The seller's floor is derived, not stored, so derive it the same way
+    // the seller does rather than asserting against a hardcoded number.
     assert.ok(
-      price >= SCENARIOS.A.seller.minUnitPriceMicroUsdc,
-      "settled below the seller's minimum",
+      price >=
+        deriveSellerMinUnitPrice(
+          SCENARIOS.A.sellerGuardrails,
+          SCENARIOS.A.terms,
+        ),
+      "settled below the seller's derived margin floor",
     );
   }
 });
@@ -255,10 +289,19 @@ test("renderLadder is stable for the same transcript", async () => {
     "two runs of the same scenario must produce identical ladders",
   );
 
-  const rerendered = renderLadder(first.transcript, {
-    negotiationId: first.negotiationId,
-    scenario: "B",
-    roundCap: SCENARIOS.B.roundCap,
-  });
+  // The ladder interleaves clamp events, so re-rendering needs them too.
+  // Omitting them is exactly the bug this assertion should catch.
+  const clampEvents = new ClampEventRepository(first.db).listByNegotiation(
+    first.negotiationId,
+  );
+  const rerendered = renderLadder(
+    first.transcript,
+    {
+      negotiationId: first.negotiationId,
+      scenario: "B",
+      roundCap: SCENARIOS.B.roundCap,
+    },
+    clampEvents,
+  );
   assert.equal(rerendered, first.ladder);
 });

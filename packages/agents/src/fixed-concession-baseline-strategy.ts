@@ -82,13 +82,25 @@ export interface BaselineDecisionState {
 }
 
 /**
- * Next price this side will propose.
+ * Next price this side will PROPOSE. Note the word: propose.
  *
- * Moves `concessionBasisPoints` of the gap between our last price and theirs,
- * then clamps at our own limit. With both sides conceding, the gap shrinks
- * geometrically and integer flooring eventually makes the two cross, which is
- * what produces agreement. When no overlap exists the clamp pins each side at
- * its limit and they never cross, which is scenario C.
+ * This deliberately does NOT enforce the owner's limit. It moves
+ * `concessionBasisPoints` of the gap toward the counterparty and returns that,
+ * even when the result breaches its own side's guardrail.
+ *
+ * That is not a bug, it is the architecture. The strategy proposes and
+ * `clampOfferIntoBand` disposes. Two things follow, both wanted:
+ *
+ *   1. The clamp visibly fires. A strategy that pre-censored itself would make
+ *      the guardrail look decorative, because it would never have to bite. The
+ *      transcript would show a safety property that was never exercised.
+ *   2. It is the same shape phase 05 needs. An LLM cannot be trusted to
+ *      self-censor, so the enforcement point must be downstream of the
+ *      proposer. Putting the strategy in the same position as the LLM means
+ *      the clamp is tested by every scenario run, not only by the LLM path.
+ *
+ * `wouldBreachOwnLimit` is reported for the decision-state audit trail. It is
+ * NOT used to modify the proposal.
  */
 export function nextProposedPrice(
   config: BaselineStrategyConfig,
@@ -106,13 +118,12 @@ export function nextProposedPrice(
   const step = applyBasisPoints(gap, config.concessionBasisPoints);
   const moved = ownPrevious + step;
 
-  // Clamp at our own limit, in whichever direction "worse for us" lies.
-  const clamped =
+  const wouldBreachOwnLimit =
     config.direction === "UP"
-      ? minMicro(moved, config.limitUnitPriceMicroUsdc)
-      : maxMicro(moved, config.limitUnitPriceMicroUsdc);
+      ? moved > config.limitUnitPriceMicroUsdc
+      : moved < config.limitUnitPriceMicroUsdc;
 
-  return { price: clamped, limitWasBinding: clamped !== moved };
+  return { price: moved, limitWasBinding: wouldBreachOwnLimit };
 }
 
 /** Gap at or under this fraction of the price counts as converged. */

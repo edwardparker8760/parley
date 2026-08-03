@@ -18,7 +18,8 @@
     "@parley/agents": "workspace:*",
     "@parley/ledger": "workspace:*",
     "@parley/protocol": "workspace:*",
-    "@parley/shared": "workspace:*"
+    "@parley/shared": "workspace:*",
+    "@parley/guardrails": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.7.2"

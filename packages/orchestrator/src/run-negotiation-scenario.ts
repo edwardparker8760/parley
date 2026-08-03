@@ -3,11 +3,17 @@
  *
  * Shared by the CLI and by the tests, so what the tests assert on is exactly
  * what the demo runs.
+ *
+ * Note the guardrail plumbing: each agent is constructed with only its OWN
+ * guardrails, and the pair handed to the turn loop is used solely by the bus
+ * egress guard, which checks a message against its own sender's limits. There
+ * is deliberately no path by which one side can read the other's band.
  */
 
 import { createBuyerAgent, createSellerAgent } from "@parley/agents";
 import { InProcessMessageBus } from "@parley/protocol";
 import {
+  ClampEventRepository,
   MessageRepository,
   NegotiationRepository,
   openLedger,
@@ -37,6 +43,15 @@ export interface RunScenarioResult extends TurnLoopResult {
   readonly ladder: string;
 }
 
+/** Deterministic clock: fixed epoch, +1s per call. */
+export function createDeterministicClock(
+  startIso = "2026-08-03T00:00:00.000Z",
+): () => Date {
+  let tick = 0;
+  const start = new Date(startIso).getTime();
+  return () => new Date(start + tick++ * 1000);
+}
+
 /** First unused id of the form `<prefix>-negotiation[-N]`. */
 function nextFreeNegotiationId(
   negotiations: NegotiationRepository,
@@ -53,15 +68,6 @@ function nextFreeNegotiationId(
   );
 }
 
-/** Deterministic clock: fixed epoch, +1s per call. */
-export function createDeterministicClock(
-  startIso = "2026-08-03T00:00:00.000Z",
-): () => Date {
-  let tick = 0;
-  const start = new Date(startIso).getTime();
-  return () => new Date(start + tick++ * 1000);
-}
-
 export async function runScenario(
   options: RunScenarioOptions,
 ): Promise<RunScenarioResult> {
@@ -70,6 +76,7 @@ export async function runScenario(
   const db = openLedger({ location: options.location ?? ":memory:" });
   const negotiations = new NegotiationRepository(db);
   const messages = new MessageRepository(db);
+  const clampEvents = new ClampEventRepository(db);
 
   // An explicit id is used verbatim, so tests stay deterministic and a
   // collision surfaces as an error rather than being papered over. An implicit
@@ -83,19 +90,34 @@ export async function runScenario(
     negotiationId,
     scenario: definition.name,
     roundCap: definition.roundCap,
-    buyer: createBuyerAgent(definition.buyer),
-    seller: createSellerAgent(definition.seller),
+    buyer: createBuyerAgent(definition.buyerGuardrails, {
+      openingUnitPriceMicroUsdc: definition.buyerOpeningMicroUsdc,
+      terms: definition.terms,
+    }),
+    seller: createSellerAgent(definition.sellerGuardrails, {
+      openingUnitPriceMicroUsdc: definition.sellerOpeningMicroUsdc,
+      terms: definition.terms,
+    }),
     bus: new InProcessMessageBus(),
     negotiations,
     messages,
+    clampEvents,
+    guardrails: {
+      BUYER: definition.buyerGuardrails,
+      SELLER: definition.sellerGuardrails,
+    },
     now: options.now ?? createDeterministicClock(),
   });
 
-  const ladder = renderLadder(result.transcript, {
-    negotiationId,
-    scenario: definition.name,
-    roundCap: definition.roundCap,
-  });
+  const ladder = renderLadder(
+    result.transcript,
+    {
+      negotiationId,
+      scenario: definition.name,
+      roundCap: definition.roundCap,
+    },
+    clampEvents.listByNegotiation(negotiationId),
+  );
 
   return { ...result, db, ladder };
 }

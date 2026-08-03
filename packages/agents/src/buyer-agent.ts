@@ -11,36 +11,38 @@
  */
 
 import type { MicroUsdc, Terms } from "@parley/shared";
+import type { BuyerGuardrails } from "@parley/guardrails";
 import { BaselineNegotiatingAgent } from "./baseline-negotiating-agent.js";
 import type { Agent } from "./agent-interface.js";
 
-export interface BuyerGuardrails {
-  /** Hard ceiling on unit price. The owner's limit. */
-  readonly maxUnitPriceMicroUsdc: MicroUsdc;
+/** Strategy knobs. These are NOT limits; the limits live in BuyerGuardrails. */
+export interface BuyerStrategyOptions {
   /** Where the buyer starts. Below the ceiling, or there is nothing to talk about. */
   readonly openingUnitPriceMicroUsdc: MicroUsdc;
-  readonly quantity: number;
   readonly terms: Terms;
   /** Fraction of the gap conceded per round, in basis points. 2000 = 20%. */
   readonly concessionBasisPoints?: number;
 }
 
-export function createBuyerAgent(guardrails: BuyerGuardrails): Agent {
-  if (guardrails.openingUnitPriceMicroUsdc > guardrails.maxUnitPriceMicroUsdc) {
+export function createBuyerAgent(
+  guardrails: BuyerGuardrails,
+  options: BuyerStrategyOptions,
+): Agent {
+  if (options.openingUnitPriceMicroUsdc > guardrails.maxUnitPriceMicroUsdc) {
     throw new Error(
       "Buyer opening price is above its own maximum. The opening offer would " +
         "already breach the owner's limit.",
     );
   }
 
-  return new BaselineNegotiatingAgent("BUYER", {
+  return new BaselineNegotiatingAgent("BUYER", guardrails, {
     direction: "UP",
-    openingUnitPriceMicroUsdc: guardrails.openingUnitPriceMicroUsdc,
+    openingUnitPriceMicroUsdc: options.openingUnitPriceMicroUsdc,
     limitUnitPriceMicroUsdc: guardrails.maxUnitPriceMicroUsdc,
-    concessionBasisPoints: guardrails.concessionBasisPoints ?? 2000,
-    quantity: guardrails.quantity,
+    concessionBasisPoints: options.concessionBasisPoints ?? 2000,
+    quantity: guardrails.targetQuantity,
     // The buyer states the requirement; the seller fills it.
     quantityRole: "REQUESTS",
-    terms: guardrails.terms,
+    terms: options.terms,
   });
 }

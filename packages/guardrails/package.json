@@ -1,5 +1,5 @@
 {
-  "name": "@parley/agents",
+  "name": "@parley/guardrails",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -9,14 +9,15 @@
     ".": "./dist/index.js"
   },
   "scripts": {
-    "build": "tsc -b"
+    "build": "tsc -b",
+    "test": "node --test ./dist/*.test.js"
   },
   "dependencies": {
-    "@parley/guardrails": "workspace:*",
     "@parley/protocol": "workspace:*",
     "@parley/shared": "workspace:*"
   },
   "devDependencies": {
+    "fast-check": "^3.23.2",
     "typescript": "^5.7.2"
   }
 }

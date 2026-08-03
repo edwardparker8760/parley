@@ -15,7 +15,16 @@
 import { InProcessMessageBus, isTerminal } from "@parley/protocol";
 import type { Envelope, EnvelopeParty } from "@parley/protocol";
 import type { Agent } from "@parley/agents";
-import type { MessageRepository, NegotiationRepository } from "@parley/ledger";
+import { assertOutboundWithinBand } from "@parley/guardrails";
+import type {
+  BuyerGuardrails,
+  SellerGuardrails,
+} from "@parley/guardrails";
+import type {
+  ClampEventRepository,
+  MessageRepository,
+  NegotiationRepository,
+} from "@parley/ledger";
 
 export interface TurnLoopOptions {
   readonly negotiationId: string;
@@ -26,6 +35,15 @@ export interface TurnLoopOptions {
   readonly bus: InProcessMessageBus;
   readonly negotiations: NegotiationRepository;
   readonly messages: MessageRepository;
+  readonly clampEvents: ClampEventRepository;
+  /**
+   * Each side's own guardrails, used ONLY by the egress guard on the bus.
+   * The guard checks a message against its own SENDER's limits; it never
+   * shows one side's limits to the other.
+   */
+  readonly guardrails: Readonly<
+    Record<EnvelopeParty, BuyerGuardrails | SellerGuardrails>
+  >;
   /** Injected so transcripts are reproducible. */
   readonly now: () => Date;
 }
@@ -35,6 +53,8 @@ export interface TurnLoopResult {
   readonly transcript: readonly Envelope[];
   readonly outcome: "SETTLED" | "WALKED_AWAY";
   readonly terminalMessage: Envelope;
+  /** How many times an owner limit overrode a proposal. Demo material. */
+  readonly clampCount: number;
 }
 
 export async function runNegotiation(
@@ -55,10 +75,19 @@ export async function runNegotiation(
     SELLER: options.seller,
   };
 
-  // Every outbound message goes through `bus.publish` before it is recorded or
-  // handed to the counterparty. That makes the bus the single egress point,
-  // which is where phase 03 installs the guardrail band guard: a message that
-  // never crosses the bus never reaches the other side.
+  // THE EGRESS GUARD. Every outbound message goes through `bus.publish`, and
+  // the bus is the only path between the two agents, so a message this guard
+  // rejects never reaches the counterparty. It re-derives each sender's band
+  // independently of the clamp that produced the message: two checks, one
+  // shared pure primitive, so a single bug cannot defeat both.
+  //
+  // It throws rather than filtering. A breach means the clamp is broken, and
+  // a broken clamp invalidates the safety claim, so failing loudly beats
+  // quietly dropping a message and continuing.
+  bus.addPublishInterceptor((envelope) => {
+    assertOutboundWithinBand(options.guardrails[envelope.from], envelope);
+  });
+
   let seq = 0;
   let onTurn: EnvelopeParty = "BUYER";
   let inbound: Envelope | undefined;
@@ -68,7 +97,7 @@ export async function runNegotiation(
     // One round is one message from each side, unless someone terminates.
     for (const _half of [0, 1]) {
       const agent = agentByParty[onTurn];
-      const { outbound, decisionState } = await agent.decide({
+      const decision = await agent.decide({
         negotiationId,
         inbound,
         history: transcript,
@@ -77,9 +106,28 @@ export async function runNegotiation(
         seq,
         now,
       });
+      const { outbound, decisionState } = decision;
 
       await bus.publish(outbound);
       messages.append(outbound, decisionState);
+
+      // Persist every clamp that bit while producing this message, keyed to
+      // the message's own seq so the transcript can interleave them.
+      options.clampEvents.appendMany(
+        decision.clampEvents.map((event) => ({
+          negotiationId,
+          seq: outbound.seq,
+          party: event.party,
+          severity: "CLAMP" as const,
+          bound: event.bound,
+          field: event.field,
+          proposed: event.proposed,
+          clamped: event.clamped,
+          explanation: event.explanation,
+          createdAt: outbound.createdAt,
+        })),
+      );
+
       transcript.push(outbound);
 
       seq += 1;
@@ -121,5 +169,11 @@ export async function runNegotiation(
     endedAt: now().toISOString(),
   });
 
-  return { negotiationId, transcript, outcome, terminalMessage: terminal };
+  return {
+    negotiationId,
+    transcript,
+    outcome,
+    terminalMessage: terminal,
+    clampCount: options.clampEvents.countByNegotiation(negotiationId),
+  };
 }

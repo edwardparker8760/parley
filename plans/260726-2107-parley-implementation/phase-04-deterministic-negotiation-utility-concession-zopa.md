@@ -23,6 +23,20 @@
 - Utility must be normalised to `[0,1]` against **each side's own private bounds**. Raw utilities are not comparable across sides and must never be compared in code.
 - The concession schedule is where scenario B earns its keep. A linear schedule converges dully. A time-dependent schedule (concede slowly early, faster as rounds run out) produces the visible late convergence the spec asks for.
 - The baseline from phase 02 stays. Without a benchmark, "the engine works" is an assertion.
+- **MEASURED BASELINE, recorded 2026-08-03. These are the numbers the engine must beat, and the comparison MUST be reported in this phase's output.**
+
+  | Scenario | Baseline outcome | Rounds to termination | Settled unit price |
+  |---|---|---|---|
+  | A (wide ZOPA) | SETTLED | **round 10 of 12** (20 messages) | 1045 micro-USDC |
+  | B (narrow ZOPA) | SETTLED | **round 12 of 12** (24 messages) | 900 micro-USDC, exactly the buyer's limit |
+  | C (no ZOPA) | WALKED_AWAY | round 12 of 12 (25 messages), by round cap | none |
+
+  Targets for the engine: beat **round 10** on A, beat **round 12** on B, and on
+  C walk away EARLY by detecting the empty band rather than burning all 12
+  rounds to the cap. C is the clearest win available: the baseline wastes the
+  entire round budget discovering what ZOPA detection knows immediately.
+  Reproduce the baseline with `STRATEGY=baseline` and confirm these figures
+  before claiming any improvement.
 - Terms are the interesting lever: the engine should trade a term concession for a price concession (give a looser delivery window, hold price). That behaviour is what separates this from a price-only haggle.
 
 ## Requirements
