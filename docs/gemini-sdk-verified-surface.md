@@ -86,14 +86,52 @@ authenticated page. What the official page does state:
 - Exceeding any single axis returns `429 RESOURCE_EXHAUSTED`, even if the
   others have headroom.
 
-Figures for the flash-lite class, from a secondary source dated 2026-01-06 and
-therefore **UNVERIFIED against Google's own tables**:
+**RPM now CONFIRMED first-party, 2026-08-03.** A live run against this project
+returned a 429 whose quota payload states the limit exactly, for the model we
+actually use:
 
-| Axis | Free tier (flash-lite class) |
-|---|---|
-| Requests per minute | 15 |
-| Input tokens per minute | 250,000 |
-| Requests per day | 1,000 |
+```
+quotaId:      GenerateRequestsPerMinutePerProjectPerModel-FreeTier
+quotaMetric:  generativelanguage.googleapis.com/generate_content_free_tier_requests
+model:        gemini-3.5-flash-lite
+quotaValue:   15
+retryDelay:   44s
+```
+
+So **15 RPM is verified**, and it is scoped per project **per model**, which is
+finer-grained than the docs state. The other two axes remain secondary and
+unverified:
+
+| Axis | Free tier (flash-lite class) | Status |
+|---|---|---|
+| Requests per minute | 15 | **VERIFIED** from a live 429 quota payload |
+| Input tokens per minute | 250,000 | secondary, unverified |
+| Requests per day | 1,000 | secondary, unverified |
+
+**Failed requests still consume quota.** In that run, 15 requests were rejected
+with 403 and the 16th was rejected with 429 for exceeding the 15 RPM limit. A
+denied request is still a counted request, so a burst of failures can exhaust
+the minute budget and mask the original error behind rate-limit errors.
+
+## Blocker observed 2026-08-03: project denied access
+
+A valid key on this project returns `403 PERMISSION_DENIED`, *"Your project has
+been denied access. Please contact support."*, on **every** `generateContent`
+call. Diagnosis, so the cause is not misattributed:
+
+- `models.list()` **succeeds** and returns 58 models, so the key authenticates
+  and the SDK wiring is correct.
+- `gemini-3.5-flash-lite` **is** in that list, so the model ID is valid and
+  visible to the project.
+- `gemini-2.5-flash-lite` and `gemini-2.5-flash` fail identically, so it is not
+  model-specific.
+
+It is therefore a **project-level generation block on Google's side**, not a
+code, model, or key-format problem. Nothing in this repo can work around it.
+Resolution is a new API key on an unrestricted project, or Google support.
+
+Consequence: live latency is still unmeasured and no tape has been recorded.
+Both are one command each once generation is permitted.
 
 ### What that means for recording a tape
 
@@ -114,10 +152,29 @@ The one caveat worth remembering: because limits are **per project**, running
 the latency harness and recording a tape from two different keys in the same
 project draws on the same 1,000 RPD.
 
+## The safety claim did not move when the provider moved
+
+Worth stating plainly, because it is the reason a provider swap is a routine
+change here rather than a re-verification exercise:
+
+The prompt-injection suite
+(`packages/llm-layer/src/prompt-injection-through-negotiation.test.ts`)
+**required no edits** for this swap, and passed unmodified before and after. It
+names no vendor, imports no vendor SDK, and needs no API key: every test injects
+a captured `LlmClient` that returns exactly what an attacker asked for.
+
+That is possible because the guardrail clamp is arithmetic over each owner's own
+limits. It consumes numbers, never model output text, and runs downstream of
+whatever the model returns, with an independent egress guard re-checking before
+anything reaches the counterparty. A guardrail that had to be re-tuned per
+provider would not be a guardrail.
+
 ## Unresolved
 
-1. The RPM/TPM/RPD figures above are secondary and were measured against
-   `gemini-2.5-flash-lite`. Confirm the actual numbers for
-   `gemini-3.5-flash-lite` in AI Studio once a key exists.
-2. Live latency is unmeasured: no key is present. `pnpm --filter
-   @parley/llm-layer measure-latency` produces the numbers as soon as one is.
+1. **Project is denied generation access** (see the blocker section above).
+   Until that is resolved, `LLM_MODE=full` cannot run against Gemini. The
+   system runs normally with `LLM_MODE=off`.
+2. TPM and RPD remain secondary figures. RPM is now confirmed at 15. Confirm
+   the other two in AI Studio, or from a live 429 payload as RPM was.
+3. Live latency is unmeasured and no tape is recorded. Both are one command
+   each (`measure-latency`, then a record run) once generation is permitted.

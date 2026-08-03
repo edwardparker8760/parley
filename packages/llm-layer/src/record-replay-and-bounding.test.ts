@@ -163,7 +163,7 @@ test("REPLAY: a recorded tape reproduces the live result exactly", async () => {
         JSON.stringify({ unitPriceMicroUsdc: "835", rationale: "Splitting the difference." }),
         1234,
       ),
-      "claude-opus-5",
+      "test-model",
     );
     const live = await selectOfferWithBoundedLlm({
       ...BASE,
@@ -199,7 +199,7 @@ test("REPLAY: a stale tape fails loudly rather than inventing an answer", async 
   try {
     const recorder = new RecordingLlmClient(
       fixedClient(JSON.stringify({ unitPriceMicroUsdc: "835", rationale: "ok" })),
-      "claude-opus-5",
+      "test-model",
     );
     await selectOfferWithBoundedLlm({ ...BASE, mode: "full", client: recorder });
     recorder.writeTape(tapePath);

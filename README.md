@@ -51,8 +51,20 @@ reputation layer makes the schedule (see `spec.md` §13).
 | Payments | x402 / Circle Gateway · `@circle-fin/x402-batching` |
 | Facilitator | `https://gateway-api-testnet.circle.com` |
 | Wallets | Circle Developer-Controlled Wallets (buyer · seller · payout) |
+| LLM | Google Gemini (`gemini-3.5-flash-lite`, free tier). Pluggable: the provider sits behind one interface and is chosen by an env var. |
 | Runtime | TypeScript, pnpm monorepo, SQLite ledger |
 | Dashboard | Next.js |
+
+The LLM writes the reasoning attached to each offer and may choose where inside
+an already-computed band to land. It cannot choose the band. The guardrail clamp
+is arithmetic over each owner's own limits, runs downstream of the model, and is
+re-checked by an independent guard before anything reaches the counterparty, so
+changing model or provider does not change what an agent is allowed to offer.
+The prompt-injection test suite is provider-agnostic and passed unmodified when
+the provider was swapped.
+
+The system also runs with `LLM_MODE=off`, using templated rationales and no API
+calls at all. The safety claim does not depend on the LLM existing.
 
 ## Status
 

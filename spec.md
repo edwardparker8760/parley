@@ -67,6 +67,40 @@ the primary artefact of the whole project.
 - Bounded exactly as the router's LLM was: output validated, out-of-band proposals rejected and
   replaced by the deterministic pick, hard timeout → deterministic fallback
 
+### 5.1 LLM provider: Google Gemini
+
+**DECIDED 2026-08-03. Provider switched from Anthropic to Google Gemini.**
+
+**Reason: cost.** Gemini serves this workload on a free tier with no billing
+account, which suits a hackathon budget. The task is small (choose one number
+inside a supplied range, write one sentence), so the cheapest fast tier is
+sufficient; nothing here needs frontier reasoning.
+
+Model: `gemini-3.5-flash-lite`. Free tier, stable rather than preview (preview
+IDs churn and the demo must stay re-recordable), and the fastest published
+tier. The model name is written in exactly one place in the code.
+
+**Why this does not weaken any safety claim.** The provider sits behind an
+`LlmClient` interface, and provider-specific code is confined to the concrete
+clients plus one factory. More importantly, the guardrail clamp is **arithmetic
+over the owner's own limits**: it consumes numbers, never model output text,
+and it runs downstream of whatever the LLM returns. An independent egress guard
+on the message bus re-validates afterwards. So the safety property is a
+property of the arithmetic, not of the model:
+
+- Swapping providers cannot widen a band.
+- A model that returns an out-of-band price has that number discarded.
+- A fully compromised model still cannot emit an illegal offer.
+
+The evidence is that **the prompt-injection suite required no changes when the
+provider changed.** Those tests inject a captured model that returns exactly
+what an attacker asked for; they are provider-agnostic by construction, and
+they passed unmodified before and after the swap. The safety claim did not move
+when the provider moved, which is the point of putting the clamp downstream.
+
+The Anthropic client is retained behind the same interface and selectable with
+`LLM_PROVIDER=anthropic`, so the swap is reversible without a code change.
+
 ## 6. Settlement
 
 On `ACCEPT`: buyer settles `unitPrice × quantity` in USDC on Arc via x402/Gateway. Deal terms

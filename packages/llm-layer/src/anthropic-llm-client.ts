@@ -1,5 +1,11 @@
 /**
- * Live Anthropic client.
+ * Anthropic client. RETAINED ALTERNATIVE, not the default.
+ *
+ * The default provider is Gemini (spec.md section 5.1, decided 2026-08-03, on
+ * cost: free tier). This client stays behind the same `LlmClient` interface and
+ * is selectable with `LLM_PROVIDER=anthropic`, so the swap is reversible with a
+ * config change rather than a code change. That reversibility is the reason it
+ * was kept rather than deleted.
  *
  * Two choices worth stating:
  *
@@ -12,10 +18,15 @@
  * 2. **Low effort, thinking left on.** This call picks one number inside a
  *    given range and writes one sentence. It does not need deep reasoning, and
  *    latency is the scarce resource in a negotiation of up to 24 calls.
- *    Disabling thinking outright is the more expensive lever and carries a
- *    known failure mode (internal tags leaking into visible output), so the
- *    cheaper and safer control is `effort: "low"` with thinking left at its
- *    default.
+ *
+ *    HISTORICAL NOTE (2026-08-03, Anthropic path only): disabling thinking
+ *    outright was rejected because on the Opus models of that date it carried a
+ *    known failure mode, internal reasoning tags leaking into the visible
+ *    response. That finding is what motivated `effort: "low"` with thinking
+ *    left at its default here. It describes the Anthropic path as it stood
+ *    then, NOT current behaviour of the default Gemini path, which has no
+ *    effort parameter and no equivalent failure mode. Re-verify before relying
+ *    on it if this client is ever promoted back to the default.
  *
  * The API key is read from config and never logged. Errors are re-thrown as
  * LlmTransportError with the message only, never the request context, because

@@ -125,6 +125,29 @@ async function main(): Promise<void> {
   }
 
   const totalMs = Date.now() - startedAt;
+
+  // Refuse to write a report with no successful samples. An earlier version
+  // happily emitted "mean 0.00s, fits a 3-minute video" after 18 consecutive
+  // failures, which is a fabricated verdict dressed as a measurement. A
+  // measurement nobody could take must look like a failure, not like a fast
+  // result.
+  if (latencies.length === 0) {
+    console.error(
+      [
+        "",
+        `ALL ${TURNS} CALLS FAILED. No latency was measured, so no report was written.`,
+        "",
+        "First failure:",
+        `  ${failures[0] ?? "unknown"}`,
+        "",
+        "Fix the cause and re-run. Nothing is written until at least one call succeeds.",
+        "",
+      ].join("\n"),
+    );
+    process.exitCode = 1;
+    return;
+  }
+
   const sorted = [...latencies].sort((a, b) => a - b);
   const mean =
     latencies.length === 0
@@ -153,6 +176,14 @@ async function main(): Promise<void> {
     "",
     "## What this means for the demo",
     "",
+    ...(failures.length > 0
+      ? [
+          `**${failures.length} of ${TURNS} calls failed.** The figures above ` +
+            "describe only the calls that succeeded, so treat the totals as a " +
+            "lower bound and re-run once the failures are resolved.",
+          "",
+        ]
+      : []),
     totalMs > 60_000
       ? `A full scenario-A negotiation costs ${(totalMs / 1000).toFixed(0)}s of dead air, ` +
         "which does not fit a 3-minute video. Ship the demo in `LLM_MODE=replay` " +

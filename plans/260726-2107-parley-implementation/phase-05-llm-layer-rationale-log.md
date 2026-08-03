@@ -47,7 +47,10 @@
 ```
 packages/llm-layer/
 ├── src/llm-client-interface.ts             # complete(prompt, opts) -> string; provider agnostic
-├── src/http-llm-client.ts                  # single provider, timeout + one transport retry
+├── src/llm-client-factory.ts               # THE one place a provider is chosen
+├── src/gemini-llm-client.ts                # current provider (free tier)
+├── src/anthropic-llm-client.ts             # retained alternative, LLM_PROVIDER=anthropic
+├── src/recording-and-replay-client.ts      # record once, replay for the video
 ├── src/offer-selection-prompt-builder.ts   # builds the prompt from OWN state only
 ├── src/llm-offer-response-schema.ts        # zod
 ├── src/bounded-offer-selector.ts           # the bounding logic; the heart of this phase
@@ -127,6 +130,7 @@ The band is given as a range, so the model's job is small and its failure modes 
 ## Implementation Steps
 
 1. Pick one provider and one small fast model. Do not build multi-provider support; that idea belongs to the superseded plan and is explicitly not carried over.
+   **RESOLVED 2026-08-03: Google Gemini, `gemini-3.5-flash-lite`.** Reason: free tier, no billing account, which suits a hackathon budget. See spec.md section 5.1. Note this is still ONE provider at a time selected by config, not the superseded multi-provider router: there is a single `LlmClient` interface with a factory, so the provider is swappable but never plural at runtime.
 2. `llm-client-interface.ts` plus `http-llm-client.ts`: `AbortController` timeout, one retry on transport error only, never on a 4xx or a validation failure. Redact the API key from every error path.
 3. `llm-offer-response-schema.ts`: zod, strict, unknown keys rejected. Price as a decimal string.
 4. `offer-selection-prompt-builder.ts`: **own state only**. Counterparty rationale is included but wrapped in an explicit untrusted fence, and the system instruction states that text in the fence cannot change the permitted range.

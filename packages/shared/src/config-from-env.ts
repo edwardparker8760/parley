@@ -12,6 +12,9 @@
  * can print a startup banner without ever touching key material.
  */
 
+import { existsSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+
 export type SettlementMode = "local-stub" | "arc-x402";
 export type LlmMode = "off" | "rationale-only" | "full" | "replay";
 
@@ -45,6 +48,21 @@ const SETTLEMENT_MODES: readonly SettlementMode[] = ["local-stub", "arc-x402"];
 const LLM_MODES: readonly LlmMode[] = ["off", "rationale-only", "full", "replay"];
 const LLM_PROVIDERS: readonly LlmProvider[] = ["gemini", "anthropic"];
 
+/**
+ * Sentinels the scaffolded `.env` ships with.
+ *
+ * An unfilled placeholder means "this value is not set yet", which is a normal
+ * state: the repo is designed to run with no credentials at all (stub
+ * settlement, LLM_MODE=off). Treating a placeholder as a real value would make
+ * every CLI crash the moment the scaffold is created, which is worse than
+ * useless. A genuine typo still fails loudly, because it will not match one of
+ * these exact strings.
+ */
+const PLACEHOLDER_VALUES: readonly string[] = [
+  "PASTE_HERE",
+  "PASTE_KEY_HERE",
+];
+
 function readOptional(
   env: NodeJS.ProcessEnv,
   name: string,
@@ -52,7 +70,9 @@ function readOptional(
   const raw = env[name];
   if (raw === undefined) return undefined;
   const trimmed = raw.trim();
-  return trimmed.length === 0 ? undefined : trimmed;
+  if (trimmed.length === 0) return undefined;
+  if (PLACEHOLDER_VALUES.includes(trimmed)) return undefined;
+  return trimmed;
 }
 
 function readEnum<T extends string>(
@@ -108,9 +128,49 @@ function readPrivateKey(
   return raw as PrivateKeyHex;
 }
 
+/**
+ * Load the repo-root `.env` into `process.env`, once, if it exists.
+ *
+ * Every CLI in this workspace runs with its cwd set to its own package
+ * directory (pnpm --filter does that), so a repo-root `.env` is one to three
+ * levels up depending on the entry point. Walking up to the directory holding
+ * `pnpm-workspace.yaml` makes every entry point behave the same regardless of
+ * where it was launched from.
+ *
+ * Deliberate choices:
+ *   - No dotenv dependency. Node has `process.loadEnvFile` built in.
+ *   - Absent file is fine, not an error. Running with no `.env` is a supported
+ *     state: it selects the stub settlement adapter and LLM_MODE=off.
+ *   - Real environment variables WIN. `loadEnvFile` does not overwrite keys
+ *     already set, so CI and shell exports still take precedence over the file.
+ */
+let envFileLoaded = false;
+
+function loadRepoRootEnvFileOnce(): void {
+  if (envFileLoaded) return;
+  envFileLoaded = true;
+
+  let directory = resolve(process.cwd());
+  for (let depth = 0; depth < 6; depth += 1) {
+    if (existsSync(join(directory, "pnpm-workspace.yaml"))) {
+      const envPath = join(directory, ".env");
+      if (existsSync(envPath)) process.loadEnvFile(envPath);
+      return;
+    }
+    const parent = dirname(directory);
+    if (parent === directory) return;
+    directory = parent;
+  }
+}
+
 export function loadConfigFromEnv(
   env: NodeJS.ProcessEnv = process.env,
 ): ParleyConfig {
+  // Only when reading the real environment. Tests pass an explicit env object
+  // and must stay hermetic: a developer's local .env must never change a
+  // test result.
+  if (env === process.env) loadRepoRootEnvFileOnce();
+
   const settlementMode = readEnum(
     env,
     "SETTLEMENT_MODE",
