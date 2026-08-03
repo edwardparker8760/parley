@@ -47,7 +47,7 @@ Six days remain with zero application code. Scope is cut to the **critical path*
 | 02 | [Negotiation protocol + agent skeletons](phase-02-negotiation-protocol-agent-skeletons.md) | Tue 4 Aug | Complete |
 | 03 | [Guardrail engine (hard clamps)](phase-03-guardrail-engine-hard-clamps.md) | Wed 5 Aug | Complete |
 | 04 | [Deterministic negotiation: utility, concession, ZOPA](phase-04-deterministic-negotiation-utility-concession-zopa.md) | Thu 6 Aug | Complete |
-| 05 | [LLM layer + rationale log](phase-05-llm-layer-rationale-log.md) | Fri 7 Aug am | Complete |
+| 05 | [LLM layer + rationale log](phase-05-llm-layer-rationale-log.md) | Fri 7 Aug am | **Partial**: layer built and bounded, NOT wired into the agents |
 | 06 | [Settlement + walk-away reporting](phase-06-settlement-and-walkaway-reporting.md) | Fri 7 Aug pm | **Complete on stub** (credential gate negative) |
 | 07 | [Dashboard (minimal)](phase-07-dashboard-minimal.md) | Sat 8 Aug am | Not started |
 | 08 | [Submission hardening (thin)](phase-08-submission-hardening.md) | Sat 8 Aug pm | Not started |
@@ -90,7 +90,7 @@ Six days remain with zero application code. Scope is cut to the **critical path*
 ## Open questions
 
 1. ~~**One process or two services?**~~ ANSWERED at the phase 02 gate: one process with a message-bus boundary.
-2. ~~**Will Circle credentials exist by Fri 7 Aug?**~~ **SUPERSEDED, then ANSWERED 2026-08-03.** The phase 01 spike showed settlement needs no Circle API key at all, only a funded EVM private key. At the phase 06 gate no wallet had been provisioned (every key in `.env` is still a placeholder), so **phase 06 shipped COMPLETE-ON-STUB.** Reopening it costs one faucet request plus the adapter implementation; it is a phase 08 stretch, not a blocker.
+2. ~~**Will Circle credentials exist by Fri 7 Aug?**~~ **SUPERSEDED, then ANSWERED 2026-08-03.** The phase 01 spike showed settlement needs no Circle API key at all, only a funded EVM private key. At the phase 06 gate no wallet had been provisioned (the six **wallet** entries in `.env` are still placeholders; `LLM_API_KEY` is a real working key and unrelated to settlement), so **phase 06 shipped COMPLETE-ON-STUB.** Reopening it costs one faucet request plus the adapter implementation; it is a phase 08 stretch, not a blocker.
 3. ~~**Does `@circle-fin/x402-batching` expose settlement status or a manual flush?**~~ ANSWERED by the phase 01 spike: status yes (`getTransferById`), manual flush no.
 4. **Is a plain USDC transfer on Arc an acceptable settlement fallback** if Nanopayments is unusable on testnet from this SDK version? Still open, but no longer on the critical path: it only matters if the owner chooses to reopen real settlement.
 5. Judging weights unpublished; assuming equal.

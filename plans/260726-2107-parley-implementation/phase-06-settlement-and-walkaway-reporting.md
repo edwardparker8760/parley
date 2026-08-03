@@ -11,8 +11,11 @@
 
 - **Priority:** P1. **Folded to minimum viable form.** Judging criterion 2 (clear use of Circle tools) needs this to exist; it does not need it to be elaborate.
 - **Status:** **COMPLETE-ON-STUB 2026-08-03.** All three minimum success criteria met. The
-  credential gate (step 8) closed NEGATIVE: no wallet is provisioned (every key in `.env` is
-  still the `.env.example` placeholder), so steps 9 to 12 did not run and the `arc-x402` adapter
+  credential gate (step 8) closed NEGATIVE: no wallet is provisioned. The six **wallet** entries
+  in `.env` (`BUYER_/SELLER_/SELLER_PAYOUT_` addresses and private keys) are still the
+  `.env.example` placeholders. `LLM_API_KEY` is NOT a placeholder: it is a real, currently working
+  Gemini key, and it has nothing to do with settlement. Steps 9 to 12 did not run and the
+  `arc-x402` adapter
   remains a throwing skeleton. Phase 07 is unblocked and inherits the reclaimed time.
   - **Deviation from the plan, deliberate:** no `packages/reporting` was created. The
     post-mortem builder lives in `packages/orchestrator/src/build-walkaway-report.ts` because

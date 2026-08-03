@@ -10,7 +10,18 @@
 ## Overview
 
 - **Priority:** P0. Never cut. Without it the transcript is numbers and the pitch loses its legibility.
-- **Status:** Not started
+- **Status:** **PARTIAL, 2026-08-03.** The layer is built, bounded, and tested in isolation
+  (14 tests: schema, five fallback branches, replay, sanitiser, prompt-injection containment).
+  Provider is Gemini behind a factory. Latency re-measured live on 2026-08-03 18:52: 16 of 18
+  calls succeeded, mean 1.11s, p95 1.60s, 18.1s wall clock; the 2 failures were 429 rate limits
+  (free tier: 15 requests per minute per model), not access denials. A verified replay tape of 18
+  real Gemini responses is recorded. **Note for the wiring work: an 18-call burst exceeds the free
+  tier, so the live path needs pacing, or the demo runs from the tape.**
+  **What is NOT done: the selector is not wired into the agents.** No package outside
+  `llm-layer` imports it, there is no `llm_invocations` table, and no scenario has ever run with
+  `LLM_MODE=full` end to end. Every rationale in the current ladders is the deterministic
+  templated one. Success criteria 1, 2 and 4 are therefore unmet.
+  **Cost to finish: roughly half a day.** This is the single largest gap in the build.
 - **Day:** Fri 7 Aug, morning
 - **Brief:** The LLM chooses where inside the already-computed feasible band to land and writes the one-sentence rationale on every message. Bounded exactly as the superseded router's LLM was: schema-validated output, out-of-band proposals rejected and replaced by the deterministic pick, hard timeout falling back to deterministic.
 

@@ -10,7 +10,10 @@
 ## Overview
 
 - **Priority:** P0. The engine's brain. Never cut.
-- **Status:** Not started
+- **Status:** **COMPLETE 2026-08-03** (commit `218c42a`). Status line was left stale at the time;
+  corrected on 2026-08-03 after verifying every todo item against the code, the 15 engine tests,
+  the determinism test in the orchestrator suite, and `docs/engine-benchmark.md`. The engine
+  beats the baseline on both rounds and price quality in all three scenarios.
 - **Day:** Thu 6 Aug
 - **Brief:** Utility function per side over price, quantity, and terms. Concession schedule. ZOPA detection with early walk-away. Benchmarked against the phase 02 fixed-concession baseline on scenarios A, B, C.
 
