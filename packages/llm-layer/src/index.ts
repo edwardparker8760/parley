@@ -4,5 +4,7 @@ export * from "./offer-selection-prompt-builder.js";
 export * from "./rationale-sanitiser.js";
 export * from "./templated-rationale-fallback.js";
 export * from "./bounded-offer-selector.js";
+export * from "./llm-client-factory.js";
+export * from "./gemini-llm-client.js";
 export * from "./anthropic-llm-client.js";
 export * from "./recording-and-replay-client.js";

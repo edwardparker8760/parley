@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.68.0",
+    "@google/genai": "^2.15.0",
     "@parley/guardrails": "workspace:*",
     "@parley/protocol": "workspace:*",
     "@parley/shared": "workspace:*",

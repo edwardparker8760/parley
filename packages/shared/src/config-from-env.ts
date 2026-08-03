@@ -13,7 +13,10 @@
  */
 
 export type SettlementMode = "local-stub" | "arc-x402";
-export type LlmMode = "off" | "rationale-only" | "full";
+export type LlmMode = "off" | "rationale-only" | "full" | "replay";
+
+/** Which vendor the LLM layer talks to. Swapped in one place: the factory. */
+export type LlmProvider = "gemini" | "anthropic";
 
 /** 0x-prefixed 32-byte EVM private key. */
 export type PrivateKeyHex = `0x${string}`;
@@ -30,12 +33,17 @@ export interface ParleyConfig {
   readonly sellerPrivateKey: PrivateKeyHex | undefined;
   readonly sellerPayoutPrivateKey: PrivateKeyHex | undefined;
   readonly llmMode: LlmMode;
+  readonly llmProvider: LlmProvider;
   readonly llmApiKey: string | undefined;
+  /** Empty string means "use the provider default from the factory". */
   readonly llmModel: string;
+  readonly llmTimeoutMs: number;
+  readonly llmTapePath: string;
 }
 
 const SETTLEMENT_MODES: readonly SettlementMode[] = ["local-stub", "arc-x402"];
-const LLM_MODES: readonly LlmMode[] = ["off", "rationale-only", "full"];
+const LLM_MODES: readonly LlmMode[] = ["off", "rationale-only", "full", "replay"];
+const LLM_PROVIDERS: readonly LlmProvider[] = ["gemini", "anthropic"];
 
 function readOptional(
   env: NodeJS.ProcessEnv,
@@ -141,11 +149,17 @@ export function loadConfigFromEnv(
   }
 
   const llmMode = readEnum(env, "LLM_MODE", LLM_MODES, "off");
+  const llmProvider = readEnum(env, "LLM_PROVIDER", LLM_PROVIDERS, "gemini");
   const llmApiKey = readOptional(env, "LLM_API_KEY");
-  if (llmMode !== "off" && llmApiKey === undefined) {
+
+  // `replay` reads a recorded tape and needs no key: a tape is provider-
+  // agnostic, so a recording survives a provider swap.
+  const needsKey = llmMode === "rationale-only" || llmMode === "full";
+  if (needsKey && llmApiKey === undefined) {
     throw new Error(
       `LLM_MODE=${llmMode} requires LLM_API_KEY. ` +
-        `Set it in .env, or use LLM_MODE=off for templated rationales.`,
+        `Set it in .env, use LLM_MODE=replay with a recorded tape, or ` +
+        `LLM_MODE=off for templated rationales.`,
     );
   }
 
@@ -165,8 +179,14 @@ export function loadConfigFromEnv(
     sellerPrivateKey,
     sellerPayoutPrivateKey,
     llmMode,
+    llmProvider,
     llmApiKey,
-    llmModel: readOptional(env, "LLM_MODEL") ?? "claude-sonnet-5",
+    // Empty means "provider default". The model name lives in exactly one
+    // place, DEFAULT_MODEL_BY_PROVIDER in the llm-layer factory, so a provider
+    // swap does not leave a stale model string behind in config.
+    llmModel: readOptional(env, "LLM_MODEL") ?? "",
+    llmTimeoutMs: readPositiveInteger(env, "LLM_TIMEOUT_MS", 4000),
+    llmTapePath: readOptional(env, "LLM_TAPE_PATH") ?? "docs/llm-tape.json",
   };
 }
 
@@ -199,7 +219,10 @@ export function describeConfig(config: ParleyConfig): string {
     `settlement=${config.settlementMode}`,
     `settlementKeys=${hasSettlementKeys(config) ? "present" : "absent"}`,
     `llm=${config.llmMode}`,
-    config.llmMode === "off" ? null : `model=${config.llmModel}`,
+    config.llmMode === "off" ? null : `provider=${config.llmProvider}`,
+    config.llmMode === "off" || config.llmModel === ""
+      ? null
+      : `model=${config.llmModel}`,
   ]
     .filter((part): part is string => part !== null)
     .join(" ");

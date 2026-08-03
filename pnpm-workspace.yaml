@@ -1,3 +1,11 @@
 packages:
   - "packages/*"
   - "apps/*"
+
+# Postinstall scripts are denied by default. These two ship one but do not need
+# it for our use: we call the Gemini REST surface through the SDK, not the
+# protobuf codegen path. Denying keeps the install reproducible and avoids
+# running vendor scripts we have not read.
+allowBuilds:
+  "@google/genai": false
+  protobufjs: false

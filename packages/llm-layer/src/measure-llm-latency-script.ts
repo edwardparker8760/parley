@@ -17,7 +17,10 @@ import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { loadConfigFromEnv } from "@parley/shared";
-import { AnthropicLlmClient } from "./anthropic-llm-client.js";
+import {
+  createLlmClient,
+  DEFAULT_MODEL_BY_PROVIDER,
+} from "./llm-client-factory.js";
 import { ReplayLlmClient } from "./recording-and-replay-client.js";
 import { buildOfferSelectionPrompt } from "./offer-selection-prompt-builder.js";
 import type { LlmClient } from "./llm-client-interface.js";
@@ -67,11 +70,16 @@ async function main(): Promise<void> {
     });
     mode = `replay (${tapePath})`;
   } else if (config.llmApiKey !== undefined) {
-    client = new AnthropicLlmClient({
+    const model =
+      config.llmModel === ""
+        ? DEFAULT_MODEL_BY_PROVIDER[config.llmProvider]
+        : config.llmModel;
+    client = createLlmClient({
+      provider: config.llmProvider,
       apiKey: config.llmApiKey,
-      model: config.llmModel,
+      model,
     });
-    mode = `live (${config.llmModel})`;
+    mode = `live (${config.llmProvider} / ${model})`;
   } else {
     console.error(
       [
@@ -81,8 +89,10 @@ async function main(): Promise<void> {
         "This measurement is the input to the demo design, so it must be real",
         "rather than assumed. To run it:",
         "",
-        "  1. Put LLM_API_KEY=<key> in .env",
-        "  2. pnpm --filter @parley/llm-layer measure-latency",
+        "  1. Get a free key at https://aistudio.google.com/apikey",
+        "     (free tier needs no billing account)",
+        "  2. Put LLM_API_KEY=<key> in .env",
+        "  3. pnpm --filter @parley/llm-layer measure-latency",
         "",
         "Or measure a recorded tape instead:",
         "  pnpm --filter @parley/llm-layer measure-latency --tape docs/llm-tape.json",
