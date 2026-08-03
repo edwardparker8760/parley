@@ -1,0 +1,26 @@
+{
+  "name": "@parley/llm-layer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "test": "node --test ./dist/*.test.js",
+    "measure-latency": "node ./dist/measure-llm-latency-script.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "@parley/guardrails": "workspace:*",
+    "@parley/protocol": "workspace:*",
+    "@parley/shared": "workspace:*",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

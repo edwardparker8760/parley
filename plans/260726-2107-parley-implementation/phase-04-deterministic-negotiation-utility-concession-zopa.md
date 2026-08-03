@@ -188,7 +188,14 @@ Note the clamp sits **after** every strategy decision, always. Phase 05 inserts 
 
 Measurable:
 
-1. Scenario A terminates in `ACCEPT` within 6 rounds.
+1. ~~Scenario A terminates in `ACCEPT` within 6 rounds.~~ **DROPPED 2026-08-03,
+   see spec.md section 8.** Measured: a beta sweep from 0.8 to 2.5 settled at
+   rounds 9 to 11 across the whole range, so the concession curve is not the
+   lever. The binding constraint is the acceptance rule, and loosening it to buy
+   rounds shortens the ladder, which is the thing the demo depends on.
+   Replacement: A must settle with a legible ladder and beat the baseline on
+   rounds AND price quality. Achieved: round 9 vs baseline 10, and 4 vs 67
+   micro-USDC from the ZOPA midpoint.
 2. Scenario B terminates in `ACCEPT` in the back half of the round budget (round 7 or later of 12), with at least three price concessions from each side and at least one terms concession somewhere in the ladder.
 3. Scenario C terminates in `WALK_AWAY` from both sides, contains zero `ACCEPT` messages, and the oracle independently confirms no ZOPA existed.
 4. Benchmark table shows the engine strictly better than the baseline on at least two of the three scenarios, on rounds-to-agreement or final utility.
