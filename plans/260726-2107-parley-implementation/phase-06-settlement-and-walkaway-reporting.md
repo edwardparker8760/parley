@@ -10,7 +10,15 @@
 ## Overview
 
 - **Priority:** P1. **Folded to minimum viable form.** Judging criterion 2 (clear use of Circle tools) needs this to exist; it does not need it to be elaborate.
-- **Status:** Not started
+- **Status:** **COMPLETE-ON-STUB 2026-08-03.** All three minimum success criteria met. The
+  credential gate (step 8) closed NEGATIVE: no wallet is provisioned (every key in `.env` is
+  still the `.env.example` placeholder), so steps 9 to 12 did not run and the `arc-x402` adapter
+  remains a throwing skeleton. Phase 07 is unblocked and inherits the reclaimed time.
+  - **Deviation from the plan, deliberate:** no `packages/reporting` was created. The
+    post-mortem builder lives in `packages/orchestrator/src/build-walkaway-report.ts` because
+    the orchestrator is already the sanctioned observer (it is the only place allowed to import
+    the ZOPA oracle), and the repositories live in `packages/ledger` with every other table.
+    One fewer package, no new dependency edges.
 - **Day:** Fri 7 Aug, afternoon
 - **Brief:** On `ACCEPT`, settle `unitPrice * quantity` in USDC on Arc with the agreed terms hashed into the payment reference. On `WALK_AWAY`, emit both structured post-mortems. No batch-flush UI, no retry orchestration, no settlement state machine beyond three states.
 
@@ -127,21 +135,21 @@ The oracle result is included in the post-mortem because it answers "was a deal 
 
 ## Todo List
 
-- [ ] Walk-away post-mortems built, persisted, printed for scenario C **(do this first)**
-- [ ] `no-payment-on-walkaway` spy test green (C = 0 calls, A = 1 call)
-- [ ] Canonical deal serialiser with stable-hash test
-- [ ] `deals`, `settlement_receipts`, `postmortems` migrations
-- [ ] Adapter factory that fails loudly rather than downgrading silently
-- [ ] ACCEPT terminal hook settling asynchronously
-- [ ] Scenario A settles on the stub with PENDING then SETTLED and a latency figure
-- [ ] **Credential gate evaluated and the outcome recorded in `plan.md`**
-- [ ] `arc-x402` adapter implemented against the verified SDK surface only
-- [ ] Buyer wallet funded and balance confirmed
-- [ ] Live Arc Testnet settlement with a real reference or tx hash
-- [ ] `docs/settlement-latency.md` written
-- [ ] Explorer URL stored on the receipt
-- [ ] Failure path marks FAILED without corrupting the transcript
-- [ ] Suite green, committed
+- [x] Walk-away post-mortems built, persisted, printed for scenario C **(done first)**
+- [x] `no-payment-on-walkaway` spy test green (C = 0 calls, A = 1 call)
+- [x] Canonical deal serialiser with stable-hash test (4 tests, `terms-hash-canonical.test.ts`)
+- [x] `deals`, `settlement_receipts`, `postmortems` migrations (schema version 3)
+- [x] Adapter factory that fails loudly rather than downgrading silently (from phase 01, now used by the CLI)
+- [x] ACCEPT terminal hook, running after the turn loop returns
+- [x] Scenario A settles on the stub, `SETTLED_STUB` with a latency figure
+- [x] **Credential gate evaluated: NEGATIVE, no wallet provisioned. Recorded in `plan.md` and `docs/settlement-latency.md`.**
+- [ ] `arc-x402` adapter implemented against the verified SDK surface only **(gated out)**
+- [ ] Buyer wallet funded and balance confirmed **(gated out; `pnpm --filter @parley/wallets balances` added to check it)**
+- [ ] Live Arc Testnet settlement with a real reference or tx hash **(gated out)**
+- [x] `docs/settlement-latency.md` written (stub measured, real path recorded as blocked)
+- [x] Explorer URL stored on the receipt (populated only when a real tx hash exists)
+- [x] Failure path marks FAILED without corrupting the transcript
+- [x] Suite green (63 tests), committed
 
 ## Success Criteria
 

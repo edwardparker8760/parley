@@ -124,6 +124,9 @@ importers:
       '@parley/protocol':
         specifier: workspace:*
         version: link:../protocol
+      '@parley/settlement':
+        specifier: workspace:*
+        version: link:../settlement
       '@parley/shared':
         specifier: workspace:*
         version: link:../shared

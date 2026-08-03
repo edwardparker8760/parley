@@ -21,7 +21,8 @@
     "@parley/protocol": "workspace:*",
     "@parley/shared": "workspace:*",
     "@parley/guardrails": "workspace:*",
-    "@parley/negotiation-engine": "workspace:*"
+    "@parley/negotiation-engine": "workspace:*",
+    "@parley/settlement": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.7.2"

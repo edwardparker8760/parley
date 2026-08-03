@@ -21,8 +21,11 @@ import {
   renderLadder,
 } from "@parley/ledger";
 import type { Database } from "@parley/ledger";
+import type { SettlementAdapter } from "@parley/settlement";
 import { runNegotiation } from "./negotiation-turn-loop.js";
 import type { TurnLoopResult } from "./negotiation-turn-loop.js";
+import { finaliseNegotiationOutcome } from "./finalise-negotiation-outcome.js";
+import type { FinaliseResult } from "./finalise-negotiation-outcome.js";
 import { SCENARIOS } from "./scenario-definitions.js";
 import type { ScenarioName } from "./scenario-definitions.js";
 
@@ -42,11 +45,21 @@ export interface RunScenarioOptions {
    * replay comparison is meaningful.
    */
   readonly now?: () => Date;
+  /**
+   * Settlement adapter used ONLY on ACCEPT. Absent means the deal is recorded
+   * but no settlement is attempted, which is what the walk-away tests want and
+   * what keeps the default test run free of artificial stub latency.
+   */
+  readonly settlement?: SettlementAdapter;
+  readonly buyerAddress?: string;
+  readonly sellerAddress?: string;
 }
 
 export interface RunScenarioResult extends TurnLoopResult {
   readonly db: Database;
   readonly ladder: string;
+  /** Deal plus receipt on ACCEPT, both post-mortems on WALK_AWAY. */
+  readonly finalisation: FinaliseResult;
 }
 
 /** Deterministic clock: fixed epoch, +1s per call. */
@@ -92,6 +105,8 @@ export async function runScenario(
     options.negotiationId ??
     nextFreeNegotiationId(negotiations, definition.name.toLowerCase());
 
+  const now = options.now ?? createDeterministicClock();
+
   const result = await runNegotiation({
     negotiationId,
     scenario: definition.name,
@@ -116,7 +131,7 @@ export async function runScenario(
       BUYER: definition.buyerGuardrails,
       SELLER: definition.sellerGuardrails,
     },
-    now: options.now ?? createDeterministicClock(),
+    now,
   });
 
   const ladder = renderLadder(
@@ -129,5 +144,37 @@ export async function runScenario(
     clampEvents.listByNegotiation(negotiationId),
   );
 
-  return { ...result, db, ladder };
+  // Terminal hooks run AFTER the transcript is committed, so a slow or failing
+  // settlement can never damage the negotiation record.
+  const lastOffer = [...result.transcript]
+    .reverse()
+    .find((envelope) => envelope.type === "OFFER" || envelope.type === "COUNTEROFFER");
+
+  const finalisation = await finaliseNegotiationOutcome({
+    db,
+    negotiationId,
+    transcript: result.transcript,
+    terminal: result.terminalMessage,
+    roundsUsed: result.terminalMessage.round,
+    settlement: options.settlement,
+    buyerAddress: options.buyerAddress,
+    sellerAddress: options.sellerAddress,
+    reportInput: {
+      buyerGuardrails: definition.buyerGuardrails,
+      sellerGuardrails: definition.sellerGuardrails,
+      // Bands are evaluated at the quantity and terms actually on the table at
+      // the end, not at the opening ones.
+      quantity:
+        lastOffer !== undefined && "offer" in lastOffer
+          ? lastOffer.offer.quantity
+          : definition.buyerGuardrails.targetQuantity,
+      terms:
+        lastOffer !== undefined && "offer" in lastOffer
+          ? lastOffer.offer.terms
+          : definition.terms,
+    },
+    now,
+  });
+
+  return { ...result, db, ladder, finalisation };
 }

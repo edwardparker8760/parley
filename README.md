@@ -66,20 +66,50 @@ the provider was swapped.
 The system also runs with `LLM_MODE=off`, using templated rationales and no API
 calls at all. The safety claim does not depend on the LLM existing.
 
+## Settlement: what is real and what is simulated
+
+**Read this before believing any number in a screenshot.**
+
+Settlement sits behind a `SettlementAdapter` interface with two implementations,
+selected by `SETTLEMENT_MODE`:
+
+| Mode | What happens | How you can tell |
+|---|---|---|
+| `local-stub` (default) | Nothing moves on chain. A deterministic reference is derived from the terms hash. | Status is `SETTLED_STUB`, `isStub` is true, the reference starts with `0xstub-`, and the CLI prints `[SIMULATED: no real money moved]`. |
+| `arc-x402` | Real EIP-3009 authorisation via Circle Gateway on Arc Testnet, batch settled by Circle. **Not yet implemented: the adapter throws rather than pretending.** | Status would be `SETTLED` with a transaction hash and an `arcscan` explorer link. |
+
+Selecting `arc-x402` without funded wallet keys **fails at startup**. It never
+downgrades quietly to the stub, because a silent downgrade is how a fabricated
+transaction hash ends up in a demo.
+
+As of the current commit, no wallet has been provisioned or funded, so every
+recorded settlement is a stub. Run `pnpm --filter @parley/wallets balances` to
+check funding before switching modes. Measured stub latency and the state of the
+real path are recorded in [`docs/settlement-latency.md`](docs/settlement-latency.md).
+
+**No payment occurs on any walk-away path.** That is enforced by construction
+(the adapter is only reachable from the ACCEPT branch) and asserted by a
+counting-spy test over scenario C.
+
 ## Status
 
-**Work in progress: Checkpoint 2 (mid-submission).** Research and specification complete,
-implementation plan locked, build starting. See:
+**Work in progress.** Phases 01-06 of the implementation plan are complete:
+scaffold and wallets, negotiation protocol, guardrail engine, deterministic
+negotiation, bounded LLM layer, settlement and walk-away reporting. Dashboard
+and submission hardening remain. See:
 
 - [`spec.md`](spec.md): full specification
 - [`plans/260726-2107-parley-implementation/plan.md`](plans/260726-2107-parley-implementation/plan.md): phased plan to 9 Aug
 - [`context/latest.md`](context/latest.md): research findings with verification log
 
-No application code yet. Target for final submission: **Sun 9 Aug 2026**.
+Target for final submission: **Sun 9 Aug 2026**.
 
 ## Honest limitations
 
-- Arc **testnet** only; faucet-limited throughput (~1 USDC/day).
+- Arc **testnet** only.
+- Settlement currently runs on the local stub. The Arc x402 adapter is scaffolded
+  against a verified SDK surface but is not implemented, and it throws rather
+  than producing a plausible-looking fake receipt.
 - Single good per negotiation; no multi-party auctions.
 - No counterparty identity or reputation system.
 - Not legal contract generation; settlement binds agreed terms via a payment reference hash.

@@ -10,7 +10,8 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "smoke": "node ./dist/settle-fake-deal-smoke-script.js"
+    "smoke": "node ./dist/settle-fake-deal-smoke-script.js",
+    "test": "node --test ./dist/*.test.js"
   },
   "dependencies": {
     "@parley/shared": "workspace:*"

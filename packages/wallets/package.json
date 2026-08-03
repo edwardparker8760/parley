@@ -10,7 +10,8 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "provision": "node ./dist/provision-wallets-script.js"
+    "provision": "node ./dist/provision-wallets-script.js",
+    "balances": "node ./dist/check-wallet-balances-script.js"
   },
   "dependencies": {
     "@parley/shared": "workspace:*",
