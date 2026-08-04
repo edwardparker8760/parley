@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsc -b",
     "start": "node ./dist/start-seller-service-script.js",
-    "test": "node --test ./dist/*.test.js"
+    "test": "tsc -b && node --test ./dist/*.test.js"
   },
   "dependencies": {
     "@circle-fin/x402-batching": "^3.2.0",

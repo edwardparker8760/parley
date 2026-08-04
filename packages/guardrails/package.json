@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "test": "node --test ./dist/*.test.js"
+    "test": "tsc -b && node --test ./dist/*.test.js"
   },
   "dependencies": {
     "@parley/protocol": "workspace:*",

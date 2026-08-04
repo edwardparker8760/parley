@@ -12,7 +12,7 @@
     "build": "tsc -b",
     "scenario": "node ./dist/run-scenario-cli.js",
     "replay": "node ./dist/replay-cli.js",
-    "test": "node --test ./dist/*.test.js",
+    "test": "tsc -b && node --test ./dist/*.test.js",
     "benchmark": "node ./dist/benchmark-engine-vs-baseline.js"
   },
   "dependencies": {

@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsc -b",
     "smoke": "node ./dist/settle-fake-deal-smoke-script.js",
-    "test": "node --test ./dist/*.test.js",
+    "test": "tsc -b && node --test ./dist/*.test.js",
     "deposit": "node ./dist/deposit-to-gateway-script.js"
   },
   "dependencies": {

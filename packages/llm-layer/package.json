@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "test": "node --test ./dist/*.test.js",
+    "test": "tsc -b && node --test ./dist/*.test.js",
     "measure-latency": "node ./dist/measure-llm-latency-script.js"
   },
   "dependencies": {
