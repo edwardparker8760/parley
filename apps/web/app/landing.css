@@ -82,8 +82,14 @@ h3 {
   max-width: 20ch;
 }
 
+/*
+ * The mid-level. Between a 44px section title and 17px body copy there was
+ * nothing for the eye to land on, so every section's opening paragraph sits
+ * here at 21px and carries the section on its own.
+ */
 .lede {
-  font-size: 20px;
+  font-size: 21px;
+  line-height: 1.5;
   color: var(--text-secondary);
   margin-top: var(--space-5);
   max-width: 60ch;
@@ -162,33 +168,388 @@ h3 {
 .card p {
   color: var(--text-secondary);
   font-size: 17px;
+  line-height: 1.55;
 }
 
-/* The offsets are what make the stack feel hand-placed rather than gridded.
-   They collapse on narrow screens, where overlapping cards would just hide
-   each other's text. */
-@media (min-width: 900px) {
-  .card-stack-offset {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-6);
+/* ---------- two-column discipline ----------
+   Content left, artifact right. Every section is either this or one centred
+   column: text on the left with nothing on the right is what made the page
+   read as empty. */
+
+.split {
+  display: grid;
+  gap: var(--space-7);
+  align-items: center;
+}
+
+@media (min-width: 1000px) {
+  .split {
+    grid-template-columns: 1fr 1fr;
   }
 
-  .card-stack-offset .card:nth-child(1) {
-    transform: translateY(var(--space-5));
+  /* Where the left column carries a list as well as prose, it needs the room. */
+  .split-copy-wide {
+    grid-template-columns: 1.15fr 0.85fr;
+    align-items: start;
   }
+}
 
-  .card-stack-offset .card:nth-child(2) {
-    transform: translateX(calc(var(--space-4) * -1));
-  }
+.split-artifact {
+  min-width: 0;
+}
 
-  .card-stack-offset .card:nth-child(3) {
-    transform: translateY(calc(var(--space-4) * -1)) translateX(var(--space-3));
-    z-index: 2;
-  }
+/* ---------- hero transcript excerpt ---------- */
 
-  .card-stack-offset .card:nth-child(4) {
-    transform: translateY(var(--space-3));
+.excerpt {
+  margin: 0;
+  background: var(--surface-white);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-raised);
+  overflow: hidden;
+}
+
+.excerpt-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--line-soft);
+  background: var(--surface-raised);
+}
+
+.excerpt-title {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: var(--weight-emphasis);
+  color: var(--text-secondary);
+}
+
+.excerpt-run {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.excerpt-body {
+  padding: var(--space-4) var(--space-5);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.excerpt-line {
+  display: grid;
+  grid-template-columns: 2.5rem 4.5rem 1fr;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+}
+
+.excerpt-round {
+  color: var(--text-secondary);
+}
+
+.excerpt-party.buyer {
+  color: var(--party-buyer);
+  font-weight: var(--weight-emphasis);
+}
+
+.excerpt-party.seller {
+  color: var(--party-seller);
+  font-weight: var(--weight-emphasis);
+}
+
+/* The inline left bar: the shape reserved for a guardrail firing, never for a
+   failure. Same rule as the product. */
+.excerpt-clamp {
+  grid-column: 1 / -1;
+  margin-top: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  background: var(--status-stopped-tint);
+  border-left: 3px solid var(--status-stopped);
+  color: var(--status-stopped);
+  font-size: 12.5px;
+}
+
+.excerpt-foot {
+  margin: 0;
+  padding: var(--space-3) var(--space-5) var(--space-4);
+  border-top: 1px solid var(--line-soft);
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+/* ---------- mechanism stack ---------- */
+
+.stack {
+  margin: 0;
+  display: grid;
+  gap: 0;
+}
+
+.stack-head {
+  margin-bottom: var(--space-3);
+}
+
+.stack-title {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: var(--weight-emphasis);
+  opacity: 0.7;
+}
+
+.stack-model,
+.stack-layer,
+.stack-wire,
+.stack-outside {
+  border-radius: var(--radius-card);
+  padding: var(--space-3) var(--space-4);
+}
+
+.stack-model {
+  border: 1px dashed currentColor;
+  opacity: 0.85;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  font-size: 15px;
+}
+
+.stack-model-note {
+  opacity: 0.7;
+  font-size: 13px;
+}
+
+.stack-layer {
+  background: var(--surface-white);
+  color: var(--text-primary);
+  display: grid;
+  grid-template-columns: 1.6rem 1fr;
+  gap: var(--space-1) var(--space-3);
+  align-items: baseline;
+}
+
+.stack-step {
+  grid-row: span 2;
+  font-size: 20px;
+  font-weight: var(--weight-heading);
+  color: var(--text-secondary);
+}
+
+.stack-name {
+  font-size: 17px;
+  font-weight: var(--weight-emphasis);
+}
+
+.stack-detail {
+  grid-column: 2;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/*
+ * Emphasis by weight and case, not by hue.
+ *
+ * This was `--status-good` and should not have been. The stack is a diagram of
+ * mechanisms, not a display of outcomes, so borrowing the settled colour for it
+ * dilutes the one thing colour carries in this product. It also measured 2.27:1
+ * against the dark band, which is unreadable regardless of the principle.
+ */
+.stack-note {
+  grid-column: 2;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  font-weight: var(--weight-emphasis);
+}
+
+/* The connector carries the order. It is a line, not decoration. */
+.stack-arrow {
+  width: 2px;
+  height: var(--space-4);
+  margin-left: calc(var(--space-4) + 0.6rem);
+  background: currentColor;
+  opacity: 0.45;
+}
+
+.stack-wire {
+  margin-top: var(--space-4);
+  border: 1px solid currentColor;
+  text-align: center;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.stack-outside {
+  margin-top: var(--space-5);
+  border: 1px dashed currentColor;
+  opacity: 0.9;
+}
+
+.stack-outside-label {
+  display: block;
+  font-size: 15px;
+  font-weight: var(--weight-emphasis);
+}
+
+.stack-outside-note {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+/* ---------- captured model comparison ---------- */
+
+.captured {
+  margin: var(--space-8) 0 0;
+}
+
+.captured-columns {
+  display: grid;
+  gap: var(--space-5);
+}
+
+@media (min-width: 860px) {
+  .captured-columns {
+    grid-template-columns: 1fr 1fr;
   }
+}
+
+.captured-side {
+  border-radius: var(--radius-panel);
+  padding: var(--space-5);
+  background: var(--surface-white);
+  color: var(--text-primary);
+}
+
+.captured-side h3 {
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-4);
+  color: var(--text-secondary);
+}
+
+.captured-demanded .captured-value {
+  color: var(--status-stopped);
+}
+
+.captured-sent .captured-value {
+  color: var(--status-good);
+}
+
+.captured-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0 var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.captured-row:last-child {
+  border-bottom: none;
+}
+
+.captured-scenario {
+  font-size: 15px;
+}
+
+.captured-value {
+  font-size: 20px;
+  font-weight: var(--weight-emphasis);
+  text-align: right;
+}
+
+.captured-meta {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.captured-verdict {
+  margin-top: var(--space-5);
+  font-size: 19px;
+  line-height: 1.5;
+  max-width: 70ch;
+}
+
+.band-dark .captured-verdict {
+  color: var(--text-on-dark);
+}
+
+/* ---------- build figures ---------- */
+
+.figures {
+  margin: var(--space-8) 0 0;
+  display: grid;
+  gap: var(--space-5);
+  border-top: 1px solid var(--line-strong);
+  padding-top: var(--space-6);
+}
+
+@media (min-width: 780px) {
+  .figures {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.figure-value {
+  margin: 0;
+  font-size: 40px;
+  font-weight: var(--weight-heading);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.figure-label {
+  margin-top: var(--space-2);
+  font-size: 15px;
+  font-weight: var(--weight-emphasis);
+}
+
+.figure-note {
+  margin: var(--space-1) 0 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/*
+ * Two arguments as two aligned rows, not four staggered points.
+ *
+ * The offsets were removed: a reader parses the left card and the right card as
+ * a pair that reads across, and a vertical stagger makes that pairing look like
+ * a layout mistake rather than a relationship. Alignment is the thing doing the
+ * work here, so nothing may break it.
+ */
+.pair-rows {
+  display: grid;
+  gap: var(--space-5);
+  margin-top: var(--space-7);
+}
+
+.pair-row {
+  display: grid;
+  gap: var(--space-5);
+  align-items: stretch;
+}
+
+@media (min-width: 860px) {
+  .pair-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* The right card of each pair is the response, and carries a little more
+   weight so the direction of the argument is visible before it is read. */
+.card-answer {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-raised);
 }
 
 /* ---------- geometric bullets ---------- */

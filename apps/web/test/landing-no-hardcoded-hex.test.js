@@ -77,6 +77,44 @@ test("decoration never borrows a status colour", () => {
   }
 });
 
+test("the mechanism diagram uses weight for emphasis, not status hue", () => {
+  // It explains mechanisms; it does not display outcomes. This shipped once
+  // using --status-good for its emphasis labels, which both diluted the meaning
+  // of the settled colour and measured 2.27:1 on the dark band.
+  const css = readFileSync(join(APP_ROOT, "app", "landing.css"), "utf8");
+  const stackRules = css.match(/\.stack[\w-]*\s*\{[^}]*\}/g) ?? [];
+  assert.ok(stackRules.length > 0, "the stack rules were not found");
+  for (const rule of stackRules) {
+    assert.doesNotMatch(
+      rule,
+      /var\(--status-|var\(--party-/,
+      `a .stack rule borrows a meaning colour: ${rule.slice(0, 60)}`,
+    );
+  }
+});
+
+test("product artifacts DO use the real status tokens", () => {
+  // The opposite rule, and just as important. The hero excerpt shows real clamp
+  // events and the comparison shows real outcomes, so approximating either
+  // would put a near-miss shade of a meaning colour on a public page.
+  const css = readFileSync(join(APP_ROOT, "app", "landing.css"), "utf8");
+  assert.match(css, /\.excerpt-clamp\s*\{[^}]*var\(--status-stopped\)/);
+  assert.match(css, /\.excerpt-party\.buyer\s*\{[^}]*var\(--party-buyer\)/);
+  assert.match(css, /\.captured-demanded \.captured-value\s*\{[^}]*var\(--status-stopped\)/);
+  assert.match(css, /\.captured-sent \.captured-value\s*\{[^}]*var\(--status-good\)/);
+});
+
+test("the hero excerpt is transcribed from a named run, not invented", () => {
+  const source = readFileSync(
+    join(APP_ROOT, "components", "landing", "transcript-excerpt.tsx"),
+    "utf8",
+  );
+  // The comment naming the run is the audit trail. Without it nobody can check
+  // whether the ladder on the front page ever happened.
+  assert.match(source, /b-baseline-\w+/, "the excerpt must name the run it came from");
+  assert.match(source, /MAX_UNIT_PRICE/);
+});
+
 test("the page renders every required section", () => {
   const page = readFileSync(join(APP_ROOT, "app", "page.tsx"), "utf8");
   for (const marker of [

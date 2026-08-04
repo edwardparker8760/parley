@@ -4,6 +4,10 @@ import { CircledLabel } from "@/components/landing/circled-label";
 import { GeometricBullet } from "@/components/landing/geometric-bullet";
 import { RevealOnScroll } from "@/components/landing/reveal-on-scroll";
 import { BenchmarkTable } from "@/components/landing/benchmark-table";
+import { TranscriptExcerpt } from "@/components/landing/transcript-excerpt";
+import { MechanismStack } from "@/components/landing/mechanism-stack";
+import { CapturedModelComparison } from "@/components/landing/captured-model-comparison";
+import { BuildFigures } from "@/components/landing/build-figures";
 
 const REPO = "https://github.com/edwardparker8760/parley";
 
@@ -12,25 +16,33 @@ export default function Page() {
     <main>
       {/* ---------- hero ---------- */}
       <section className="band band-white">
-        <div className="wrap">
-          <CircledLabel seed={0}>Agentic economy</CircledLabel>
-          <h1 className="headline">
-            <span>Agents that</span>
-            <span>negotiate</span>
-            <span>the price.</span>
-          </h1>
-          <p className="headline-sub">
-            A buyer and a seller haggle over bulk inference capacity inside limits
-            their owners set in advance. The limits are arithmetic, not
-            instructions, so no prompt can talk an agent past them.
-          </p>
-          <div className="link-row">
-            <a className="button button-primary" href={REPO}>
-              Read the code
-            </a>
-            <a className="button" href="/app">
-              Open the dashboard
-            </a>
+        {/* Copy left, artifact right. The excerpt is a real ladder with real
+            clamp events, so the proof and the visual weight arrive together. */}
+        <div className="wrap split">
+          <div className="split-copy">
+            <CircledLabel seed={0}>Agentic economy</CircledLabel>
+            <h1 className="headline">
+              <span>Agents that</span>
+              <span>negotiate</span>
+              <span>the price.</span>
+            </h1>
+            <p className="headline-sub">
+              A buyer and a seller haggle over bulk inference capacity inside limits
+              their owners set in advance. The limits are arithmetic, not
+              instructions, so no prompt can talk an agent past them.
+            </p>
+            <div className="link-row">
+              <a className="button button-primary" href={REPO}>
+                Read the code
+              </a>
+              <a className="button" href="/app">
+                Open the dashboard
+              </a>
+            </div>
+          </div>
+
+          <div className="split-artifact">
+            <TranscriptExcerpt />
           </div>
         </div>
       </section>
@@ -49,38 +61,46 @@ export default function Page() {
             </p>
           </RevealOnScroll>
 
+          {/* Two arguments, not four points. Each row is a pair that reads
+              across: the state of things, then the response to it. The stagger
+              was removed because it read as misalignment rather than design. */}
           <RevealOnScroll delayMs={90}>
-            <div className="card-stack card-stack-offset">
-              <article className="card">
-                <h3>Today</h3>
-                <p>
-                  An agent is handed a number and authorised to pay it. That is a
-                  payment rail with an agent attached to the end of it.
-                </p>
-              </article>
-              <article className="card">
-                <h3>Parley</h3>
-                <p>
-                  Two agents with opposing interests discover the number
-                  themselves, then settle. Settlement is the last step, not the
-                  product.
-                </p>
-              </article>
-              <article className="card">
-                <h3>The catch</h3>
-                <p>
-                  An agent that can negotiate can also be talked into a bad deal.
-                  Prompt injection stops being a curiosity when the agent holds
-                  your wallet.
-                </p>
-              </article>
-              <article className="card">
-                <h3>The answer</h3>
-                <p>
-                  Put the owner&apos;s limits somewhere language cannot reach
-                  them. Then it does not matter what the model is told.
-                </p>
-              </article>
+            <div className="pair-rows">
+              <div className="pair-row">
+                <article className="card">
+                  <h3>Today</h3>
+                  <p>
+                    An agent is handed a number and authorised to pay it. That is a
+                    payment rail with an agent attached to the end of it.
+                  </p>
+                </article>
+                <article className="card card-answer">
+                  <h3>Parley</h3>
+                  <p>
+                    Two agents with opposing interests discover the number
+                    themselves, then settle. Settlement is the last step, not the
+                    product.
+                  </p>
+                </article>
+              </div>
+
+              <div className="pair-row">
+                <article className="card">
+                  <h3>The catch</h3>
+                  <p>
+                    An agent that can negotiate can also be talked into a bad deal.
+                    Prompt injection stops being a curiosity when the agent holds
+                    your wallet.
+                  </p>
+                </article>
+                <article className="card card-answer">
+                  <h3>The answer</h3>
+                  <p>
+                    Put the owner&apos;s limits somewhere language cannot reach
+                    them. Then it does not matter what the model is told.
+                  </p>
+                </article>
+              </div>
             </div>
           </RevealOnScroll>
         </div>
@@ -89,7 +109,13 @@ export default function Page() {
       {/* ---------- how the guardrail works ---------- */}
       <section className="band band-dark" id="guardrail">
         <div className="wrap">
+          {/* Copy and list left, layered diagram right. The list says there are
+              four mechanisms; only the diagram shows that they are stacked, that
+              each re-checks the last, and that the round cap sits outside both
+              agents entirely. */}
           <RevealOnScroll>
+            <div className="split split-copy-wide">
+              <div className="split-copy">
             <CircledLabel seed={2}>The claim</CircledLabel>
             <h2 className="section-title">The model proposes. Arithmetic disposes.</h2>
             <p className="lede">
@@ -155,6 +181,18 @@ export default function Page() {
                 </div>
               </li>
             </ul>
+              </div>
+
+              <div className="split-artifact">
+                <MechanismStack />
+              </div>
+            </div>
+          </RevealOnScroll>
+
+          {/* The captured-model result, full width beneath, because it is a
+              comparison and needs both columns to itself. */}
+          <RevealOnScroll delayMs={90}>
+            <CapturedModelComparison />
           </RevealOnScroll>
         </div>
       </section>
@@ -173,6 +211,10 @@ export default function Page() {
 
           <RevealOnScroll delayMs={90}>
             <BenchmarkTable />
+          </RevealOnScroll>
+
+          <RevealOnScroll delayMs={140}>
+            <BuildFigures />
           </RevealOnScroll>
         </div>
       </section>
