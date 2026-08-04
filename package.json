@@ -16,7 +16,8 @@
     "provision-wallets": "pnpm --filter @parley/wallets provision",
     "run:scenario": "pnpm --filter @parley/orchestrator scenario",
     "replay": "pnpm --filter @parley/orchestrator replay",
-    "benchmark": "pnpm --filter @parley/orchestrator benchmark"
+    "benchmark": "pnpm --filter @parley/orchestrator benchmark",
+    "export-snapshot": "pnpm --filter @parley/orchestrator export-snapshot"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

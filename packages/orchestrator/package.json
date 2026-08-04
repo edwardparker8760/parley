@@ -13,7 +13,8 @@
     "scenario": "node ./dist/run-scenario-cli.js",
     "replay": "node ./dist/replay-cli.js",
     "test": "tsc -b && node --test ./dist/*.test.js",
-    "benchmark": "node ./dist/benchmark-engine-vs-baseline.js"
+    "benchmark": "node ./dist/benchmark-engine-vs-baseline.js",
+    "export-snapshot": "node ./dist/export-snapshot-cli.js"
   },
   "dependencies": {
     "@parley/agents": "workspace:*",

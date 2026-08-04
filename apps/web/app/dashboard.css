@@ -1,0 +1,756 @@
+/*
+ * One screen, sized for a 1920x1080 video frame.
+ *
+ * Type is larger than a normal dashboard would use, because this is read on
+ * video rather than at desk distance. The only scroll region is the transcript,
+ * which is deliberate: the ladder grows to 24 rows and the rest must not move
+ * while it does.
+ */
+
+
+/*
+ * The dashboard takes the RESTRAINED subset of the design language: palette,
+ * font, spacing rhythm, corner radius, and the small section labels. It does
+ * not take the hand-drawn circles, the decorative geometric icons, the 65px
+ * headlines, or any reveal or count-up animation.
+ *
+ * The reason is not taste. A guardrail event and a settled amount must appear
+ * instantly at their final value: an animated number is a number that is wrong
+ * for a few hundred milliseconds, and this screen is recorded and screenshotted
+ * as evidence of what the system did.
+ *
+ * ## Fully light, including the header
+ *
+ * A dark header was available under the design rules, on the grounds that a nav
+ * bar carries no status. Ours does: the outcome chip (SETTLED, WALKED_AWAY,
+ * RUNNING) lives in the top bar, and none of the status colours reach 3:1
+ * against the dark surface. Rather than maintain a second status treatment for
+ * one strip of screen, the whole dashboard is light.
+ *
+ * ## Shape is load-bearing
+ *
+ * `--status-stopped` covers guardrail events, failures, outcome facts and
+ * provenance. They share a hue and must never share a shape:
+ *
+ *   guardrail worked -> inline left bar + tint      (.clamp-badge, .llm-badge)
+ *   system failed    -> solid chip                  (.status-failed)
+ *   outcome fact     -> plain text                  (.no-zopa)
+ *   provenance       -> full-width banner           (.simulated-banner)
+ *
+ * So that this sentence is literally true while pointing at the screen: every
+ * inline red bar here is the arithmetic holding.
+ */
+
+:root {
+  /* Local aliases onto the shared tokens. Nothing here invents a colour; these
+     exist so the rest of this file reads in dashboard vocabulary. */
+  --bg: var(--surface-sunken);
+  --panel: var(--surface-white);
+  --panel-edge: var(--line-soft);
+  --text: var(--text-primary);
+  --muted: var(--text-secondary);
+  --buyer: var(--party-buyer);
+  --seller: var(--party-seller);
+  --danger: var(--status-stopped);
+  --ok: var(--status-good);
+  --neutral: var(--status-neutral);
+  --mono: var(--font-mono);
+}
+
+.screen {
+  /* The page background lives here rather than on `body`, because the two
+     routes want different ones and `body` is now shared. */
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  padding: 14px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+
+/* ---------- top bar ---------- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 26px;
+  letter-spacing: 0.5px;
+}
+
+.brand p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  max-width: 640px;
+}
+
+.launcher-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.launchers {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.strategy-switch {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.strategy {
+  padding: 3px 10px;
+  background: transparent;
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius-chip);
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Selection is interaction, so it is lime. It was buyer blue, which quietly
+   borrowed a party colour for a UI state and is exactly the kind of drift the
+   colour rule exists to stop. */
+.strategy.on {
+  border-color: var(--accent-lime-strong);
+  background: var(--accent-lime);
+  color: var(--text-primary);
+}
+
+.strategy:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.strategy-note {
+  color: var(--text-secondary);
+}
+
+.launcher {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 16px;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius-control);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.launcher:hover:not(:disabled) {
+  border-color: var(--accent-lime-strong);
+  background: var(--accent-lime);
+}
+
+.launcher:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.launcher.active {
+  border-color: var(--accent-lime-strong);
+  background: var(--accent-lime);
+}
+
+/* One focus ring for the whole screen, and it is the accent. Keyboard users get
+   the same signal everywhere rather than per-control guesses. */
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--accent-lime-strong);
+  outline-offset: 2px;
+}
+
+.launcher-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.launcher-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.running-dot {
+  color: var(--neutral);
+  font-size: 13px;
+}
+
+.run-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.outcome {
+  font-weight: 700;
+  letter-spacing: 0.6px;
+}
+
+.outcome-settled {
+  color: var(--ok);
+}
+
+/*
+ * NEUTRAL, not stopped. A walk-away is an outcome, not a failure: in scenario C
+ * it is the system working exactly as designed. Colouring it the same as a
+ * failed receipt would tell the audience the demo broke at the moment it is
+ * proving its central claim.
+ */
+.outcome-walked_away {
+  color: var(--neutral);
+}
+
+.outcome-running {
+  color: var(--neutral);
+}
+
+/* ---------- recorded-run banner ----------
+   Same family as the SIMULATED banner and for the same reason: full width so it
+   cannot be cropped away from the numbers it qualifies, and carrying its
+   meaning in words so it survives greyscale and re-encoding. It sits in the
+   normal flow above the grid, so it costs the ladder a little height rather
+   than floating over anything. */
+
+.recorded-banner {
+  background: var(--status-neutral);
+  color: var(--text-on-dark);
+  border-radius: var(--radius-card);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3) var(--space-6);
+}
+
+.recorded-banner-headline {
+  margin: 0;
+  font-size: 14px;
+  font-weight: var(--weight-emphasis);
+  letter-spacing: 0.02em;
+}
+
+.recorded-banner-facts {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  font-size: 12px;
+}
+
+.recorded-banner-facts > div {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.recorded-banner-facts dt {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.6;
+}
+
+.recorded-banner-facts dd {
+  margin: 0;
+}
+
+/* ---------- layout ---------- */
+
+.grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  gap: 12px;
+}
+
+/*
+ * An explicit stack, not auto-placement. The panel count on the left varies
+ * (settlement on a deal, post-mortems on a walk-away), and grid auto-placement
+ * would push the odd one into an implicit row that `overflow: hidden` then
+ * silently eats. A silently invisible settlement panel on video is exactly the
+ * failure this layout must not have.
+ */
+.column-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius-card);
+  padding: 12px 14px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel h2 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.panel-note {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.panel-chart {
+  flex: 0 0 auto;
+}
+
+.panel-guardrails {
+  flex: 0 0 auto;
+}
+
+/* The last panel in the stack takes the slack, so the column always fills. */
+.panel-settlement,
+.panel-postmortem {
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+.panel-transcript {
+  min-height: 0;
+}
+
+/* ---------- chart ---------- */
+
+.chart {
+  width: 100%;
+  height: auto;
+}
+
+.chart-bg {
+  fill: transparent;
+}
+
+.zopa-band {
+  fill: var(--status-good-tint);
+  stroke: var(--status-good);
+  stroke-width: 1;
+}
+
+.zopa-label {
+  fill: var(--ok);
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+.reservation-line {
+  stroke-width: 1.5;
+  stroke-dasharray: 6 5;
+}
+
+.reservation-line.buyer {
+  stroke: var(--buyer);
+}
+
+.reservation-line.seller {
+  stroke: var(--seller);
+}
+
+.price-line {
+  fill: none;
+  stroke-width: 2.5;
+}
+
+.price-line.buyer {
+  stroke: var(--buyer);
+}
+
+.price-line.seller {
+  stroke: var(--seller);
+}
+
+.dot.buyer {
+  fill: var(--buyer);
+}
+
+.dot.seller {
+  fill: var(--seller);
+}
+
+.chart-label {
+  font-size: 10px;
+  font-family: var(--mono);
+}
+
+.chart-label.buyer {
+  fill: var(--buyer);
+}
+
+.chart-label.seller {
+  fill: var(--seller);
+}
+
+.axis {
+  stroke: var(--panel-edge);
+  stroke-width: 1;
+}
+
+.axis-label {
+  fill: var(--muted);
+}
+
+.no-zopa {
+  margin: 6px 0 0;
+  color: var(--danger);
+  font-size: 13px;
+}
+
+/* ---------- transcript ---------- */
+
+.ladder-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.ladder {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.ladder thead th {
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+  text-align: left;
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--panel-edge);
+}
+
+.ladder td {
+  padding: 6px 8px;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.row-buyer .col-party {
+  color: var(--buyer);
+  font-weight: 600;
+}
+
+.row-seller .col-party {
+  color: var(--seller);
+  font-weight: 600;
+}
+
+.row-buyer {
+  background: var(--party-buyer-row);
+}
+
+.row-seller {
+  background: var(--party-seller-row);
+}
+
+.col-round,
+.col-party,
+.col-type {
+  white-space: nowrap;
+}
+
+.col-price,
+.col-terms {
+  font-family: var(--mono);
+  white-space: nowrap;
+}
+
+.col-rationale {
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.reason-code {
+  display: block;
+  font-size: 10px;
+  color: var(--danger);
+  font-family: var(--mono);
+}
+
+.clamp-badge {
+  display: block;
+  margin-top: 4px;
+  padding: 3px 7px;
+  background: var(--status-stopped-tint);
+  border-left: 3px solid var(--danger);
+  color: var(--status-stopped);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.llm-badge {
+  display: block;
+  margin-top: 4px;
+  padding: 3px 7px;
+  background: var(--status-stopped-tint);
+  border-left: 3px solid var(--danger);
+  color: var(--status-stopped);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+/* ---------- guardrails ---------- */
+
+.guardrail-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.guardrail-column h3 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+
+.guardrail-column.buyer h3 {
+  color: var(--buyer);
+}
+
+.guardrail-column.seller h3 {
+  color: var(--seller);
+}
+
+.guardrail-column dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3px 10px;
+  font-size: 12.5px;
+}
+
+.guardrail-column dt {
+  color: var(--muted);
+}
+
+.guardrail-column dd {
+  margin: 0;
+  font-family: var(--mono);
+  text-align: right;
+}
+
+.guardrail-column dd.derived {
+  color: var(--ok);
+}
+
+.clamp-count {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.clamp-count strong {
+  color: var(--danger);
+  font-size: 14px;
+}
+
+/* ---------- settlement ---------- */
+
+/*
+ * PROVENANCE, and it does not depend on colour.
+ *
+ * A full-width banner carrying the literal sentence, not a small tinted pill.
+ * The dangerous failure of this control is not that a simulated settlement
+ * looks like a failure; it is that someone believes the money was real. So it
+ * must survive greyscale, screenshot compression and video re-encoding, which
+ * means the words do the work and the colour is only reinforcement.
+ *
+ * Full width, above the figures rather than beside the heading, so it cannot be
+ * cropped out of a screenshot that still shows the amount.
+ */
+.simulated-banner {
+  display: block;
+  width: 100%;
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--status-stopped);
+  color: var(--text-on-fill);
+  border-radius: var(--radius-chip);
+  font-size: 12px;
+  font-weight: var(--weight-emphasis);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.settlement-fields {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 14px;
+  font-size: 13px;
+}
+
+.settlement-fields dt {
+  color: var(--muted);
+}
+
+.settlement-fields dd {
+  margin: 0;
+  text-align: right;
+  font-family: var(--mono);
+}
+
+.settlement-fields dd.amount {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.status-settled,
+.status-settled_stub {
+  color: var(--ok);
+}
+
+.status-pending,
+.status-not_attempted {
+  color: var(--neutral);
+}
+
+/*
+ * SYSTEM FAILURE, and therefore a SOLID CHIP.
+ *
+ * It shares the stopped hue with the guardrail badges and must never share
+ * their shape. A guardrail badge is an inline left bar; a failure is a filled
+ * block. That distinction is what lets the claim "every inline red bar on this
+ * screen is the arithmetic holding" stay literally true.
+ */
+.status-failed {
+  display: inline-block;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-chip);
+  background: var(--status-stopped);
+  color: var(--text-on-fill);
+  font-weight: var(--weight-emphasis);
+}
+
+.settlement-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.explorer-link {
+  margin-top: 8px;
+  color: var(--buyer);
+  font-size: 13px;
+}
+
+.error {
+  color: var(--danger);
+}
+
+/* ---------- post-mortems ---------- */
+
+.verdict {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.verdict.impossible {
+  color: var(--danger);
+}
+
+.verdict.possible {
+  color: var(--neutral);
+}
+
+.postmortem-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.postmortem h3 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+
+.postmortem.buyer h3 {
+  color: var(--buyer);
+}
+
+.postmortem.seller h3 {
+  color: var(--seller);
+}
+
+.postmortem p {
+  margin: 2px 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.postmortem .reason-code {
+  color: var(--danger);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.postmortem .explanation {
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+/* ---------- misc ---------- */
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 15px;
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+.error-banner {
+  margin: 0;
+  padding: 8px 12px;
+  background: var(--status-stopped-tint);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-control);
+  color: var(--status-stopped);
+  font-size: 13px;
+}

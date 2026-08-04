@@ -1,0 +1,36 @@
+@import "@parley/theme/tokens.css";
+
+/*
+ * Shared base for both routes. Everything specific lives in `landing.css` or
+ * `dashboard.css`, each imported by its own layout.
+ *
+ * The two sheets are kept apart on purpose. They were written as separate apps
+ * and share exactly one class name, `.mono`, which is defined here so neither
+ * sheet has to. Merging them into one global file would have meant auditing a
+ * hundred selectors for collisions on every future change, for no benefit.
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--surface-white);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* One focus ring across both routes, so keyboard users get a single signal. */
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--accent-lime-strong);
+  outline-offset: 2px;
+}
