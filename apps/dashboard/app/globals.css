@@ -7,18 +7,55 @@
  * while it does.
  */
 
+@import "@parley/theme/tokens.css";
+
+/*
+ * The dashboard takes the RESTRAINED subset of the design language: palette,
+ * font, spacing rhythm, corner radius, and the small section labels. It does
+ * not take the hand-drawn circles, the decorative geometric icons, the 65px
+ * headlines, or any reveal or count-up animation.
+ *
+ * The reason is not taste. A guardrail event and a settled amount must appear
+ * instantly at their final value: an animated number is a number that is wrong
+ * for a few hundred milliseconds, and this screen is recorded and screenshotted
+ * as evidence of what the system did.
+ *
+ * ## Fully light, including the header
+ *
+ * A dark header was available under the design rules, on the grounds that a nav
+ * bar carries no status. Ours does: the outcome chip (SETTLED, WALKED_AWAY,
+ * RUNNING) lives in the top bar, and none of the status colours reach 3:1
+ * against the dark surface. Rather than maintain a second status treatment for
+ * one strip of screen, the whole dashboard is light.
+ *
+ * ## Shape is load-bearing
+ *
+ * `--status-stopped` covers guardrail events, failures, outcome facts and
+ * provenance. They share a hue and must never share a shape:
+ *
+ *   guardrail worked -> inline left bar + tint      (.clamp-badge, .llm-badge)
+ *   system failed    -> solid chip                  (.status-failed)
+ *   outcome fact     -> plain text                  (.no-zopa)
+ *   provenance       -> full-width banner           (.simulated-banner)
+ *
+ * So that this sentence is literally true while pointing at the screen: every
+ * inline red bar here is the arithmetic holding.
+ */
+
 :root {
-  --bg: #0d1117;
-  --panel: #151b23;
-  --panel-edge: #232c38;
-  --text: #e6edf3;
-  --muted: #8b949e;
-  --buyer: #58a6ff;
-  --seller: #f0883e;
-  --danger: #f85149;
-  --ok: #3fb950;
-  --warn: #d29922;
-  --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, monospace;
+  /* Local aliases onto the shared tokens. Nothing here invents a colour; these
+     exist so the rest of this file reads in dashboard vocabulary. */
+  --bg: var(--surface-sunken);
+  --panel: var(--surface-white);
+  --panel-edge: var(--line-soft);
+  --text: var(--text-primary);
+  --muted: var(--text-secondary);
+  --buyer: var(--party-buyer);
+  --seller: var(--party-seller);
+  --danger: var(--status-stopped);
+  --ok: var(--status-good);
+  --neutral: var(--status-neutral);
+  --mono: var(--font-mono);
 }
 
 * {
@@ -31,7 +68,7 @@ body {
   padding: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  font-family: var(--font-display);
   height: 100%;
 }
 
@@ -90,15 +127,19 @@ body {
   padding: 3px 10px;
   background: transparent;
   border: 1px solid var(--panel-edge);
-  border-radius: 5px;
+  border-radius: var(--radius-chip);
   color: var(--muted);
   font: inherit;
   cursor: pointer;
 }
 
+/* Selection is interaction, so it is lime. It was buyer blue, which quietly
+   borrowed a party colour for a UI state and is exactly the kind of drift the
+   colour rule exists to stop. */
 .strategy.on {
-  border-color: var(--buyer);
-  color: var(--buyer);
+  border-color: var(--accent-lime-strong);
+  background: var(--accent-lime);
+  color: var(--text-primary);
 }
 
 .strategy:disabled {
@@ -107,7 +148,7 @@ body {
 }
 
 .strategy-note {
-  color: #6e7681;
+  color: var(--text-secondary);
 }
 
 .launcher {
@@ -118,7 +159,7 @@ body {
   padding: 8px 16px;
   background: var(--panel);
   border: 1px solid var(--panel-edge);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: var(--text);
   cursor: pointer;
   font: inherit;
@@ -126,7 +167,8 @@ body {
 }
 
 .launcher:hover:not(:disabled) {
-  border-color: var(--buyer);
+  border-color: var(--accent-lime-strong);
+  background: var(--accent-lime);
 }
 
 .launcher:disabled {
@@ -135,8 +177,16 @@ body {
 }
 
 .launcher.active {
-  border-color: var(--buyer);
-  background: #1b2431;
+  border-color: var(--accent-lime-strong);
+  background: var(--accent-lime);
+}
+
+/* One focus ring for the whole screen, and it is the accent. Keyboard users get
+   the same signal everywhere rather than per-control guesses. */
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--accent-lime-strong);
+  outline-offset: 2px;
 }
 
 .launcher-name {
@@ -150,7 +200,7 @@ body {
 }
 
 .running-dot {
-  color: var(--warn);
+  color: var(--neutral);
   font-size: 13px;
 }
 
@@ -172,12 +222,18 @@ body {
   color: var(--ok);
 }
 
+/*
+ * NEUTRAL, not stopped. A walk-away is an outcome, not a failure: in scenario C
+ * it is the system working exactly as designed. Colouring it the same as a
+ * failed receipt would tell the audience the demo broke at the moment it is
+ * proving its central claim.
+ */
 .outcome-walked_away {
-  color: var(--danger);
+  color: var(--neutral);
 }
 
 .outcome-running {
-  color: var(--warn);
+  color: var(--neutral);
 }
 
 /* ---------- layout ---------- */
@@ -207,7 +263,7 @@ body {
 .panel {
   background: var(--panel);
   border: 1px solid var(--panel-edge);
-  border-radius: 10px;
+  border-radius: var(--radius-card);
   padding: 12px 14px;
   min-height: 0;
   display: flex;
@@ -229,7 +285,7 @@ body {
   text-transform: none;
   letter-spacing: 0;
   font-size: 12px;
-  color: #6e7681;
+  color: var(--text-secondary);
   font-weight: 400;
 }
 
@@ -264,8 +320,8 @@ body {
 }
 
 .zopa-band {
-  fill: rgba(63, 185, 80, 0.14);
-  stroke: rgba(63, 185, 80, 0.4);
+  fill: var(--status-good-tint);
+  stroke: var(--status-good);
   stroke-width: 1;
 }
 
@@ -368,7 +424,7 @@ body {
 .ladder td {
   padding: 6px 8px;
   vertical-align: top;
-  border-bottom: 1px solid #1b232e;
+  border-bottom: 1px solid var(--line-soft);
 }
 
 .row-buyer .col-party {
@@ -382,11 +438,11 @@ body {
 }
 
 .row-buyer {
-  background: rgba(88, 166, 255, 0.05);
+  background: var(--party-buyer-row);
 }
 
 .row-seller {
-  background: rgba(240, 136, 62, 0.05);
+  background: var(--party-seller-row);
 }
 
 .col-round,
@@ -402,7 +458,7 @@ body {
 }
 
 .col-rationale {
-  color: #c9d1d9;
+  color: var(--text-primary);
   line-height: 1.4;
 }
 
@@ -417,9 +473,9 @@ body {
   display: block;
   margin-top: 4px;
   padding: 3px 7px;
-  background: rgba(248, 81, 73, 0.15);
+  background: var(--status-stopped-tint);
   border-left: 3px solid var(--danger);
-  color: #ffa198;
+  color: var(--status-stopped);
   font-family: var(--mono);
   font-size: 11px;
 }
@@ -428,9 +484,9 @@ body {
   display: block;
   margin-top: 4px;
   padding: 3px 7px;
-  background: rgba(210, 153, 34, 0.14);
-  border-left: 3px solid var(--warn);
-  color: #e3b341;
+  background: var(--status-stopped-tint);
+  border-left: 3px solid var(--danger);
+  color: var(--status-stopped);
   font-family: var(--mono);
   font-size: 11px;
 }
@@ -492,15 +548,30 @@ body {
 
 /* ---------- settlement ---------- */
 
-.simulated-badge {
-  margin-left: auto;
-  padding: 3px 10px;
-  background: var(--warn);
-  color: #1a1200;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.6px;
+/*
+ * PROVENANCE, and it does not depend on colour.
+ *
+ * A full-width banner carrying the literal sentence, not a small tinted pill.
+ * The dangerous failure of this control is not that a simulated settlement
+ * looks like a failure; it is that someone believes the money was real. So it
+ * must survive greyscale, screenshot compression and video re-encoding, which
+ * means the words do the work and the colour is only reinforcement.
+ *
+ * Full width, above the figures rather than beside the heading, so it cannot be
+ * cropped out of a screenshot that still shows the amount.
+ */
+.simulated-banner {
+  display: block;
+  width: 100%;
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--status-stopped);
+  color: var(--text-on-fill);
+  border-radius: var(--radius-chip);
+  font-size: 12px;
+  font-weight: var(--weight-emphasis);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .settlement-fields {
@@ -531,12 +602,26 @@ body {
   color: var(--ok);
 }
 
-.status-pending {
-  color: var(--warn);
+.status-pending,
+.status-not_attempted {
+  color: var(--neutral);
 }
 
+/*
+ * SYSTEM FAILURE, and therefore a SOLID CHIP.
+ *
+ * It shares the stopped hue with the guardrail badges and must never share
+ * their shape. A guardrail badge is an inline left bar; a failure is a filled
+ * block. That distinction is what lets the claim "every inline red bar on this
+ * screen is the arithmetic holding" stay literally true.
+ */
 .status-failed {
-  color: var(--danger);
+  display: inline-block;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-chip);
+  background: var(--status-stopped);
+  color: var(--text-on-fill);
+  font-weight: var(--weight-emphasis);
 }
 
 .settlement-empty {
@@ -568,7 +653,7 @@ body {
 }
 
 .verdict.possible {
-  color: var(--warn);
+  color: var(--neutral);
 }
 
 .postmortem-cards {
@@ -604,7 +689,7 @@ body {
 }
 
 .postmortem .explanation {
-  color: #c9d1d9;
+  color: var(--text-primary);
   line-height: 1.4;
 }
 
@@ -629,9 +714,9 @@ body {
 .error-banner {
   margin: 0;
   padding: 8px 12px;
-  background: rgba(248, 81, 73, 0.15);
+  background: var(--status-stopped-tint);
   border: 1px solid var(--danger);
-  border-radius: 8px;
-  color: #ffa198;
+  border-radius: var(--radius-control);
+  color: var(--status-stopped);
   font-size: 13px;
 }

@@ -39,10 +39,12 @@ export function SettlementStatusPanel(props: {
 
   return (
     <section className="panel panel-settlement">
-      <h2>
-        Settlement
-        {settlement.isStub ? <SimulatedSettlementBadge /> : null}
-      </h2>
+      <h2>Settlement</h2>
+
+      {/* Above the figures, not beside the heading. A banner that sits next to
+          a title can be cropped out of a screenshot that still shows the
+          amount, which is the one framing that would mislead. */}
+      {settlement.isStub ? <SimulatedSettlementBadge /> : null}
 
       <dl className="settlement-fields">
         <dt>status</dt>

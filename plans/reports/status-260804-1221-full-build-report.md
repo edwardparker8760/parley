@@ -163,6 +163,15 @@ Worth recording, because each was found by verification rather than by review:
    01 spike had already proven are not in the payment path.
 5. **A fabricated latency report** (mean 0.00s from 18 failed calls) was caught
    and deleted; that incident produced `docs/verification-must-not-silently-noop.md`.
+6. **A red-green colour-blind viewer could not tell SETTLED from WALKED_AWAY.**
+   The original palette put success on `#3fb950` and failure on `#f85149`, which
+   measure deltaE **9.0** apart under simulated deuteranopia: a collision, on the
+   most important distinction on the screen. It had been on screen since phase 07
+   and looked fine to everyone who looked at it, because everyone who looked at
+   it could see red and green. Found only because the design re-skin required
+   proving the new palette was safe, which meant measuring the old one first.
+   Fixed by `packages/theme`, whose status palette measures 21.9 at worst.
+   Same lineage as the other five: eyeballing agreed, arithmetic disagreed.
 
 ## Honest limitations
 

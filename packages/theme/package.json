@@ -1,0 +1,13 @@
+{
+  "name": "@parley/theme",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The single source of truth for colour, type, spacing and radius. Every app reads from here; nothing hardcodes a hex.",
+  "type": "module",
+  "exports": {
+    "./tokens.css": "./src/tokens.css"
+  },
+  "files": [
+    "src"
+  ]
+}

@@ -1,0 +1,161 @@
+/*
+ * THE SINGLE SOURCE OF TRUTH FOR COLOUR, TYPE, SPACING AND RADIUS.
+ *
+ * Every app imports this file and reads variables from it. No hex literal may
+ * appear anywhere else in the codebase, and `no-hardcoded-hex.test.js` fails the
+ * build if one does. That is not tidiness: colour carries meaning in this
+ * product, and a near-miss shade invented in a component is a status that no
+ * longer matches the status it is supposed to be.
+ *
+ * ## Colour carries meaning, so read this before adding one
+ *
+ * The status palette was chosen by measurement, not by eye. Method and numbers
+ * are in `plans/reports/status-260804-1317-color-semantics-audit.md`: sRGB to
+ * LMS, Vienot/Brettel/Mollon 1999 dichromat projection, pairwise CIE76 deltaE.
+ *
+ * The palette this replaced FAILED that test. Its green SETTLED and its red
+ * WALKED_AWAY measured deltaE 9.0 under deuteranopia, meaning a red-green
+ * colour-blind viewer could not tell a completed deal from a collapsed one.
+ * That is the most important distinction on the screen.
+ *
+ * Under dichromacy the usable space collapses to roughly one blue-to-yellow
+ * axis plus lightness. With the two parties occupying the blue and yellow
+ * poles, there is room for exactly THREE further distinguishable status
+ * colours. So status is a three-way CLASS, and the finer distinction inside a
+ * class is carried by the literal label and by shape.
+ *
+ * Worst measured pair in what follows: 21.9 deuteranopia, 20.6 protanopia,
+ * against a threshold of 20. Adding a fourth status hue will break that.
+ *
+ * ## Shape is load-bearing, not decoration
+ *
+ * `--status-stopped` covers four different meanings, and they must never share
+ * a shape:
+ *
+ *   guardrail worked  (clamp fired, LLM offer refused)  -> INLINE LEFT BAR + tint
+ *   system failed     (FAILED receipt)                  -> SOLID CHIP
+ *   outcome fact      (no ZOPA exists)                  -> plain text
+ *   provenance        (SIMULATED)                       -> FULL-WIDTH BANNER
+ *
+ * The reason is the demo. A judge who reads a red guardrail mark as an error
+ * sees a bug at the exact moment the system is working as designed. The rule
+ * that makes the claim sayable out loud: EVERY inline red bar on the screen is
+ * the arithmetic holding. No exceptions, or the sentence stops being true.
+ */
+
+:root {
+  /* ---- surfaces ---------------------------------------------------------
+     Three light surfaces give the page rhythm without introducing a second
+     status treatment. `--surface-dark` is for landing-page rhythm and for a
+     header or nav that carries no status: none of the status colours reach
+     3:1 against it, so data never sits on it. */
+  --surface-white: #ffffff;
+  --surface-raised: #f8f8f8;
+  --surface-sunken: #ecebe8;
+  --surface-dark: #2c2c2c;
+
+  /* ---- text ------------------------------------------------------------- */
+  --text-primary: #141413;
+  --text-secondary: #434343;
+  --text-on-dark: #f8f8f8;
+  --text-on-fill: #ffffff;
+
+  /* ---- lines ------------------------------------------------------------ */
+  --line-soft: #ecebe8;
+  --line-strong: #d8d6d1;
+
+  /* ---- interaction, and ONLY interaction ---------------------------------
+     Lime means hover, focus, active. It never means a status. Its contrast on
+     white is 1.24, so it physically cannot be readable text on a light
+     surface, which makes misuse as a status hard rather than merely
+     discouraged. Use it as a fill or a border, with --text-primary on top. */
+  --accent-lime: #e3ef7a;
+  --accent-lime-strong: #d4e34f;
+
+  /* ---- status: three classes, measured -----------------------------------
+     good     settled, settled-on-stub, a ZOPA exists, the seller's floor
+     stopped  clamp fired, LLM offer refused, receipt failed, no ZOPA, stub
+     neutral  walked away, pending, running, not attempted */
+  --status-good: #0f6e5e;
+  --status-stopped: #8c1d18;
+  --status-neutral: #2c2c2c;
+
+  /* ---- party identity ----------------------------------------------------
+     Buyer blue and seller orange are the classic dichromat-safe pair, which is
+     why they get the two poles. NOTE: seller on --surface-sunken measures 4.34,
+     just under AA for small text. Use it on white or raised surfaces, or at
+     16px bold and above. Darkening it to fix that drags it toward
+     --status-stopped under deuteranopia (deltaE 23.1 falls to 17.0), so the
+     contrast is the better thing to spend. */
+  --party-buyer: #1d4ed8;
+  --party-seller: #c2410c;
+
+  /* ---- tints -------------------------------------------------------------
+     Each is its base mixed 10% into white, or 5.5% for the transcript row
+     stripes. Defined here rather than written as rgba() at the call site, so
+     that "no hex outside this file" stays literally true. Primary text
+     measures 15:1 or better on every one of them. */
+  --status-good-tint: #e7f1ef;
+  --status-stopped-tint: #f4e8e8;
+  --status-neutral-tint: #eaeaea;
+  --party-buyer-tint: #e8edfb;
+  --party-seller-tint: #f9ece7;
+  --party-buyer-row: #f3f5fd;
+  --party-seller-row: #fcf5f2;
+
+  /* ---- type --------------------------------------------------------------
+     `--font-red-hat-display` is set by each app from next/font, which
+     self-hosts the file so a demo works with no network. The fallback chain
+     matters: if the font fails to load the page must still be legible. */
+  --font-display: var(--font-red-hat-display), "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, monospace;
+
+  /* Headings are 500. Not bold: the weight comes from size and space. */
+  --weight-heading: 500;
+  --weight-body: 400;
+  --weight-emphasis: 600;
+
+  /* ---- spacing rhythm ----------------------------------------------------
+     A 4px base. Components step through these rather than picking numbers, so
+     the two apps breathe at the same rate. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 72px;
+  --space-9: 112px;
+
+  /* ---- corners -----------------------------------------------------------
+     Soft throughout. `--radius-card` is the default for any panel or card. */
+  --radius-chip: 6px;
+  --radius-control: 10px;
+  --radius-card: 16px;
+  --radius-panel: 24px;
+  --radius-pill: 999px;
+
+  /* ---- elevation ---------------------------------------------------------
+     Soft and low. Cards on the landing page overlap, so they need enough
+     shadow to read as separate sheets and not enough to look like a modal. */
+  --shadow-card: 0 2px 8px rgba(20, 20, 19, 0.06), 0 12px 32px rgba(20, 20, 19, 0.05);
+  --shadow-raised: 0 4px 14px rgba(20, 20, 19, 0.09), 0 20px 48px rgba(20, 20, 19, 0.07);
+
+  /* ---- motion ------------------------------------------------------------ */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 140ms;
+  --duration-reveal: 620ms;
+}
+
+/*
+ * Anyone who has asked not to see movement gets none. The scroll reveals on the
+ * landing page are the main thing this turns off; the dashboard has no reveal
+ * animation at all, because a guardrail event appearing must be instant.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-reveal: 0ms;
+  }
+}
