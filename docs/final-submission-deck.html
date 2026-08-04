@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Parley - Final Submission Deck</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0d1117;
+    --panel: #161b27;
+    --panel2: #1c2333;
+    --ink: #e6edf3;
+    --muted: #8b98ab;
+    --accent: #4da3ff;
+    --accent2: #3fb68b;
+    --warn: #e5a83b;
+    --line: #2a3448;
+  }
+  html, body { background: #000; }
+  .slide {
+    width: 1280px;
+    height: 720px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", -apple-system, Arial, sans-serif;
+    padding: 64px 80px;
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .slide::after {
+    content: attr(data-num) " / 7";
+    position: absolute;
+    bottom: 28px;
+    right: 40px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .brand {
+    position: absolute;
+    bottom: 28px;
+    left: 40px;
+    font-size: 14px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+  .kicker {
+    font-size: 16px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+  h1 { font-size: 88px; font-weight: 700; letter-spacing: -0.01em; }
+  h2 { font-size: 44px; font-weight: 700; margin-bottom: 30px; letter-spacing: -0.01em; }
+  .sub { font-size: 30px; color: var(--muted); margin-top: 18px; line-height: 1.4; }
+  .tag {
+    display: inline-block;
+    background: var(--panel2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 22px;
+    font-size: 19px;
+    color: var(--accent);
+    margin-right: 12px;
+  }
+  .big { font-size: 24px; line-height: 1.5; }
+  .muted { color: var(--muted); }
+  .accent { color: var(--accent); }
+  .green { color: var(--accent2); }
+  .warn { color: var(--warn); }
+  .cols { display: flex; gap: 32px; flex: 1; }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 28px 30px;
+    flex: 1;
+  }
+  .card h3 { font-size: 23px; margin-bottom: 12px; color: var(--accent); font-weight: 650; }
+  .card.green h3 { color: var(--accent2); }
+  .card.warn h3 { color: var(--warn); }
+  .card p, .card li { font-size: 19px; line-height: 1.5; color: var(--ink); }
+  .card ul { margin-left: 20px; }
+  .card li { margin-bottom: 8px; }
+  .quote {
+    border-left: 4px solid var(--accent);
+    padding: 14px 24px;
+    font-size: 24px;
+    font-style: italic;
+    color: var(--ink);
+    background: var(--panel);
+    border-radius: 0 12px 12px 0;
+    margin-top: auto;
+  }
+  .check { color: var(--accent2); font-weight: 700; }
+  .titleWrap { margin: auto 0; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; color: var(--accent); }
+  /*
+   * Fit by HEIGHT, not width. The source is a 1920x1080 dashboard capture, so
+   * sizing it to the slide width makes it 630px tall in a 360px box and the
+   * bottom panels get cropped away. Cropping the walk-away panel off the slide
+   * whose entire point is the walk-away panel is the failure to avoid.
+   */
+  .shot {
+    max-height: 100%;
+    max-width: 100%;
+    width: auto;
+    object-fit: contain;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    display: block;
+    margin: 0 auto;
+  }
+  .shotwrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .metric { font-size: 54px; font-weight: 700; line-height: 1.1; }
+  .metric.green { color: var(--accent2); }
+  .metric.warn { color: var(--warn); }
+  .metric-label { font-size: 17px; color: var(--muted); line-height: 1.4; margin-top: 8px; }
+  @page { size: 1280px 720px; margin: 0; }
+  @media print { html, body { background: none; } .slide { page-break-after: always; } }
+</style>
+</head>
+<body>
+
+<!-- Slide 1: Title -->
+<section class="slide" data-num="1">
+  <div class="titleWrap">
+    <div class="kicker">Encode &times; Arc - Programmable Money Hackathon · Final submission</div>
+    <h1>Parley</h1>
+    <p class="sub">Agents that <span class="accent">negotiate the price</span>, then pay it.<br>
+    A buyer and a seller strike deals inside owner-set guardrails and settle in USDC on Arc.</p>
+    <div style="margin-top:44px">
+      <span class="tag">Track: Agentic Economy</span>
+      <span class="tag">github.com/edwardparker8760/parley</span>
+      <span class="tag">88 tests green</span>
+    </div>
+  </div>
+  <div class="brand">PARLEY</div>
+</section>
+
+<!-- Slide 2: The gap -->
+<section class="slide" data-num="2">
+  <div class="kicker">The gap</div>
+  <h2>Agent payments exist. Agent <em>pricing</em> does not.</h2>
+  <div class="cols">
+    <div class="card warn">
+      <h3>Today: fixed-price payments</h3>
+      <p>Existing agentic-payment demos, including Circle's own nanopayments starter, show an agent paying a <b>fixed, posted price</b>. The economically interesting step, deciding <i>what the price should be</i>, never happens.</p>
+    </div>
+    <div class="card green">
+      <h3>Parley: price discovery</h3>
+      <p>Two agents with <b>opposing interests</b> negotiate price, quantity and terms on behalf of their owners. Settlement is the <b>last step, not the product</b>.</p>
+    </div>
+  </div>
+  <p class="quote">If agents are going to transact for us, they must be able to disagree, concede, and walk away, without ever breaking their owner's limits.</p>
+  <div class="brand">PARLEY</div>
+</section>
+
+<!-- Slide 3: The core property -->
+<section class="slide" data-num="3">
+  <div class="kicker">The claim</div>
+  <h2>Owner limits are arithmetic, not instructions</h2>
+  <div class="cols">
+    <div class="card">
+      <h3>Deterministic layer: correctness</h3>
+      <ul>
+        <li>Utility functions and a back-loaded concession schedule</li>
+        <li>ZOPA inferred from revealed offers only</li>
+        <li><b>Hard guardrail clamp</b> computes the feasible band; nothing outside it can be sent</li>
+        <li>An <b>independent egress guard</b> on the bus re-derives the band and rejects breaches</li>
+      </ul>
+    </div>
+    <div class="card green">
+      <h3>LLM layer: judgement and legibility</h3>
+      <ul>
+        <li>Chooses <i>where inside a 2% window</i> to land</li>
+        <li>Writes the rationale attached to every offer</li>
+        <li>Schema-validated; an out-of-band pick is discarded, its words kept</li>
+        <li>Timeout, transport error and bad schema all fall back deterministically</li>
+      </ul>
+    </div>
+  </div>
+  <p class="quote" style="font-size:23px">The band is computed <b>before</b> the model is consulted and re-checked <b>twice</b> after. A fully compromised model still cannot produce an out-of-band offer.</p>
+  <div class="brand">PARLEY</div>
+</section>
+
+<!-- Slide 4: Proof -->
+<section class="slide" data-num="4">
+  <div class="kicker">Tested, not asserted</div>
+  <h2>The safety claim, mechanically checked</h2>
+  <div class="cols">
+    <div class="card green">
+      <div class="metric green">0</div>
+      <div class="metric-label">out-of-band offers on the wire from a model answering <b>99999999</b> to every prompt, across all three scenarios. Every refusal is logged with the number arithmetic threw away.</div>
+    </div>
+    <div class="card">
+      <div class="metric">0</div>
+      <div class="metric-label">settlement calls on a walk-away. Unreachable by construction, asserted by a counting-spy test over scenario C, against exactly 1 for scenario A.</div>
+    </div>
+    <div class="card warn">
+      <div class="metric warn">88</div>
+      <div class="metric-label">tests: band properties over an adversarial corpus, prompt injection through the counterparty's own text, prompt-leak in both directions, byte-identical replay from SQLite.</div>
+    </div>
+  </div>
+  <p class="quote" style="font-size:22px">Swapping the LLM provider mid-build changed <b>zero</b> tests in the injection suite. The safety property belongs to the arithmetic, not to the model.</p>
+  <div class="brand">PARLEY</div>
+</section>
+
+<!-- Slide 5: Circle tools -->
+<section class="slide" data-num="5">
+  <div class="kicker">Circle stack</div>
+  <h2 style="margin-bottom:22px">What each Circle tool does here</h2>
+  <div class="cols" style="gap:24px">
+    <div class="card">
+      <h3>Arc Testnet</h3>
+      <p><code>eip155:5042002</code>. The chain settlement lands on. USDC at <code>0x3600...</code>, RPC <code>rpc.testnet.arc.network</code>.</p>
+    </div>
+    <div class="card">
+      <h3>Circle Gateway</h3>
+      <p><code>GatewayClient</code> holds the buyer's Gateway balance and signs the EIP-3009 authorisation. Deposit, balances and withdrawal all run through it.</p>
+    </div>
+    <div class="card green">
+      <h3>Nanopayments x402</h3>
+      <p><code>@circle-fin/x402-batching@3.2.0</code>. Buyer <code>pay()</code> runs the full 402 flow against a seller endpoint built with <code>createGatewayMiddleware</code>.</p>
+    </div>
+    <div class="card">
+      <h3>x402 facilitator</h3>
+      <p><code>gateway-api-testnet.circle.com</code> verifies and settles. Passed explicitly, because the SDK default is mainnet.</p>
+    </div>
+  </div>
+  <p class="quote" style="font-size:19px;padding:11px 22px">Read from the installed SDK, not the blog post: <code>GatewayClient</code> takes a raw EVM key via viem. No API key, no entity secret, no Developer-Controlled Wallets in the payment path. That finding made the credential blocker smaller, and it is written down.</p>
+  <div class="brand">PARLEY</div>
+</section>
+
+<!-- Slide 6: The screen -->
+<section class="slide" data-num="6">
+  <div class="kicker">Scenario C, the one that matters</div>
+  <h2 style="margin-bottom:20px">No overlap: both walk away, nothing is paid</h2>
+  <!-- Explicit widths: two 2x captures each defaulting to max-width:100% would
+       total 200% of the row and be clipped by the wrapper's overflow rule. -->
+  <div class="shotwrap" style="gap:20px">
+    <img class="shot" style="max-width:41%" src="panel-scenario-c-chart.png" alt="Convergence chart for scenario C: the dashed seller floor line sits above the dashed buyer ceiling line, and the two price lines never approach each other">
+    <img class="shot" style="max-width:55%" src="panel-scenario-c-postmortem.png" alt="Walk-away panel: a deal was never possible, with both sides naming the limit that bound them and the final gap">
+  </div>
+  <p class="big" style="font-size:22px">The dashed lines are each side's private limit: neither agent sees the other's, the audience sees both. The seller's floor sits <b>above</b> the buyer's ceiling, so no price satisfies both owners. The agents establish that in nine rounds, then each files a post-mortem naming the limit that bound it.</p>
+  <div class="brand">PARLEY</div>
+</section>
+
+<!-- Slide 7: Built, and honest limits -->
+<section class="slide" data-num="7">
+  <div class="kicker">Where it landed</div>
+  <h2>Built, and what is deliberately not claimed</h2>
+  <div class="cols">
+    <div class="card green" style="flex:1.15">
+      <h3>Built</h3>
+      <ul>
+        <li><span class="check">&#10003;</span> Protocol, ledger and a turn loop whose round cap sits outside both agents</li>
+        <li><span class="check">&#10003;</span> Guardrail engine: two independent checks over one pure band function</li>
+        <li><span class="check">&#10003;</span> Utility, concession schedule, dual ZOPA detection</li>
+        <li><span class="check">&#10003;</span> Bounded LLM, wired in, every consultation logged</li>
+        <li><span class="check">&#10003;</span> Settlement on accept, post-mortems on walk-away</li>
+        <li><span class="check">&#10003;</span> One-screen dashboard, live and replayable</li>
+      </ul>
+    </div>
+    <div class="card warn">
+      <h3>Not claimed</h3>
+      <ul>
+        <li>Settlement runs on the <b>local stub</b>. The Arc adapter is implemented and tested offline, but no wallet is funded, so no real money has moved and every receipt is badged <b>SIMULATED</b>.</li>
+        <li>Testnet only.</li>
+        <li>Prompts go to a third-party API.</li>
+        <li>No identity or reputation layer. Scoped, then cut on day one of six.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="quote" style="font-size:22px">Next: on-chain, sybil-resistant reputation, so a seller's history survives across marketplaces and cannot be reset by spinning up a fresh address.</p>
+  <div class="brand">PARLEY</div>
+</section>
+
+</body>
+</html>

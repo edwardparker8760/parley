@@ -11,7 +11,26 @@
 ## Overview
 
 - **Priority:** P1. Zero code value, total submission value. An unsubmitted project scores nothing.
-- **Status:** Not started
+- **Status:** **PREPARED 2026-08-04, awaiting the owner's video and submission.** Everything that
+  is not a screen recording or a form submission is done and verified.
+
+  **The clean-clone test earned its position as step 1.** It found that `pnpm test` reported
+  **zero tests and exit 0** on a fresh clone: the test scripts ran `node --test ./dist/*.test.js`
+  with no `dist` present, so a judge cloning the repo would have seen a green run that verified
+  nothing. Fixed by building on install (root `prepare`) and by each package building before it
+  tests. This is the same failure class as `docs/verification-must-not-silently-noop.md`.
+
+  Also corrected: the README credited **Circle Developer-Controlled Wallets**, which the phase 01
+  spike had already proven are not in the payment path at all. That was an overclaim on the
+  highest-weighted judging criterion, and it is now stated accurately, including what is NOT used
+  and why.
+
+  **Deliverables:** `docs/demo-video-script.md` (timed against the dashboard's real 550ms pacing
+  and the measured 815ms stub settlement), `docs/pre-submit-checklist.md` (26 items, 17 run and
+  passing, 9 marked OWNER), `docs/final-submission-deck.html` plus a rendered PDF (7 slides, real
+  screenshots, verified no slide overflows), README rewritten with a verified quickstart.
+
+  **Left for the owner:** record the video, update any hosted copy of the deck, push, submit.
 - **Day:** Sat 8 Aug, afternoon. **Submit Sat 8 Aug**, one day before the Sun 9 Aug AoE deadline. The platform locks at the deadline and late submissions cannot be judged.
 - **Brief:** Deploy or document local run, rewrite README, record the 3-minute video, update the deck, run the pre-submit checklist, submit.
 
@@ -94,20 +113,21 @@ If the LLM layer shipped in `off` mode, the 1:00-1:40 beat gets stronger, not we
 
 ## Todo List
 
-- [ ] Clean-clone test passes from a fresh directory
-- [ ] `README.md` rewritten with quickstart, scenarios, Circle tools, honest limitations, future work
-- [ ] Settlement honesty line included if shipping on stub
-- [ ] `.env.example` audited, no values, no mainnet
-- [ ] `docs/demo-video-script.md` written with latency-driven timings
-- [ ] Screen cleaned of anything key-bearing before recording
-- [ ] Video recorded, under 3:00, at 1920x1080
-- [ ] Video reviewed for leaked keys and for stub-presented-as-real
-- [ ] Circle tools named aloud: Wallets, Gateway, Nanopayments, x402
-- [ ] Deck updated from checkpoint-2
-- [ ] Pre-submit checklist run clean
-- [ ] Git identity verified, repo public, pushed
-- [ ] **Submitted Sat 8 Aug**
-- [ ] `plan.md` final status marks
+- [x] Clean-clone test passes from a fresh directory **(found and fixed the vacuous-pass bug)**
+- [x] `README.md` rewritten with quickstart, scenarios, Circle tools, honest limitations, future work
+- [x] Settlement honesty line included: stub stated plainly, in three places
+- [x] `.env.example` audited: no values beyond safe defaults, no mainnet, `PARLEY_LEDGER` added
+- [x] `docs/demo-video-script.md` written with latency-driven timings and a cut order
+- [ ] Screen cleaned of anything key-bearing before recording **(OWNER)**
+- [ ] Video recorded, under 3:00, at 1920x1080 **(OWNER)**
+- [ ] Video reviewed for leaked keys and for stub-presented-as-real **(OWNER)**
+- [x] Circle tools named in the script: Arc, Gateway, Nanopayments/x402, facilitator
+- [x] Deck rebuilt as `docs/final-submission-deck.html` plus PDF; checkpoint-2 kept as the record
+- [x] Pre-submit checklist written and run: 17 automated items pass, 9 are the owner's
+- [x] Git identity verified on every commit, repo confirmed public
+- [ ] Pushed to origin **(OWNER, or say the word)**
+- [ ] **Submitted** **(OWNER)**
+- [x] `plan.md` final status marks
 
 ## Pre-Submit Checklist (`docs/pre-submit-checklist.md`)
 

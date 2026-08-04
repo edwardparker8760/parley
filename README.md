@@ -31,17 +31,58 @@ No prompt can talk an agent past its owner's limits.
   ─────────────      ↑ nothing outside the feasible band ever ships
 ```
 
+## Quickstart
+
+Needs Node 20+ and pnpm. No API key and no wallet are required: the defaults are
+`LLM_MODE=off` and `SETTLEMENT_MODE=local-stub`, and every scenario runs fully in
+that configuration.
+
+```bash
+git clone https://github.com/edwardparker8760/parley.git
+cd parley
+pnpm install            # also builds every package
+pnpm test               # 88 tests
+pnpm run:scenario C     # the one that proves the guardrails bind
+```
+
+Scenario C ends with both agents walking away, both post-mortems printed, and no
+payment attempted. Then, for the screen:
+
+```bash
+pnpm --filter @parley/dashboard start   # http://localhost:4020
+```
+
+Optional, and neither is needed for the demo: copy `.env.example` to `.env` and
+set `LLM_API_KEY` with `LLM_MODE=full` for model-written rationales, or run
+`pnpm provision-wallets` and fund the buyer to try real settlement.
+
 ## Demo scenarios
 
 | | Setup | Outcome |
 |---|---|---|
-| A | Wide ZOPA | Converges fast, settles on Arc |
-| B | Narrow ZOPA | Converges late, after real concessions |
-| C | **No ZOPA** | Both walk away and report why. No payment. |
-| D *(stretch)* | Seller with bad review history | Buyer opens tougher, walks earlier |
+| A | Wide ZOPA | Converges by round 9, settles |
+| B | Narrow ZOPA | Converges at the round cap, after real concessions |
+| C | **No ZOPA** | Both walk away at round 9 and report why. No payment. |
 
-Scenario C is the proof the guardrails bind. Scenario D ships only if the conditional
-reputation layer makes the schedule (see `spec.md` §13).
+Scenario C is the proof the guardrails bind. A fourth scenario, driven by a
+conditional reputation layer, was **cut on 2026-08-03** when the schedule made it
+unreachable; it survives as future work below rather than as a half-built claim.
+
+## Circle tools used
+
+| Tool | What it does here |
+|---|---|
+| **Arc Testnet** (`eip155:5042002`) | The chain settlement lands on. USDC at `0x3600...0000`, RPC `rpc.testnet.arc.network`. |
+| **Circle Gateway** | `GatewayClient` holds the buyer's Gateway balance and signs the payment. Deposit, balances and withdrawal all go through it. |
+| **Nanopayments / x402 batching** | `@circle-fin/x402-batching@3.2.0`. The buyer's `pay()` runs the full 402 flow; the seller's `createGatewayMiddleware` issues the 402 challenge and settles. |
+| **Circle x402 facilitator** | `gateway-api-testnet.circle.com`. Verifies and settles the EIP-3009 authorisation. Passed explicitly, because the SDK's default is mainnet. |
+| **Circle faucet** | Funds the buyer wallet on Arc Testnet. |
+
+**Not used, and worth saying:** Circle Developer-Controlled Wallets. The phase 01
+spike read the installed SDK rather than the blog post and found `GatewayClient`
+takes a raw EVM private key via viem, with no API key and no entity secret
+anywhere in the payment path. Wallets are generated locally with viem instead.
+The finding is recorded in [`docs/x402-sdk-verified-surface.md`](docs/x402-sdk-verified-surface.md).
 
 ## Stack
 
@@ -50,7 +91,7 @@ reputation layer makes the schedule (see `spec.md` §13).
 | Chain | Arc Testnet `eip155:5042002` |
 | Payments | x402 / Circle Gateway · `@circle-fin/x402-batching` |
 | Facilitator | `https://gateway-api-testnet.circle.com` |
-| Wallets | Circle Developer-Controlled Wallets (buyer · seller · payout) |
+| Wallets | Local viem keypairs (buyer · seller · payout), funded from the Circle faucet |
 | LLM | Google Gemini (`gemini-3.5-flash-lite`, free tier). Pluggable: the provider sits behind one interface and is chosen by an env var. |
 | Runtime | TypeScript, pnpm monorepo, SQLite ledger |
 | Dashboard | Next.js |
@@ -127,30 +168,55 @@ browser only via the orchestrator's observer payload, computed from the phase 04
 oracle; a test asserts no component sources them from a message, because a
 reservation price on the bus would mean the agents could see it too.
 
+## What is verified, and how
+
+Claims in this README are cheap; these are the things that check them.
+
+| Claim | What checks it |
+|---|---|
+| No prompt can move an owner's limit | Property tests over the band function plus an adversarial corpus, and a captured-model test where the LLM returns `99999999` on every call across all three scenarios and puts **zero** out-of-band offers on the wire |
+| Neither agent can see the other's limits | A source scan asserting no agent-side file imports the ZOPA oracle, and a prompt-leak test in both directions including the seller's derived floor |
+| A walk-away never pays | A counting-spy adapter over scenario C: zero settlement calls, against exactly one for scenario A |
+| The transcript is not theatre | Replay from SQLite is byte-identical to the live ladder |
+| `LLM_MODE=off` is a real rollback | Byte-identical ladders with the model on and off |
+| A stub is never mistaken for real | `isStub` persisted on the receipt, `0xstub-` reference prefix, `SIMULATED` badge, and a factory that fails loudly rather than downgrading |
+
+`pnpm test` runs all 88. `pnpm benchmark` regenerates the engine-versus-baseline
+comparison in [`docs/engine-benchmark.md`](docs/engine-benchmark.md).
+
 ## Status
 
-**Work in progress.** Phases 01-07 of the implementation plan are complete:
-scaffold and wallets, negotiation protocol, guardrail engine, deterministic
-negotiation, bounded LLM layer, settlement and walk-away reporting, dashboard.
-Submission hardening remains. See:
+Phases 01-08 of the implementation plan are complete. See:
 
 - [`spec.md`](spec.md): full specification
-- [`plans/260726-2107-parley-implementation/plan.md`](plans/260726-2107-parley-implementation/plan.md): phased plan to 9 Aug
+- [`plans/260726-2107-parley-implementation/plan.md`](plans/260726-2107-parley-implementation/plan.md): phased plan
 - [`context/latest.md`](context/latest.md): research findings with verification log
-
-Target for final submission: **Sun 9 Aug 2026**.
 
 ## Honest limitations
 
-- Arc **testnet** only.
-- Settlement currently runs on the local stub. The Arc x402 adapter is
-  implemented against a verified SDK surface, but no wallet has been funded, so
-  no real settlement has been executed or measured.
-- The dashboard is a local demo with no authentication. Do not expose it
+- Arc **testnet** only. No mainnet configuration exists in this repo.
+- **Settlement runs on the local stub.** The Arc x402 adapter is implemented
+  against a verified SDK surface and tested offline, but no wallet has been
+  funded, so no real settlement has been executed and no real latency measured.
+  Every settlement figure you will see is a stub figure, and the UI says so.
+- **Prompts go to a third-party API.** When `LLM_MODE` is not `off`, each agent's
+  own band and offer history are sent to Google's Gemini endpoint. Fine for
+  testnet demo data; it is not a production privacy posture.
+- The dashboard is a local demo with **no authentication**. Do not expose it
   publicly with a funded wallet behind it.
 - Single good per negotiation; no multi-party auctions.
 - No counterparty identity or reputation system.
-- Not legal contract generation; settlement binds agreed terms via a payment reference hash.
-- Reputation (if built) is local and ledger-stored. **Future work:** on-chain identity and
-  sybil-resistant reputation, so trust scores survive across marketplaces and can't be reset
-  by spinning up a fresh seller.
+- Not legal contract generation; settlement binds agreed terms via a payment
+  reference hash.
+- The LLM's discretion is bounded to a 2% window around the deterministic pick.
+  It colours the negotiation and writes every rationale; it does not run it.
+
+## Future work
+
+- **On-chain identity and sybil-resistant reputation**, so a seller's history
+  survives across marketplaces and cannot be reset by spinning up a fresh
+  address. This was scoped as scenario D and cut on day one of six when the
+  schedule made it unreachable.
+- Real settlement measured end to end, which needs a funded wallet and one
+  faucet request.
+- Multi-issue negotiation beyond price, quantity and two terms.
