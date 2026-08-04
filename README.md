@@ -64,7 +64,12 @@ The prompt-injection test suite is provider-agnostic and passed unmodified when
 the provider was swapped.
 
 The system also runs with `LLM_MODE=off`, using templated rationales and no API
-calls at all. The safety claim does not depend on the LLM existing.
+calls at all. The safety claim does not depend on the LLM existing: with the LLM
+off, every scenario reaches the same outcome, which is asserted by test.
+
+All three scenarios have been run end to end against live Gemini. Measured
+numbers, and the reason the demo runs from a recorded tape rather than live, are
+in [`docs/llm-negotiation-runs.md`](docs/llm-negotiation-runs.md).
 
 ## Settlement: what is real and what is simulated
 

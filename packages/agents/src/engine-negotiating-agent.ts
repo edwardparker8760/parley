@@ -11,7 +11,6 @@
  * imported, so this agent structurally cannot cheat.
  */
 
-import { formatMicroAsUsdc } from "@parley/shared";
 import type { MicroUsdc, Offer, Terms } from "@parley/shared";
 import { isOfferEnvelope } from "@parley/protocol";
 import type { Envelope, EnvelopeParty } from "@parley/protocol";
@@ -42,6 +41,16 @@ import {
 } from "@parley/negotiation-engine";
 import type { ConcessionMode } from "@parley/negotiation-engine";
 import type { Agent, DecisionInput, DecisionOutput } from "./agent-interface.js";
+import {
+  buildAcceptRationale,
+  buildEngineRationale,
+  describeSituation,
+} from "./engine-rationale-text.js";
+import { consultBoundedLlm } from "./llm-offer-consultation.js";
+import type {
+  AgentLlmSettings,
+  LlmInvocationRecord,
+} from "./llm-offer-consultation.js";
 
 export interface EngineAgentConfig {
   readonly aspirationMicroUsdc: MicroUsdc;
@@ -52,6 +61,13 @@ export interface EngineAgentConfig {
   readonly concessionMode: ConcessionMode;
   /** Private, never crosses the bus. Makes our jitter unpredictable to them. */
   readonly privateSalt: string;
+  /**
+   * Absent or `off` means the agent behaves exactly as it did in phase 04:
+   * deterministic pick, deterministic rationale, no consultation, no log row.
+   * That equivalence is the point of the flag, and it is what makes
+   * `LLM_MODE=off` a genuine runtime rollback rather than a different product.
+   */
+  readonly llm?: AgentLlmSettings;
 }
 
 export class EngineNegotiatingAgent implements Agent {
@@ -213,15 +229,12 @@ export class EngineNegotiatingAgent implements Agent {
               ...common,
               type: "ACCEPT",
               acceptsSeq: input.inbound.seq,
-              rationale:
-                decision.reason === "DEADLINE_AND_ACCEPTABLE"
-                  ? `${formatMicroAsUsdc(input.inbound.offer.unitPriceMicroUsdc)}/call ` +
-                    `scores ${inboundUtility.toFixed(2)}, below the ` +
-                    `${reachableUtility.toFixed(2)} I wanted, but it clears my ` +
-                    `limits and the rounds are gone. Better than no deal.`
-                  : `${formatMicroAsUsdc(input.inbound.offer.unitPriceMicroUsdc)}/call ` +
-                    `scores ${inboundUtility.toFixed(2)} for me, at or above the ` +
-                    `${reachableUtility.toFixed(2)} I could still reach. Taking it.`,
+              rationale: buildAcceptRationale({
+                priceMicroUsdc: input.inbound.offer.unitPriceMicroUsdc,
+                inboundUtility,
+                reachableUtility,
+                atDeadline: decision.reason === "DEADLINE_AND_ACCEPTABLE",
+              }),
             },
             clampEvents: [],
             decisionState: { strategy: "engine", decision, inboundUtility },
@@ -243,7 +256,24 @@ export class EngineNegotiatingAgent implements Agent {
       mode: this.#config.concessionMode,
     });
 
-    const clamped = clampOfferIntoBand(guardrails, proposal);
+    // 3a. Optionally let the LLM move the price inside a window around that
+    // pick. It runs BEFORE the clamp and can never replace it: whatever comes
+    // back, `clampOfferIntoBand` below re-derives the owner's band from
+    // arithmetic and overrides anything outside it, and the bus egress guard
+    // checks it again independently.
+    const consultation = await this.#consultLlm({
+      proposal,
+      state,
+      input,
+      quantity,
+    });
+
+    const proposalForClamp =
+      consultation === null
+        ? proposal
+        : { ...proposal, unitPriceMicroUsdc: consultation.unitPriceMicroUsdc };
+
+    const clamped = clampOfferIntoBand(guardrails, proposalForClamp);
 
     if (!clamped.ok) {
       const postMortem = buildPostMortem({
@@ -275,8 +305,14 @@ export class EngineNegotiatingAgent implements Agent {
           } satisfies ClampEvent,
         ],
         decisionState: { strategy: "engine", postMortem },
+        llmInvocation: consultation?.invocation ?? null,
       };
     }
+
+    // THE CLAMP HAS RUN. This assertion exists so that a future refactor which
+    // moves the consultation after the clamp, or drops the clamp on some new
+    // branch, fails here instead of shipping an out-of-band offer to a demo.
+    this.#assertClampAuthorised(clamped.offer.unitPriceMicroUsdc, quantity, clamped.offer.terms);
 
     const isOpening = state.ownOffers.length === 0;
     const utility = this.#utility(clamped.offer);
@@ -286,13 +322,18 @@ export class EngineNegotiatingAgent implements Agent {
         ...common,
         type: isOpening ? "OFFER" : "COUNTEROFFER",
         offer: clamped.offer,
-        rationale: buildEngineRationale({
-          opening: isOpening,
-          price: clamped.offer.unitPriceMicroUsdc,
-          utility,
-          termsTraded: proposal.termsTraded,
-          roundsRemaining: input.roundsRemaining,
-        }),
+        // The model's words are used only when the model actually spoke. The
+        // deterministic rationale is richer than the generic template (it names
+        // the term that was traded), so `off` mode is not a degraded read.
+        rationale:
+          consultation?.rationale ??
+          buildEngineRationale({
+            opening: isOpening,
+            price: clamped.offer.unitPriceMicroUsdc,
+            utility,
+            termsTraded: proposal.termsTraded,
+            roundsRemaining: input.roundsRemaining,
+          }),
       },
       clampEvents: clamped.clampsApplied,
       decisionState: {
@@ -301,32 +342,87 @@ export class EngineNegotiatingAgent implements Agent {
         utility,
         termsTraded: proposal.termsTraded,
         proposedPrice: proposal.unitPriceMicroUsdc.toString(),
+        llmPrice: consultation?.unitPriceMicroUsdc.toString() ?? null,
+        llmOutcome: consultation?.invocation.outcome ?? null,
         finalPrice: clamped.offer.unitPriceMicroUsdc.toString(),
         inference: inference.reason,
       },
+      llmInvocation: consultation?.invocation ?? null,
     };
   }
-}
 
-function buildEngineRationale(context: {
-  opening: boolean;
-  price: MicroUsdc;
-  utility: number;
-  termsTraded: string | null;
-  roundsRemaining: number;
-}): string {
-  const unit = formatMicroAsUsdc(context.price);
-  if (context.opening) {
-    return `Opening at ${unit}/call.`;
+  /**
+   * Ask the bounded LLM where inside its window to land.
+   *
+   * Returns null when the LLM is off, which is the phase 04 behaviour exactly:
+   * no call, no log row, no change to the rationale.
+   */
+  async #consultLlm(context: {
+    proposal: { unitPriceMicroUsdc: MicroUsdc; terms: Terms; termsTraded: string | null };
+    state: ReturnType<typeof deriveState>;
+    input: DecisionInput;
+    quantity: number;
+  }): Promise<{
+    unitPriceMicroUsdc: MicroUsdc;
+    rationale: string;
+    invocation: LlmInvocationRecord;
+  } | null> {
+    const llm = this.#config.llm;
+    if (llm === undefined || llm.mode === "off" || llm.client === null) {
+      return null;
+    }
+
+    const { state, input, proposal } = context;
+    const ownLast = state.ownOffers[state.ownOffers.length - 1] ?? null;
+    const theirLast =
+      state.counterpartyOffers[state.counterpartyOffers.length - 1] ?? null;
+
+    // The band is recomputed against the terms this proposal actually carries,
+    // because a terms trade moves a seller's floor.
+    const band = computeFeasibleBand(
+      this.#guardrails.get(),
+      context.quantity,
+      proposal.terms,
+    );
+
+    return await consultBoundedLlm({
+      party: this.party === "BUYER" ? "BUYER" : "SELLER",
+      llm,
+      band,
+      deterministicPickMicroUsdc: proposal.unitPriceMicroUsdc,
+      round: input.round,
+      roundCap: input.roundCap,
+      roundsRemaining: input.roundsRemaining,
+      quantity: context.quantity,
+      ownLastOfferMicroUsdc: ownLast,
+      counterpartyLastOfferMicroUsdc: theirLast,
+      // UNTRUSTED. Fenced by the prompt builder, and harmless regardless: the
+      // window it could influence was computed before this text was read.
+      counterpartyRationale:
+        input.inbound !== undefined ? input.inbound.rationale : null,
+      situation: describeSituation(ownLast, proposal, state.ownOffers.length),
+    });
   }
-  if (context.termsTraded !== null) {
-    return (
-      `Holding near ${unit}/call by giving ground on terms instead ` +
-      `(${context.termsTraded}). ${context.roundsRemaining} rounds left.`
-    ).slice(0, 240);
+
+  /**
+   * Re-derive the band and confirm the outgoing price sits inside it.
+   *
+   * Cheap, and it is the invariant the whole safety claim rests on, so it is
+   * checked rather than assumed at the one point where an LLM-supplied number
+   * has just passed through.
+   */
+  #assertClampAuthorised(
+    price: MicroUsdc,
+    quantity: number,
+    terms: Terms,
+  ): void {
+    const band = computeFeasibleBand(this.#guardrails.get(), quantity, terms);
+    if (band.empty || !priceWithin(price, band.loMicroUsdc, band.hiMicroUsdc)) {
+      throw new Error(
+        `Guardrail invariant broken: ${this.party} was about to send ` +
+          `${price} micro-USDC, which its own owner limits do not permit. ` +
+          `The clamp did not run, or ran before the price was chosen.`,
+      );
+    }
   }
-  return (
-    `Moving to ${unit}/call, worth ${context.utility.toFixed(2)} to me. ` +
-    `${context.roundsRemaining} rounds left.`
-  ).slice(0, 240);
 }

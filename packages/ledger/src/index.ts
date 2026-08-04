@@ -6,4 +6,5 @@ export * from "./clamp-event-repository.js";
 export * from "./deal-repository.js";
 export * from "./settlement-receipt-repository.js";
 export * from "./postmortem-repository.js";
+export * from "./llm-invocation-repository.js";
 export * from "./transcript-replay.js";

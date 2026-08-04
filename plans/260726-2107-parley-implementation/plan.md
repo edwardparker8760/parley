@@ -47,7 +47,7 @@ Six days remain with zero application code. Scope is cut to the **critical path*
 | 02 | [Negotiation protocol + agent skeletons](phase-02-negotiation-protocol-agent-skeletons.md) | Tue 4 Aug | Complete |
 | 03 | [Guardrail engine (hard clamps)](phase-03-guardrail-engine-hard-clamps.md) | Wed 5 Aug | Complete |
 | 04 | [Deterministic negotiation: utility, concession, ZOPA](phase-04-deterministic-negotiation-utility-concession-zopa.md) | Thu 6 Aug | Complete |
-| 05 | [LLM layer + rationale log](phase-05-llm-layer-rationale-log.md) | Fri 7 Aug am | **Partial**: layer built and bounded, NOT wired into the agents |
+| 05 | [LLM layer + rationale log](phase-05-llm-layer-rationale-log.md) | Fri 7 Aug am | Complete (wired 4 Aug; demo mode `replay`) |
 | 06 | [Settlement + walk-away reporting](phase-06-settlement-and-walkaway-reporting.md) | Fri 7 Aug pm | **Complete on stub** (credential gate negative) |
 | 07 | [Dashboard (minimal)](phase-07-dashboard-minimal.md) | Sat 8 Aug am | Not started |
 | 08 | [Submission hardening (thin)](phase-08-submission-hardening.md) | Sat 8 Aug pm | Not started |

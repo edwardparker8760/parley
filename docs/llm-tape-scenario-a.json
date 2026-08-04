@@ -1,0 +1,108 @@
+{
+  "recordedAt": "2026-08-04T03:51:49.996Z",
+  "model": "gemini-3.5-flash-lite",
+  "entries": [
+    {
+      "promptHash": "3217825452df17ae",
+      "promptPreview": "You are the BUYER agent negotiating bulk inference capacity.\nYou want a LOW unit price.\n\nYour permitted unit-price range",
+      "raw": "{\n  \"unitPriceMicroUsdc\": \"522\",\n  \"rationale\": \"We are proposing a starting price of 522 micro-USDC per call to align with our deterministic budget for this round.\"\n}",
+      "latencyMs": 1253
+    },
+    {
+      "promptHash": "53469c4f61bab80b",
+      "promptPreview": "You are the SELLER agent negotiating bulk inference capacity.\nYou want a HIGH unit price.\n\nYour permitted unit-price ran",
+      "raw": "{\n  \"unitPriceMicroUsdc\": \"1505\",\n  \"rationale\": \"We are starting at our maximum permitted price of 1505 micro-USDC to account for premium compute quality and demand.\"\n}",
+      "latencyMs": 1107
+    },
+    {
+      "promptHash": "a1e1926e2998b9ee",
+      "promptPreview": "You are the BUYER agent negotiating bulk inference capacity.\nYou want a LOW unit price.\n\nYour permitted unit-price range",
+      "raw": "{\n  \"unitPriceMicroUsdc\": \"561\",\n  \"rationale\": \"We are adjusting our offer upward to 561 micro-USDC to bridge the gap and move negotiations forward.\"\n}",
+      "latencyMs": 990
+    },
+    {
+      "promptHash": "5fb68b0ff4bf6426",
+      "promptPreview": "You are the SELLER agent negotiating bulk inference capacity.\nYou want a HIGH unit price.\n\nYour permitted unit-price ran",
+      "raw": "{\n  \"unitPriceMicroUsdc\": \"1425\",\n  \"rationale\": \"We are holding firm at 1425 micro-USDC per call as our deterministic engine suggests to reflect the high quality of our bulk inference capacity.\"\n}",
+      "latencyMs": 968
+    },
+    {
+      "promptHash": "8772f4acd8067210",
+      "promptPreview": "You are the BUYER agent negotiating bulk inference capacity.\nYou want a LOW unit price.\n\nYour permitted unit-price range",
+      "raw": "{\n  \"unitPriceMicroUsdc\": \"593\",\n  \"rationale\": \"We are lowering our price to the absolute minimum of our allowed range to bridge the gap toward your target.\"\n}",
+      "latencyMs": 1049
+    },
+    {
+      "promptHash": "4dd74111b5fa5cd1",
+      "promptPreview": "You are the SELLER agent negotiating bulk inference capacity.\nYou want a HIGH unit price.\n\nYour permitted unit-price ran",
+      "raw": "{\n  \"unitPriceMicroUsdc\": \"1415\",\n  \"rationale\": \"We are making a small concession to keep the momentum going, but still expect a premium for our high-volume capacity.\"\n}",
+      "latencyMs": 1022
+    },
+    {
+      "promptHash": "e9ba2a896b334346",
+      "promptPreview": "You are the BUYER agent negotiating bulk inference capacity.\nYou want a LOW unit price.\n\nYour permitted unit-price range",
+      "raw": "{\n  \"unitPriceMicroUsdc\": \"596\",\n  \"rationale\": \"I am inching my price up slightly to encourage movement, but still holding the line against their inflated quote.\"\n}",
+      "latencyMs": 1107
+    },
+    {
+      "promptHash": "7cc0f90d3d269256",
+      "promptPreview": "You are the SELLER agent negotiating bulk inference capacity.\nYou want a HIGH unit price.\n\nYour permitted unit-price ran",
+      "raw": "{\n  \"unitPriceMicroUsdc\": \"1340\",\n  \"rationale\": \"Holding firm at 1340 micro-USDC to ensure fair value for high-volume inference capacity.\"\n}",
+      "latencyMs": 1079
+    },
+    {
+      "promptHash": "2e43db1c2a22b7db",
+      "promptPreview": "You are the BUYER agent negotiating bulk inference capacity.\nYou want a LOW unit price.\n\nYour permitted unit-price range",
+      "raw": "{\n  \"unitPriceMicroUsdc\": \"661\",\n  \"rationale\": \"We are increasing our bid to 661 micro-USDC to bridge the gap, but the seller's price remains far too high for bulk capacity.\"\n}",
+      "latencyMs": 1161
+    },
+    {
+      "promptHash": "68945e703ab877b8",
+      "promptPreview": "You are the SELLER agent negotiating bulk inference capacity.\nYou want a HIGH unit price.\n\nYour permitted unit-price ran",
+      "raw": "{\n  \"unitPriceMicroUsdc\": \"1291\",\n  \"rationale\": \"We are holding firm at 1291 micro-USDC to ensure fair value for our high-quality bulk inference capacity.\"\n}",
+      "latencyMs": 1018
+    },
+    {
+      "promptHash": "c38235703c8d69b4",
+      "promptPreview": "You are the BUYER agent negotiating bulk inference capacity.\nYou want a LOW unit price.\n\nYour permitted unit-price range",
+      "raw": "{\n  \"unitPriceMicroUsdc\": \"692\",\n  \"rationale\": \"I am offering 692 micro-USDC to make steady progress toward a fair compromise.\"\n}",
+      "latencyMs": 1004
+    },
+    {
+      "promptHash": "7ea73c7b333f96f6",
+      "promptPreview": "You are the SELLER agent negotiating bulk inference capacity.\nYou want a HIGH unit price.\n\nYour permitted unit-price ran",
+      "raw": "{\n  \"unitPriceMicroUsdc\": \"1195\",\n  \"rationale\": \"I am maintaining our price at 1195 micro-USDC as our firm baseline for this capacity.\"\n}",
+      "latencyMs": 1080
+    },
+    {
+      "promptHash": "5defd765bebdfb1d",
+      "promptPreview": "You are the BUYER agent negotiating bulk inference capacity.\nYou want a LOW unit price.\n\nYour permitted unit-price range",
+      "raw": "{\n  \"unitPriceMicroUsdc\": \"744\",\n  \"rationale\": \"I am offering 744 micro-USDC to steadily bridge the gap toward a fair market rate for this bulk capacity.\"\n}",
+      "latencyMs": 1045
+    },
+    {
+      "promptHash": "60635f83a0199759",
+      "promptPreview": "You are the SELLER agent negotiating bulk inference capacity.\nYou want a HIGH unit price.\n\nYour permitted unit-price ran",
+      "raw": "{\n  \"unitPriceMicroUsdc\": \"1200\",\n  \"rationale\": \"Holding firm at 1200 micro-USDC to reflect the true value of high-performance bulk inference capacity.\"\n}",
+      "latencyMs": 1019
+    },
+    {
+      "promptHash": "3e4223836895050c",
+      "promptPreview": "You are the BUYER agent negotiating bulk inference capacity.\nYou want a LOW unit price.\n\nYour permitted unit-price range",
+      "raw": "{\n  \"unitPriceMicroUsdc\": \"861\",\n  \"rationale\": \"I am adjusting my bid to 861 micro-USDC to make meaningful progress toward a fair compromise.\"\n}",
+      "latencyMs": 988
+    },
+    {
+      "promptHash": "08a363193265b8b6",
+      "promptPreview": "You are the SELLER agent negotiating bulk inference capacity.\nYou want a HIGH unit price.\n\nYour permitted unit-price ran",
+      "raw": "{\n  \"unitPriceMicroUsdc\": \"1000\",\n  \"rationale\": \"I am holding firm near one thousand micro-USDC to reflect the high quality and demand of our inference capacity.\"\n}",
+      "latencyMs": 1064
+    },
+    {
+      "promptHash": "5da963fa38daed6a",
+      "promptPreview": "You are the BUYER agent negotiating bulk inference capacity.\nYou want a LOW unit price.\n\nYour permitted unit-price range",
+      "raw": "{\n  \"unitPriceMicroUsdc\": \"984\",\n  \"rationale\": \"We are countering with 984 micro-USDC to bridge the gap and move negotiations forward on this bulk order.\"\n}",
+      "latencyMs": 926
+    }
+  ]
+}

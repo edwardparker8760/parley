@@ -13,6 +13,7 @@
 
 import type { Envelope, EnvelopeParty } from "@parley/protocol";
 import type { ClampEvent } from "@parley/guardrails";
+import type { LlmInvocationRecord } from "./llm-offer-consultation.js";
 
 export interface DecisionInput {
   readonly negotiationId: string;
@@ -46,6 +47,15 @@ export interface DecisionOutput {
    * (spec section 4). Shape is strategy-specific and intentionally opaque here.
    */
   readonly decisionState: unknown;
+  /**
+   * The LLM consultation that produced this message, when there was one.
+   *
+   * The agent does NOT write it: agents have no ledger access, by design, and
+   * handing one a database to log with would put a write path inside the thing
+   * holding the private guardrails. So the record travels out with the
+   * decision and the turn loop persists it, exactly like `clampEvents`.
+   */
+  readonly llmInvocation?: LlmInvocationRecord | null;
 }
 
 export interface Agent {

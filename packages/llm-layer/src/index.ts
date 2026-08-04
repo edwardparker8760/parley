@@ -8,3 +8,4 @@ export * from "./llm-client-factory.js";
 export * from "./gemini-llm-client.js";
 export * from "./anthropic-llm-client.js";
 export * from "./recording-and-replay-client.js";
+export * from "./rate-paced-client.js";

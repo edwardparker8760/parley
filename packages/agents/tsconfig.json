@@ -19,6 +19,9 @@
     },
     {
       "path": "../negotiation-engine"
+    },
+    {
+      "path": "../llm-layer"
     }
   ]
 }

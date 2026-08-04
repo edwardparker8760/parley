@@ -143,4 +143,41 @@ export const MIGRATIONS: readonly Migration[] = [
        )`,
     ],
   },
+  {
+    version: 4,
+    name: "llm-invocations",
+    statements: [
+      // One row per LLM consultation, whatever the outcome. This table is the
+      // evidence for the bounded-LLM claim: `outcome` records whether the
+      // model's number was used (ACCEPTED) or refused (OUT_OF_BAND,
+      // SCHEMA_INVALID, TIMEOUT, ERROR), and `rejected_price_micro_usdc` keeps
+      // the number arithmetic threw away. Without that column the dashboard
+      // could say "the model was overruled" but never show by how much.
+      //
+      // `raw_response` is stored verbatim and is UNTRUSTED text: it is whatever
+      // the model returned, including anything a counterparty talked it into
+      // saying. It is stored for debugging, never parsed for a numeric path,
+      // and any renderer must escape it.
+      `CREATE TABLE IF NOT EXISTS llm_invocations (
+         id INTEGER PRIMARY KEY AUTOINCREMENT,
+         negotiation_id TEXT NOT NULL REFERENCES negotiations(id),
+         seq INTEGER NOT NULL,
+         party TEXT NOT NULL,
+         mode TEXT NOT NULL,
+         model TEXT NOT NULL,
+         prompt_hash TEXT NOT NULL,
+         raw_response TEXT,
+         rationale TEXT NOT NULL,
+         outcome TEXT NOT NULL,
+         fallback_used INTEGER NOT NULL,
+         rejected_price_micro_usdc TEXT,
+         final_price_micro_usdc TEXT NOT NULL,
+         latency_ms INTEGER NOT NULL,
+         created_at TEXT NOT NULL,
+         UNIQUE(negotiation_id, seq)
+       )`,
+      `CREATE INDEX IF NOT EXISTS idx_llm_invocations_negotiation_seq
+         ON llm_invocations(negotiation_id, seq)`,
+    ],
+  },
 ];

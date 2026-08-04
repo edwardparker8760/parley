@@ -16,6 +16,7 @@ import type { ConcessionMode } from "@parley/negotiation-engine";
 import { BaselineNegotiatingAgent } from "./baseline-negotiating-agent.js";
 import { EngineNegotiatingAgent } from "./engine-negotiating-agent.js";
 import type { Agent, StrategyName } from "./agent-interface.js";
+import type { AgentLlmSettings } from "./llm-offer-consultation.js";
 
 /** Strategy knobs. These are NOT limits; the limits live in BuyerGuardrails. */
 export interface BuyerStrategyOptions {
@@ -31,6 +32,8 @@ export interface BuyerStrategyOptions {
   readonly minAcceptableUtility?: number;
   /** Exposed so the exploitability test can run the vulnerable form. */
   readonly concessionMode?: ConcessionMode;
+  /** Bounded LLM settings. Absent means deterministic, as in phase 04. */
+  readonly llm?: AgentLlmSettings;
 }
 
 export function createBuyerAgent(
@@ -56,6 +59,7 @@ export function createBuyerAgent(
       minAcceptableUtility: options.minAcceptableUtility ?? 0,
       concessionMode: options.concessionMode ?? "DEFENDED",
       privateSalt: "buyer-private-salt",
+      ...(options.llm !== undefined ? { llm: options.llm } : {}),
     });
   }
 

@@ -20,6 +20,9 @@ importers:
       '@parley/guardrails':
         specifier: workspace:*
         version: link:../guardrails
+      '@parley/llm-layer':
+        specifier: workspace:*
+        version: link:../llm-layer
       '@parley/negotiation-engine':
         specifier: workspace:*
         version: link:../negotiation-engine
@@ -118,6 +121,9 @@ importers:
       '@parley/ledger':
         specifier: workspace:*
         version: link:../ledger
+      '@parley/llm-layer':
+        specifier: workspace:*
+        version: link:../llm-layer
       '@parley/negotiation-engine':
         specifier: workspace:*
         version: link:../negotiation-engine

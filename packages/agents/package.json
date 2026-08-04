@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@parley/guardrails": "workspace:*",
+    "@parley/llm-layer": "workspace:*",
     "@parley/protocol": "workspace:*",
     "@parley/shared": "workspace:*",
     "@parley/negotiation-engine": "workspace:*"

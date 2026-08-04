@@ -11,16 +11,17 @@
  */
 
 import { createBuyerAgent, createSellerAgent } from "@parley/agents";
-import type { StrategyName } from "@parley/agents";
+import type { AgentLlmSettings, StrategyName } from "@parley/agents";
 import { InProcessMessageBus } from "@parley/protocol";
 import {
   ClampEventRepository,
+  LlmInvocationRepository,
   MessageRepository,
   NegotiationRepository,
   openLedger,
   renderLadder,
 } from "@parley/ledger";
-import type { Database } from "@parley/ledger";
+import type { Database, LlmInvocationRow } from "@parley/ledger";
 import type { SettlementAdapter } from "@parley/settlement";
 import { runNegotiation } from "./negotiation-turn-loop.js";
 import type { TurnLoopResult } from "./negotiation-turn-loop.js";
@@ -53,6 +54,17 @@ export interface RunScenarioOptions {
   readonly settlement?: SettlementAdapter;
   readonly buyerAddress?: string;
   readonly sellerAddress?: string;
+  /**
+   * Bounded LLM settings, shared by both agents.
+   *
+   * Absent means fully deterministic: no calls, no log rows, and outcomes
+   * identical to phase 04. Tests rely on that, and so does the demo rollback.
+   *
+   * Both sides deliberately get the SAME client. They still cannot see each
+   * other: each agent builds its prompt from its own state only, and the
+   * client is a transport, not a shared memory.
+   */
+  readonly llm?: AgentLlmSettings;
 }
 
 export interface RunScenarioResult extends TurnLoopResult {
@@ -60,6 +72,8 @@ export interface RunScenarioResult extends TurnLoopResult {
   readonly ladder: string;
   /** Deal plus receipt on ACCEPT, both post-mortems on WALK_AWAY. */
   readonly finalisation: FinaliseResult;
+  /** Every LLM consultation this run made. Empty when the run was deterministic. */
+  readonly llmInvocations: LlmInvocationRow[];
 }
 
 /** Deterministic clock: fixed epoch, +1s per call. */
@@ -96,6 +110,7 @@ export async function runScenario(
   const negotiations = new NegotiationRepository(db);
   const messages = new MessageRepository(db);
   const clampEvents = new ClampEventRepository(db);
+  const llmInvocations = new LlmInvocationRepository(db);
 
   // An explicit id is used verbatim, so tests stay deterministic and a
   // collision surfaces as an error rather than being papered over. An implicit
@@ -116,17 +131,20 @@ export async function runScenario(
       terms: definition.terms,
       strategy: options.strategy ?? "engine",
       beta: definition.beta,
+      ...(options.llm !== undefined ? { llm: options.llm } : {}),
     }),
     seller: createSellerAgent(definition.sellerGuardrails, {
       openingUnitPriceMicroUsdc: definition.sellerOpeningMicroUsdc,
       terms: definition.terms,
       strategy: options.strategy ?? "engine",
       beta: definition.beta,
+      ...(options.llm !== undefined ? { llm: options.llm } : {}),
     }),
     bus: new InProcessMessageBus(),
     negotiations,
     messages,
     clampEvents,
+    llmInvocations,
     guardrails: {
       BUYER: definition.buyerGuardrails,
       SELLER: definition.sellerGuardrails,
@@ -176,5 +194,11 @@ export async function runScenario(
     now,
   });
 
-  return { ...result, db, ladder, finalisation };
+  return {
+    ...result,
+    db,
+    ladder,
+    finalisation,
+    llmInvocations: llmInvocations.listByNegotiation(negotiationId),
+  };
 }

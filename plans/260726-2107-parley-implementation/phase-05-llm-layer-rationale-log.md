@@ -10,7 +10,14 @@
 ## Overview
 
 - **Priority:** P0. Never cut. Without it the transcript is numbers and the pitch loses its legibility.
-- **Status:** **PARTIAL, 2026-08-03.** The layer is built, bounded, and tested in isolation
+- **Status:** **COMPLETE, 2026-08-04.** The selector is wired into the agents, `llm_invocations`
+  exists, and all three scenarios have run end to end against live Gemini
+  (`docs/llm-negotiation-runs.md`): A 17 calls / 70.7s, B 23 / 96.5s, C 16 / 65.7s, zero 429s
+  under pacing, and scenario C still walks away paying nothing. Tapes recorded per scenario;
+  replay reproduces each run identically in under a second. Test count 63 to 70.
+  **Demo mode is `replay`** (step 13 decision): live `full` takes 70.7s on scenario A and
+  success criterion 6 allows 60s. See "Delivered" below for the deviations from this plan.
+- **Status (superseded):** **PARTIAL, 2026-08-03.** The layer is built, bounded, and tested in isolation
   (14 tests: schema, five fallback branches, replay, sanitiser, prompt-injection containment).
   Provider is Gemini behind a factory. Latency re-measured live on 2026-08-03 18:52: 16 of 18
   calls succeeded, mean 1.11s, p95 1.60s, 18.1s wall clock; the 2 failures were 429 rate limits
@@ -157,24 +164,51 @@ The band is given as a range, so the model's job is small and its failure modes 
 14. Re-run the full test suite with `LLM_MODE=off`. All phase 03 property tests and phase 04 scenario assertions must still be green.
 15. Commit.
 
+## Delivered, and where it differs from this plan
+
+Four deviations, all deliberate.
+
+1. **The selector is wired in `packages/agents/src/engine-negotiating-agent.ts`, not in
+   `propose-next-offer.ts`.** Same position in the flow (after the concession schedule, before
+   the clamp), but `negotiation-engine` stays pure and synchronous, which its property tests
+   depend on. The consultation itself lives in `packages/agents/src/llm-offer-consultation.ts`.
+2. **The model gets a 2% window around the deterministic pick, not the whole feasible band.**
+   Forced: a seller's feasible band is `[floor, null]` and has no upper edge to put in a prompt,
+   and a buyer's is `[0, ceiling]`, so handing over the full band would let the model open at the
+   owner's worst acceptable price. The window is a STRATEGY bound; the safety bound is still the
+   clamp plus the egress guard, both downstream and both untouched.
+3. **The response schema is price plus rationale only** (as built in phase 05), not the
+   `{price, quantity, terms, rationale}` in requirement 2. Quantity and terms come from the
+   deterministic proposal, so a model cannot widen a deal by inventing a bigger order. The schema
+   is `.strict()`, so the extra keys this plan specified would be a `SCHEMA_INVALID` outcome.
+4. **`LLM_MODE=replay` reads a tape file, not `llm_invocations`** (step 12). The tape client
+   already existed and was verified; keying by prompt hash means a stale tape misses loudly.
+   One tape per scenario, because scenario B never asks scenario A's questions.
+
+Also: with the LLM off, the agent takes the phase 04 path exactly, writes no invocation rows, and
+produces a byte-identical ladder. That is asserted rather than assumed, because "off is a genuine
+rollback" is the claim that makes demo day survivable.
+
 ## Todo List
 
-- [ ] Provider chosen, single small fast model
-- [ ] LLM client with 4s timeout and transport-only retry
-- [ ] Strict zod response schema
-- [ ] Prompt builder using own state only, counterparty text fenced
-- [ ] Bounded selector implementing all five outcome branches
-- [ ] Rationale sanitiser tested against the phase 03 adversarial corpus
-- [ ] Five templated fallback rationales that read like sentences
-- [ ] `llm_invocations` table and logger
-- [ ] Selector wired between concession schedule and clamp, clamp still unconditional
-- [ ] Nine branch tests green
-- [ ] Prompt-leak test green in both directions
-- [ ] `LLM_MODE=off` completes all three scenarios
-- [ ] `LLM_MODE=replay` reproduces a negotiation from cache
-- [ ] Wall-clock per scenario recorded; demo mode chosen accordingly
-- [ ] Full suite green with `LLM_MODE=off`
-- [ ] Committed
+- [x] Provider chosen, single small fast model
+- [x] LLM client with 4s timeout and transport-only retry
+- [x] Strict zod response schema
+- [x] Prompt builder using own state only, counterparty text fenced
+- [x] Bounded selector implementing all five outcome branches
+- [x] Rationale sanitiser tested against the phase 03 adversarial corpus
+- [x] Five templated fallback rationales that read like sentences
+- [x] `llm_invocations` table and logger
+- [x] Selector wired between concession schedule and clamp, clamp still unconditional
+      (plus a post-clamp assertion, so a refactor that skips the clamp fails loudly)
+- [x] Branch tests green: OUT_OF_BAND, SCHEMA_INVALID (prose and empty), TIMEOUT, ACCEPTED,
+      all driven end to end through whole scenarios rather than against the selector alone
+- [x] Prompt-leak test green in both directions, including the seller's derived floor
+- [x] `LLM_MODE=off` completes all three scenarios, byte-identical to phase 04
+- [x] `LLM_MODE=replay` reproduces a negotiation from cache (all three, under a second each)
+- [x] Wall-clock per scenario recorded; demo mode chosen accordingly (`replay`)
+- [x] Full suite green with `LLM_MODE=off` (70 tests)
+- [x] Committed
 
 ## Success Criteria
 

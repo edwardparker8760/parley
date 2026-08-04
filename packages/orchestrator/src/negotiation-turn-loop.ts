@@ -22,6 +22,7 @@ import type {
 } from "@parley/guardrails";
 import type {
   ClampEventRepository,
+  LlmInvocationRepository,
   MessageRepository,
   NegotiationRepository,
 } from "@parley/ledger";
@@ -36,6 +37,11 @@ export interface TurnLoopOptions {
   readonly negotiations: NegotiationRepository;
   readonly messages: MessageRepository;
   readonly clampEvents: ClampEventRepository;
+  /**
+   * Where LLM consultations are recorded. Absent when the run is deterministic,
+   * which is every test run and every `LLM_MODE=off` demo.
+   */
+  readonly llmInvocations?: LlmInvocationRepository;
   /**
    * Each side's own guardrails, used ONLY by the egress guard on the bus.
    * The guard checks a message against its own SENDER's limits; it never
@@ -128,6 +134,23 @@ export async function runNegotiation(
           createdAt: outbound.createdAt,
         })),
       );
+
+      // The LLM consultation behind this message, if there was one. Written
+      // whatever the outcome, including the branches where the model's number
+      // was refused: a log that only kept the successes would hide precisely
+      // the rows that prove the bounding works.
+      if (
+        options.llmInvocations !== undefined &&
+        decision.llmInvocation !== undefined &&
+        decision.llmInvocation !== null
+      ) {
+        options.llmInvocations.append({
+          ...decision.llmInvocation,
+          negotiationId,
+          seq: outbound.seq,
+          createdAt: outbound.createdAt,
+        });
+      }
 
       transcript.push(outbound);
 
