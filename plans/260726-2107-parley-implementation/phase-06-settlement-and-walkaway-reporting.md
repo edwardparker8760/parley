@@ -22,6 +22,19 @@
     the orchestrator is already the sanctioned observer (it is the only place allowed to import
     the ZOPA oracle), and the repositories live in `packages/ledger` with every other table.
     One fewer package, no new dependency edges.
+- **Status update 2026-08-04: real path CODE COMPLETE, awaiting funding.** Steps 9 and 13 are
+  done; steps 10 to 12 are blocked on a browser faucet, not on code. Wallets are provisioned
+  (buyer `0x38D6faC8493cd60C120fa0629A19713606d64F38`) and all balances are zero.
+  - **Missing piece the plan did not name:** `GatewayClient.pay(url)` pays an HTTP resource that
+    answers 402. Two agents in one process have nothing to pay, so real settlement required a new
+    `packages/seller-service` running `createGatewayMiddleware`. It prices each request from the
+    seller's OWN copy of the deal row and rejects a mismatched terms hash before quoting a price,
+    so a buyer can neither underpay nor detach a payment from the negotiation that produced it.
+  - **`settle()` returns `PENDING`, never `SETTLED`.** Circle batches and exposes no flush, so an
+    accepted authorisation is not a confirmed transfer. `waitForSettlement()` polls and reports
+    what it actually observed, including a timeout.
+  - 12 new tests (8 adapter, 4 paywall), all offline. The 402 challenge is exercised against
+    Circle's real testnet facilitator. Suite 70 to 82.
 - **Day:** Fri 7 Aug, afternoon
 - **Brief:** On `ACCEPT`, settle `unitPrice * quantity` in USDC on Arc with the agreed terms hashed into the payment reference. On `WALK_AWAY`, emit both structured post-mortems. No batch-flush UI, no retry orchestration, no settlement state machine beyond three states.
 
@@ -146,9 +159,11 @@ The oracle result is included in the post-mortem because it answers "was a deal 
 - [x] ACCEPT terminal hook, running after the turn loop returns
 - [x] Scenario A settles on the stub, `SETTLED_STUB` with a latency figure
 - [x] **Credential gate evaluated: NEGATIVE, no wallet provisioned. Recorded in `plan.md` and `docs/settlement-latency.md`.**
-- [ ] `arc-x402` adapter implemented against the verified SDK surface only **(gated out)**
-- [ ] Buyer wallet funded and balance confirmed **(gated out; `pnpm --filter @parley/wallets balances` added to check it)**
-- [ ] Live Arc Testnet settlement with a real reference or tx hash **(gated out)**
+- [x] `arc-x402` adapter implemented against the verified SDK surface only **(2026-08-04)**
+- [x] `packages/seller-service`: the 402-protected endpoint the adapter pays **(not in the original plan; see below)**
+- [x] Wallets provisioned, addresses in `.env`, keys never committed
+- [ ] Buyer wallet funded and balance confirmed **(blocked: faucet.circle.com is a browser flow)**
+- [ ] Live Arc Testnet settlement with a real reference or tx hash **(blocked on funding only)**
 - [x] `docs/settlement-latency.md` written (stub measured, real path recorded as blocked)
 - [x] Explorer URL stored on the receipt (populated only when a real tx hash exists)
 - [x] Failure path marks FAILED without corrupting the transcript

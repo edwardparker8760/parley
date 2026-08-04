@@ -45,5 +45,6 @@ export function createSettlementAdapter(
     chain: ARC_TESTNET_SDK_CHAIN_NAME,
     network: ARC_TESTNET_CAIP2,
     facilitatorUrl: CIRCLE_X402_FACILITATOR_URL,
+    sellerServiceUrl: config.sellerServiceUrl,
   });
 }

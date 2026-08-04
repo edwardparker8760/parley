@@ -81,7 +81,14 @@ selected by `SETTLEMENT_MODE`:
 | Mode | What happens | How you can tell |
 |---|---|---|
 | `local-stub` (default) | Nothing moves on chain. A deterministic reference is derived from the terms hash. | Status is `SETTLED_STUB`, `isStub` is true, the reference starts with `0xstub-`, and the CLI prints `[SIMULATED: no real money moved]`. |
-| `arc-x402` | Real EIP-3009 authorisation via Circle Gateway on Arc Testnet, batch settled by Circle. **Not yet implemented: the adapter throws rather than pretending.** | Status would be `SETTLED` with a transaction hash and an `arcscan` explorer link. |
+| `arc-x402` | Real EIP-3009 authorisation via Circle Gateway on Arc Testnet, batch settled by Circle. **Implemented, not yet run with real money: no wallet is funded.** | Status is `PENDING` with a real transaction reference and an `arcscan` explorer link, and `isStub` is false. |
+
+Real settlement pays the seller's 402-protected endpoint (`packages/seller-service`),
+which prices each request from its own copy of the deal and refuses any request
+whose terms hash does not match. `settle()` returns `PENDING` rather than
+`SETTLED` on purpose: Circle batches, there is no manual flush, so an accepted
+authorisation is not a confirmed on-chain transfer. See
+[`docs/settlement-latency.md`](docs/settlement-latency.md).
 
 Selecting `arc-x402` without funded wallet keys **fails at startup**. It never
 downgrades quietly to the stub, because a silent downgrade is how a fabricated

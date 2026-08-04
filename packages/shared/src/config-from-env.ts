@@ -42,6 +42,13 @@ export interface ParleyConfig {
   readonly llmModel: string;
   readonly llmTimeoutMs: number;
   readonly llmTapePath: string;
+  /**
+   * Base URL of the seller's 402-protected service.
+   *
+   * Real settlement pays an HTTP resource, not an address, so `arc-x402` needs
+   * somewhere to pay. Defaults to the local seller service.
+   */
+  readonly sellerServiceUrl: string;
 }
 
 const SETTLEMENT_MODES: readonly SettlementMode[] = ["local-stub", "arc-x402"];
@@ -247,6 +254,8 @@ export function loadConfigFromEnv(
     llmModel: readOptional(env, "LLM_MODEL") ?? "",
     llmTimeoutMs: readPositiveInteger(env, "LLM_TIMEOUT_MS", 4000),
     llmTapePath: readOptional(env, "LLM_TAPE_PATH") ?? "docs/llm-tape.json",
+    sellerServiceUrl:
+      readOptional(env, "SELLER_SERVICE_URL") ?? "http://127.0.0.1:4021",
   };
 }
 

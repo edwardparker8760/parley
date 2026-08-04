@@ -1,5 +1,5 @@
 {
-  "name": "@parley/settlement",
+  "name": "@parley/seller-service",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -10,18 +10,21 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "smoke": "node ./dist/settle-fake-deal-smoke-script.js",
-    "test": "node --test ./dist/*.test.js",
-    "deposit": "node ./dist/deposit-to-gateway-script.js"
+    "start": "node ./dist/start-seller-service-script.js",
+    "test": "node --test ./dist/*.test.js"
   },
   "dependencies": {
     "@circle-fin/x402-batching": "^3.2.0",
+    "@parley/ledger": "workspace:*",
+    "@parley/settlement": "workspace:*",
     "@parley/shared": "workspace:*",
     "@x402/core": "^2.20.0",
     "@x402/evm": "^2.20.0",
+    "express": "^5.1.0",
     "viem": "^2.55.10"
   },
   "devDependencies": {
+    "@types/express": "^5.0.0",
     "typescript": "^5.7.2"
   }
 }

@@ -87,6 +87,26 @@ export class DealRepository {
     };
   }
 
+  /**
+   * Look up a deal by its own id.
+   *
+   * Used by the seller's 402-protected endpoint: the buyer names a deal, and
+   * the seller prices the request from ITS OWN copy of the deal row rather
+   * than from anything the buyer sent. That is what stops a buyer paying less
+   * than it agreed to.
+   */
+  findById(dealId: string): DealRow | undefined {
+    const row = this.#db
+      .prepare(
+        `SELECT id, negotiation_id, accepted_seq, unit_price_micro_usdc,
+                quantity, delivery_window_hours, sla_tier, amount_micro_usdc,
+                terms_hash, created_at
+           FROM deals WHERE id = ?`,
+      )
+      .get(dealId) as Record<string, unknown> | undefined;
+    return row === undefined ? undefined : toDealRow(row);
+  }
+
   findByNegotiation(negotiationId: string): DealRow | undefined {
     const row = this.#db
       .prepare(
@@ -96,19 +116,21 @@ export class DealRepository {
            FROM deals WHERE negotiation_id = ?`,
       )
       .get(negotiationId) as Record<string, unknown> | undefined;
-    if (row === undefined) return undefined;
-
-    return {
-      id: String(row["id"]),
-      negotiationId: String(row["negotiation_id"]),
-      acceptedSeq: Number(row["accepted_seq"]),
-      unitPriceMicroUsdc: BigInt(String(row["unit_price_micro_usdc"])),
-      quantity: Number(row["quantity"]),
-      deliveryWindowHours: Number(row["delivery_window_hours"]),
-      slaTier: String(row["sla_tier"]) as SlaTier,
-      amountMicroUsdc: BigInt(String(row["amount_micro_usdc"])),
-      termsHash: String(row["terms_hash"]),
-      createdAt: String(row["created_at"]),
-    };
+    return row === undefined ? undefined : toDealRow(row);
   }
+}
+
+function toDealRow(row: Record<string, unknown>): DealRow {
+  return {
+    id: String(row["id"]),
+    negotiationId: String(row["negotiation_id"]),
+    acceptedSeq: Number(row["accepted_seq"]),
+    unitPriceMicroUsdc: BigInt(String(row["unit_price_micro_usdc"])),
+    quantity: Number(row["quantity"]),
+    deliveryWindowHours: Number(row["delivery_window_hours"]),
+    slaTier: String(row["sla_tier"]) as SlaTier,
+    amountMicroUsdc: BigInt(String(row["amount_micro_usdc"])),
+    termsHash: String(row["terms_hash"]),
+    createdAt: String(row["created_at"]),
+  };
 }
