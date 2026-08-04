@@ -65,6 +65,18 @@ export interface RunScenarioOptions {
    * client is a transport, not a shared memory.
    */
   readonly llm?: AgentLlmSettings;
+  /** Presentation pacing for the dashboard. Default 0, so tests stay fast. */
+  readonly turnDelayMs?: number;
+  /**
+   * Fixes the agents' jitter independently of the negotiation id.
+   *
+   * Defaults to the id, which is what the CLI and the tests want. The dashboard
+   * sets it to the scenario name so that every run of scenario B produces the
+   * same negotiation while still getting a fresh ledger row.
+   */
+  readonly seedKey?: string;
+  /** Where the ledger lives, when the caller opened it. Enables live reads. */
+  readonly db?: Database;
 }
 
 export interface RunScenarioResult extends TurnLoopResult {
@@ -106,7 +118,10 @@ export async function runScenario(
 ): Promise<RunScenarioResult> {
   const definition = SCENARIOS[options.scenario];
 
-  const db = openLedger({ location: options.location ?? ":memory:" });
+  // An injected database is what lets the dashboard read the ladder WHILE it is
+  // being written: same connection, same process, no polling a file that a
+  // second connection has not flushed yet.
+  const db = options.db ?? openLedger({ location: options.location ?? ":memory:" });
   const negotiations = new NegotiationRepository(db);
   const messages = new MessageRepository(db);
   const clampEvents = new ClampEventRepository(db);
@@ -132,6 +147,7 @@ export async function runScenario(
       strategy: options.strategy ?? "engine",
       beta: definition.beta,
       ...(options.llm !== undefined ? { llm: options.llm } : {}),
+      ...(options.seedKey !== undefined ? { seedKey: options.seedKey } : {}),
     }),
     seller: createSellerAgent(definition.sellerGuardrails, {
       openingUnitPriceMicroUsdc: definition.sellerOpeningMicroUsdc,
@@ -139,6 +155,7 @@ export async function runScenario(
       strategy: options.strategy ?? "engine",
       beta: definition.beta,
       ...(options.llm !== undefined ? { llm: options.llm } : {}),
+      ...(options.seedKey !== undefined ? { seedKey: options.seedKey } : {}),
     }),
     bus: new InProcessMessageBus(),
     negotiations,
@@ -150,6 +167,9 @@ export async function runScenario(
       SELLER: definition.sellerGuardrails,
     },
     now,
+    ...(options.turnDelayMs !== undefined
+      ? { turnDelayMs: options.turnDelayMs }
+      : {}),
   });
 
   const ladder = renderLadder(

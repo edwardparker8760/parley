@@ -9,3 +9,7 @@ packages:
 allowBuilds:
   "@google/genai": false
   protobufjs: false
+  # Next pulls sharp for image optimisation. The dashboard renders no images at
+  # all, so its native build step is dead weight. Denied rather than approved:
+  # a build script we do not need is a build script we do not run.
+  sharp: false

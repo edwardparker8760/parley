@@ -52,6 +52,16 @@ export interface TurnLoopOptions {
   >;
   /** Injected so transcripts are reproducible. */
   readonly now: () => Date;
+  /**
+   * Pause after each message. Presentation only, default 0.
+   *
+   * A deterministic negotiation completes in about 50ms, which is correct and
+   * unwatchable: the dashboard would jump straight from empty to finished. The
+   * dashboard sets this so the ladder builds at reading speed. It changes
+   * nothing about the transcript, so a paced run and an instant run produce
+   * byte-identical ledgers.
+   */
+  readonly turnDelayMs?: number;
 }
 
 export interface TurnLoopResult {
@@ -153,6 +163,10 @@ export async function runNegotiation(
       }
 
       transcript.push(outbound);
+
+      if (options.turnDelayMs !== undefined && options.turnDelayMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, options.turnDelayMs));
+      }
 
       seq += 1;
       inbound = outbound;

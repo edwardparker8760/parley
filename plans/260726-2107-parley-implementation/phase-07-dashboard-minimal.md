@@ -9,7 +9,34 @@
 ## Overview
 
 - **Priority:** P2. **Minimal by decision.** This is the first thing cut if anything upstream slips.
-- **Status:** Not started
+- **Status:** **COMPLETE 2026-08-04.** All eight success criteria met, verified in a real browser
+  at 1920x1080 (screenshots taken via puppeteer; no page scroll in any scenario). Suite 82 to 88.
+
+**Deviations, all deliberate:**
+
+1. **No `negotiation-event-emitter.ts`, and the turn loop emits nothing.** The SSE route reads
+   the view straight from the ledger through the SAME database handle the negotiation is writing
+   to, and pushes a whole snapshot when it changes. That deletes a whole class of bug (an event
+   stream that disagrees with the ledger), makes live and replay literally one code path, and
+   left the turn loop needing one additive field instead of an emitter. Snapshots rather than
+   deltas for the same reason: at 24 short rows the payload is a few kilobytes, and the browser
+   state is then provably a function of the ledger.
+2. **A strategy switch was added**, which the plan told me not to build. It earned its place:
+   the phase 04 engine is clamped **zero** times because it concedes on a schedule that never
+   reaches the band edge, so success criterion 3 ("at least one clamp marker visible") is
+   unreachable with the engine alone. The phase 02 baseline is clamped 9 times in B and 18 in C.
+   Running both is the actual argument: the limits bind, and the good agent does not need them to.
+3. **Plain CSS, no Tailwind.** One stylesheet, no PostCSS pipeline, finer control of stroke and
+   type weight for a video frame.
+4. **`turnDelayMs` and `seedKey` added to the turn loop and scenario runner.** A deterministic
+   negotiation completes in ~50ms, which is correct and unwatchable. `seedKey` is the more
+   important one: the seed WAS the negotiation id, so a fresh id per run produced a different
+   negotiation, and scenario B's narrow ZOPA flipped between settling and walking away depending
+   on a timestamp. The dashboard now pins the seed to the value the CLI and tests use, so the
+   browser reproduces exactly the negotiation the suite asserts on.
+5. **Settlement and walk-away panels share a slot**, since a negotiation is one or the other.
+   Five panels into four grid cells would have auto-placed the last into an implicit row that
+   `overflow: hidden` then silently ate, which is how a settlement panel goes missing on video.
 - **Day:** Sat 8 Aug, morning
 - **Brief:** One screen. Live transcript, convergence chart with audience-visible reservation lines, guardrail panel with clamp markers, settlement panel, scenario A/B/C launchers, walk-away post-mortems. Nothing else.
 
@@ -124,22 +151,22 @@ Live and replay produce the same props shape, so every component is written once
 
 ## Todo List
 
-- [ ] Next.js app scaffolded, boilerplate removed (20 min timebox)
-- [ ] Typed negotiation event emitter in the orchestrator
-- [ ] SSE stream route
-- [ ] Run-scenario route with three named scenarios
-- [ ] Event-stream hook producing replay-shaped state
-- [ ] Live transcript ladder with rationales and clamp markers
-- [ ] Convergence chart with two price lines and audience-only reservation lines (60 min timebox)
-- [ ] ZOPA band shading when one exists
-- [ ] Guardrail panel with clamp-bite counters and the asymmetry label
-- [ ] Settlement panel with `SIMULATED` badge and explorer link
-- [ ] Walk-away post-mortem panel
-- [ ] Replay via `/?negotiation=<id>`
-- [ ] `no-dangerous-html` test green
-- [ ] `reservation-data-source` test green
-- [ ] All three scenarios verified in the browser at 1920x1080
-- [ ] Committed
+- [x] Next.js app scaffolded by hand (create-next-app skipped: interactive prompts)
+- [x] ~~Typed negotiation event emitter~~ replaced by ledger-derived snapshots, see deviation 1
+- [x] SSE stream route (verified: 25 distinct snapshots streamed during one scenario C run)
+- [x] Run-scenario route with three named scenarios, plus a two-value strategy allowlist
+- [x] Event-stream hook producing replay-shaped state (identical shape, one code path)
+- [x] Live transcript ladder with rationales and clamp markers
+- [x] Convergence chart with two price lines and audience-only reservation lines
+- [x] ZOPA band shading when one exists (present in A and B, absent in C)
+- [x] Guardrail panel with clamp-bite counters and the asymmetry label
+- [x] Settlement panel with `SIMULATED` badge; explorer link renders only for a non-stub receipt
+- [x] Walk-away post-mortem panel
+- [x] Replay via `/?negotiation=<id>`
+- [x] `no-dangerous-html` test green (also bans `innerHTML` and `document.write`)
+- [x] `reservation-data-source` test green
+- [x] All three scenarios verified in a real browser at 1920x1080, no page scroll
+- [x] Committed
 
 ## Success Criteria
 

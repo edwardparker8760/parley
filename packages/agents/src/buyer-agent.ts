@@ -34,6 +34,8 @@ export interface BuyerStrategyOptions {
   readonly concessionMode?: ConcessionMode;
   /** Bounded LLM settings. Absent means deterministic, as in phase 04. */
   readonly llm?: AgentLlmSettings;
+  /** Fixes the jitter stream, so a demo run is reproducible. */
+  readonly seedKey?: string;
 }
 
 export function createBuyerAgent(
@@ -60,6 +62,7 @@ export function createBuyerAgent(
       concessionMode: options.concessionMode ?? "DEFENDED",
       privateSalt: "buyer-private-salt",
       ...(options.llm !== undefined ? { llm: options.llm } : {}),
+      ...(options.seedKey !== undefined ? { seedKey: options.seedKey } : {}),
     });
   }
 

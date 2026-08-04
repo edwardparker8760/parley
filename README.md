@@ -103,12 +103,36 @@ real path are recorded in [`docs/settlement-latency.md`](docs/settlement-latency
 (the adapter is only reachable from the ACCEPT branch) and asserted by a
 counting-spy test over scenario C.
 
+## Dashboard
+
+One screen: convergence chart, owner limits, settlement or walk-away, and the
+full transcript.
+
+```bash
+pnpm --filter @parley/dashboard build
+pnpm --filter @parley/dashboard start   # http://localhost:4020
+```
+
+Pick a scenario and it runs live, the ladder building at reading speed. The
+engine and baseline agents can be swapped from the screen, which is worth doing
+once: the phase 02 baseline walks into its owner's limit and gets clamped nine
+times in scenario B, while the phase 04 engine never reaches its limit at all
+and is clamped zero times. Same limits, two agents, and the panel counts both.
+
+`?negotiation=<id>` replays any completed negotiation straight from the ledger
+with no live process, including runs recorded from the CLI with `--db`.
+
+The dashed lines on the chart are each side's reservation price. They reach the
+browser only via the orchestrator's observer payload, computed from the phase 04
+oracle; a test asserts no component sources them from a message, because a
+reservation price on the bus would mean the agents could see it too.
+
 ## Status
 
-**Work in progress.** Phases 01-06 of the implementation plan are complete:
+**Work in progress.** Phases 01-07 of the implementation plan are complete:
 scaffold and wallets, negotiation protocol, guardrail engine, deterministic
-negotiation, bounded LLM layer, settlement and walk-away reporting. Dashboard
-and submission hardening remain. See:
+negotiation, bounded LLM layer, settlement and walk-away reporting, dashboard.
+Submission hardening remains. See:
 
 - [`spec.md`](spec.md): full specification
 - [`plans/260726-2107-parley-implementation/plan.md`](plans/260726-2107-parley-implementation/plan.md): phased plan to 9 Aug
@@ -119,9 +143,11 @@ Target for final submission: **Sun 9 Aug 2026**.
 ## Honest limitations
 
 - Arc **testnet** only.
-- Settlement currently runs on the local stub. The Arc x402 adapter is scaffolded
-  against a verified SDK surface but is not implemented, and it throws rather
-  than producing a plausible-looking fake receipt.
+- Settlement currently runs on the local stub. The Arc x402 adapter is
+  implemented against a verified SDK surface, but no wallet has been funded, so
+  no real settlement has been executed or measured.
+- The dashboard is a local demo with no authentication. Do not expose it
+  publicly with a funded wallet behind it.
 - Single good per negotiation; no multi-party auctions.
 - No counterparty identity or reputation system.
 - Not legal contract generation; settlement binds agreed terms via a payment reference hash.

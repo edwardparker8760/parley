@@ -62,6 +62,19 @@ export interface EngineAgentConfig {
   /** Private, never crosses the bus. Makes our jitter unpredictable to them. */
   readonly privateSalt: string;
   /**
+   * What the seeded jitter is derived from. Defaults to the negotiation id.
+   *
+   * The dashboard needs a fresh ledger id per run (so re-running a scenario
+   * does not collide) while producing the SAME negotiation every time (so the
+   * demo is reproducible and matches what the tests assert). Those two wants
+   * conflict while the seed IS the id, so the seed gets its own knob.
+   *
+   * Scenario B is the reason this matters: its ZOPA is deliberately narrow, so
+   * a different jitter stream can flip it from settling to walking away. A demo
+   * whose outcome depends on a timestamp is not a demo.
+   */
+  readonly seedKey?: string;
+  /**
    * Absent or `off` means the agent behaves exactly as it did in phase 04:
    * deterministic pick, deterministic rationale, no consultation, no log row.
    * That equivalence is the point of the flag, and it is what makes
@@ -90,7 +103,11 @@ export class EngineNegotiatingAgent implements Agent {
   #randomFor(negotiationId: string): () => number {
     if (this.#random === null) {
       this.#random = createSeededRandom(
-        deriveAgentSeed(negotiationId, this.party, this.#config.privateSalt),
+        deriveAgentSeed(
+          this.#config.seedKey ?? negotiationId,
+          this.party,
+          this.#config.privateSalt,
+        ),
       );
     }
     return this.#random;
