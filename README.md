@@ -68,6 +68,11 @@ Scenario C is the proof the guardrails bind. A fourth scenario, driven by a
 conditional reputation layer, was **cut on 2026-08-03** when the schedule made it
 unreachable; it survives as future work below rather than as a half-built claim.
 
+![Scenario C on the dashboard: the seller's floor sits above the buyer's ceiling, the two price lines never approach, both agents walk away and file post-mortems, and no payment is made](docs/demo-scenario-c.png)
+
+*Scenario C. The dashed lines are the two owners' limits. They do not overlap, so
+there is no price both sides can accept, and the agents establish that and stop.*
+
 ## Circle tools used
 
 | Tool | What it does here |
