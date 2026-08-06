@@ -14,14 +14,141 @@ html {
   scroll-behavior: smooth;
 }
 
-/* ---------- layout ---------- */
+/* ---------- navigation ---------- */
 
-.band {
-  padding: var(--space-9) var(--space-6);
+/*
+ * The bar sits on --surface-raised, which is exactly what the hero band is, so
+ * at the top of the page it reads as part of the hero rather than as a strip
+ * bolted over it. The hairline underneath is what separates it once a darker
+ * band scrolls beneath.
+ *
+ * No scroll listener and no shadow-on-scroll state: that costs a client
+ * component and an event handler to change a border that is already legible
+ * against all four band surfaces.
+ */
+/*
+ * The horizontal padding is on the bar and the max-width is on the row inside
+ * it, which is the same order `.band` and `.wrap` use. Putting the padding
+ * inside the max-width instead would inset the wordmark by one --space-6 from
+ * the content column beneath it, and a logo that does not line up with the
+ * headline under it is visible from across the room.
+ */
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 0 var(--space-6);
+  background: var(--surface-raised);
+  border-bottom: 1px solid var(--line-strong);
 }
 
+.site-nav-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: var(--space-3) 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.site-wordmark {
+  font-size: 20px;
+  font-weight: var(--weight-emphasis);
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  text-decoration: none;
+  /* Pushes everything else to the right edge. */
+  margin-right: auto;
+}
+
+.site-nav-links {
+  list-style: none;
+  display: flex;
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+}
+
+.site-nav-links a {
+  font-size: 16px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding-bottom: 2px;
+  /* Reserved from the start so hovering does not shift the row by a pixel. */
+  border-bottom: 2px solid transparent;
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.site-nav-links a:hover,
+.site-nav-links a:focus-visible {
+  color: var(--text-primary);
+  border-bottom-color: var(--accent-lime-strong);
+}
+
+/* The nav CTA is the same button, one step smaller: it is a persistent offer,
+   not the hero's call to action, and should not compete with it. */
+.site-nav-cta {
+  font-size: 15px;
+  padding: var(--space-2) var(--space-4);
+}
+
+/*
+ * Off-screen until focused. Kept in normal flow when focused rather than
+ * floated over the bar, so it cannot cover the wordmark it sits beside.
+ */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 20;
+  padding: var(--space-3) var(--space-5);
+  background: var(--surface-dark);
+  color: var(--text-on-dark);
+  text-decoration: none;
+}
+
+.skip-link:focus-visible {
+  left: 0;
+}
+
+/* Below this the four section links go and the wordmark plus the one real
+   action stay. */
+@media (max-width: 720px) {
+  .site-nav-links {
+    display: none;
+  }
+
+  .site-nav {
+    padding: 0 var(--space-5);
+  }
+}
+
+/* ---------- layout ---------- */
+
+/*
+ * Rhythm: tight inside a group, generous between groups.
+ *
+ * Everything used to sit --space-9 from everything, which meant nothing
+ * grouped: a section label floated as far from its own headline as the headline
+ * did from the previous section. The label, headline and paragraph are one
+ * unit and are now spaced as one; the air is spent at the band boundaries
+ * instead, where it separates arguments rather than syllables.
+ */
+.band {
+  padding: var(--space-8) var(--space-6) var(--space-9);
+  /* Clears the sticky bar, so a jump to #guardrail lands on the label and not
+     underneath it. */
+  scroll-margin-top: 64px;
+}
+
+/*
+ * Bands alternate between the two warm surfaces. Neither is pure white:
+ * #FFFFFF belongs to cards, which is what gives them somewhere to lift from.
+ */
 .band-white {
-  background: var(--surface-white);
+  background: var(--surface-raised);
 }
 
 .band-sunken {
@@ -67,8 +194,35 @@ h3 {
   font-size: 22px;
   line-height: 1.5;
   color: var(--text-secondary);
-  margin-top: var(--space-6);
+  margin-top: var(--space-4);
   max-width: 46ch;
+}
+
+/*
+ * One highlighted phrase in the hero, and only one. A lime wash behind dark
+ * text is the brand's loudest move on the page, so spending it twice would
+ * spend it for nothing.
+ *
+ * `mark` rather than a span: the phrase is genuinely the marked passage, and
+ * the element carries that to a screen reader without extra attributes.
+ */
+/*
+ * Painted as a gradient rather than a flat background so the wipe has something
+ * to animate: `background-size` goes 0% to 100% across, which draws the
+ * highlight on left to right like a marker stroke. The resting size is the
+ * finished 100%, so with the animation off the phrase is simply highlighted.
+ */
+.hero-mark {
+  background-image: linear-gradient(var(--accent-lime), var(--accent-lime));
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  color: var(--text-primary);
+  padding: 0.06em 0.24em;
+  border-radius: var(--radius-chip);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  /* Lands just after the paragraph it sits in has finished arriving. */
+  animation: hero-mark-wipe 620ms var(--ease-out) 980ms both;
 }
 
 .band-dark .headline-sub {
@@ -78,7 +232,8 @@ h3 {
 
 .section-title {
   font-size: 44px;
-  margin-top: var(--space-4);
+  /* Close to its own label: they are one unit. */
+  margin-top: var(--space-2);
   max-width: 20ch;
 }
 
@@ -91,7 +246,7 @@ h3 {
   font-size: 21px;
   line-height: 1.5;
   color: var(--text-secondary);
-  margin-top: var(--space-5);
+  margin-top: var(--space-4);
   max-width: 60ch;
 }
 
@@ -109,8 +264,9 @@ h3 {
   font-size: 13px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  font-weight: var(--weight-emphasis);
-  color: var(--text-secondary);
+  /* Labels are anchors, so they get real weight rather than the body weight. */
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .band-dark .circled {
@@ -126,17 +282,27 @@ h3 {
   pointer-events: none;
 }
 
+/*
+ * Lime is the BRAND colour here.
+ *
+ * The rule that lime means interaction and never a status belongs to the
+ * dashboard, where colour has to carry meaning. This page has no statuses, so
+ * lime is free to do what a brand colour does. Its absence was the main reason
+ * the page read clinical.
+ *
+ * It is never body text: 1.24:1 on a light surface. It is a stroke, a fill, or
+ * a highlight behind dark text.
+ */
 .circled svg path {
   fill: none;
-  stroke: var(--text-primary);
-  stroke-width: 1.6;
+  stroke: var(--accent-lime-strong);
+  stroke-width: 2.4;
   stroke-linecap: round;
-  opacity: 0.55;
+  opacity: 1;
 }
 
 .band-dark .circled svg path {
   stroke: var(--accent-lime);
-  opacity: 0.9;
 }
 
 /* ---------- cards, offset and overlapping ---------- */
@@ -148,21 +314,20 @@ h3 {
   gap: var(--space-5);
 }
 
+/* Cards are the only thing on the page that is pure white. That is what makes
+   them read as sheets sitting on a surface rather than holes cut in it. */
 .card {
   background: var(--surface-white);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-panel);
-  padding: var(--space-6);
+  padding: var(--space-5) var(--space-5) var(--space-6);
   box-shadow: var(--shadow-card);
 }
 
-.band-white .card {
-  background: var(--surface-raised);
-}
-
 .card h3 {
-  font-size: 26px;
-  margin-bottom: var(--space-3);
+  font-size: 24px;
+  font-weight: var(--weight-emphasis);
+  margin-bottom: var(--space-2);
 }
 
 .card p {
@@ -205,31 +370,38 @@ h3 {
   background: var(--surface-white);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-panel);
-  box-shadow: var(--shadow-raised);
+  /* Heavier than a card: this is the one object above the fold that has to
+     look like a real artifact rather than a panel of text. */
+  box-shadow: var(--shadow-artifact);
   overflow: hidden;
 }
 
+/*
+ * A DARK header strip, so there is one dark element above the fold instead of
+ * none, and lime on it, which is where the brand colour reads strongest
+ * (11.23:1 against the dark surface).
+ */
 .excerpt-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: var(--space-4);
   padding: var(--space-3) var(--space-5);
-  border-bottom: 1px solid var(--line-soft);
-  background: var(--surface-raised);
+  background: var(--surface-dark);
 }
 
 .excerpt-title {
   font-size: 12px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  font-weight: var(--weight-emphasis);
-  color: var(--text-secondary);
+  font-weight: 700;
+  color: var(--accent-lime);
 }
 
 .excerpt-run {
   font-size: 12px;
-  color: var(--text-secondary);
+  color: var(--text-on-dark);
+  opacity: 0.65;
 }
 
 .excerpt-body {
@@ -558,7 +730,7 @@ h3 {
   list-style: none;
   display: grid;
   gap: var(--space-4);
-  margin-top: var(--space-6);
+  margin-top: var(--space-5);
 }
 
 .icon-list li {
@@ -689,8 +861,10 @@ h3 {
 .link-row {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-4);
-  margin-top: var(--space-7);
+  gap: var(--space-3);
+  /* Roughly half what it was: the buttons belong to the paragraph above them,
+     not to the band boundary below. */
+  margin-top: var(--space-5);
 }
 
 .button {
@@ -707,7 +881,17 @@ h3 {
   text-decoration: none;
   transition:
     background var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out);
+    color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+/* A single pixel of lift, plus the card shadow. Enough that the button feels
+   picked up rather than merely recoloured; not enough to move the row. */
+.button:hover,
+.button:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
 }
 
 /* Lime is interaction, and only interaction. */
@@ -750,14 +934,208 @@ a:focus-visible,
   outline-offset: 2px;
 }
 
-/* ---------- scroll reveal ---------- */
+/* ---------- hero entrance ----------
+ *
+ * The hero plays on load rather than on scroll, because it is already in view:
+ * an IntersectionObserver here would either fire instantly or, worse, fire
+ * after hydration and show a blank hero on a slow connection.
+ *
+ * So this is CSS animation, not transition, and every element's resting style
+ * IS its finished state. The keyframes only describe where it comes FROM, with
+ * `both` so the backwards fill holds it hidden through its delay. Turn the
+ * animations off and the hero is simply there, correct and complete, which is
+ * exactly what `prefers-reduced-motion` does at the bottom of this file.
+ *
+ * The order is the argument's order: label, then the headline one line at a
+ * time, then the artifact lifting in beside it, then the claim, then the
+ * highlight landing under the phrase that matters, then the buttons. The
+ * ladder's rows type themselves in last, because a recording that appears
+ * finished does not read as a recording.
+ */
+
+@keyframes hero-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+/* The line rises from behind its own bottom edge. 115% rather than 100% so a
+   descender is fully clear of the mask before it starts. */
+@keyframes hero-line-up {
+  from {
+    transform: translateY(115%);
+  }
+}
+
+@keyframes hero-artifact-in {
+  from {
+    opacity: 0;
+    transform: translateY(34px) scale(0.97);
+  }
+}
+
+@keyframes hero-row-in {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+}
+
+@keyframes hero-mark-wipe {
+  from {
+    background-size: 0% 100%;
+  }
+}
+
+@keyframes hero-stroke-draw {
+  from {
+    stroke-dashoffset: var(--stroke-length);
+  }
+}
+
+/* A very slow drift, far too slow to watch. It exists so that a hero left on
+   screen is never completely static. */
+@keyframes hero-glow-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(-2%, 3%, 0) scale(1.08);
+  }
+}
+
+/*
+ * A soft lime wash behind the artifact, which is what stops the hero reading as
+ * a white rectangle with text on it. Sized in vw so it scales with the page,
+ * and pinned behind everything with a negative z-index.
+ */
+.band-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.band-hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -18%;
+  right: -12%;
+  width: 62vw;
+  height: 120%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--accent-lime) 38%, transparent),
+    transparent
+  );
+  /* Low enough to read as warmth in the corner rather than as a coloured
+     panel. If you can point at where it ends, it is too strong. */
+  opacity: 0.3;
+  pointer-events: none;
+  animation: hero-glow-drift 24s var(--ease-out) infinite alternate;
+}
+
+.site-nav {
+  animation: hero-fade-up var(--duration-enter) var(--ease-out) both;
+}
+
+.hero-label {
+  display: inline-block;
+  animation: hero-fade-up var(--duration-enter) var(--ease-out) 60ms both;
+}
+
+/* Drawn, not faded: the stroke writes itself around the label. Each path
+   declares its own length so the shorter second pass is not left waiting on the
+   longer first one. */
+.hero-label svg path {
+  stroke-dasharray: var(--stroke-length);
+  stroke-dashoffset: 0;
+  animation: hero-stroke-draw 900ms var(--ease-out) 220ms both;
+}
+
+.hero-label svg path:nth-child(1) {
+  --stroke-length: 480;
+}
+
+.hero-label svg path:nth-child(2) {
+  --stroke-length: 200;
+  animation-delay: 700ms;
+  animation-duration: 500ms;
+}
+
+/* The mask each headline line rises from behind. The padding gives descenders
+   room inside the clip, and the negative margin gives it back to the layout. */
+.headline-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+
+.headline-line > span {
+  display: block;
+  animation: hero-line-up var(--duration-enter-slow) var(--ease-out) both;
+}
+
+.headline-line:nth-child(1) > span {
+  animation-delay: 140ms;
+}
+
+.headline-line:nth-child(2) > span {
+  animation-delay: 240ms;
+}
+
+.headline-line:nth-child(3) > span {
+  animation-delay: 340ms;
+}
+
+.hero-sub {
+  animation: hero-fade-up var(--duration-enter) var(--ease-out) 520ms both;
+}
+
+.hero-actions > * {
+  animation: hero-fade-up var(--duration-enter) var(--ease-out) both;
+}
+
+.hero-actions > *:nth-child(1) {
+  animation-delay: 660ms;
+}
+
+.hero-actions > *:nth-child(2) {
+  animation-delay: 740ms;
+}
+
+.hero-artifact {
+  animation: hero-artifact-in var(--duration-enter-slow) var(--ease-out) 380ms both;
+}
+
+/* Each row waits on the one above it, so the ladder is dealt rather than
+   printed. The last row lands at roughly 1.3s, which is where the whole
+   sequence ends. */
+.band-hero .excerpt-line {
+  animation: hero-row-in 420ms var(--ease-out) both;
+  animation-delay: calc(760ms + var(--row-index, 0) * 70ms);
+}
+
+/* ---------- scroll reveal ----------
+ *
+ * Four entrances, not one. A page where every block fades up by the same
+ * eighteen pixels reads as a template: the eye learns the move after the second
+ * section and predicts it for the rest of the page. Which variant a section
+ * gets is decided in `page.tsx`; what each one does lives here.
+ *
+ * All four share a duration token, so `prefers-reduced-motion` switches the
+ * whole page off in one place.
+ */
 
 .reveal {
   opacity: 0;
-  transform: translateY(18px);
   transition:
     opacity var(--duration-reveal) var(--ease-out),
-    transform var(--duration-reveal) var(--ease-out);
+    transform var(--duration-reveal) var(--ease-out),
+    clip-path var(--duration-reveal) var(--ease-out);
+  transition-delay: var(--reveal-delay, 0ms);
 }
 
 .reveal.is-visible {
@@ -765,11 +1143,225 @@ a:focus-visible,
   transform: none;
 }
 
-/* Nothing may stay invisible if the observer never runs. A page that hides its
-   own content when JavaScript fails is worse than a page with no animation. */
-.no-js .reveal {
+/* Prose. The quietest of the four. */
+.reveal-rise {
+  transform: translateY(18px);
+}
+
+/* Artifacts and panels. Further, plus a touch of scale, so an object with a
+   shadow reads as settling onto the page rather than sliding across it. */
+.reveal-lift {
+  transform: translateY(38px) scale(0.975);
+}
+
+/*
+ * Headline blocks, wiped up from behind their own bottom edge.
+ *
+ * The clip is on the CHILDREN, and this is load-bearing rather than a style
+ * choice. IntersectionObserver measures the target's rect AFTER clipping, so an
+ * element that hides itself with `clip-path: inset(... 100% ...)` has zero
+ * visible area, never reports itself as intersecting, and therefore never
+ * receives the class that would reveal it. It waits forever for a signal it
+ * made impossible. Clipping one level down leaves the observed element
+ * unclipped and the observer able to see it.
+ *
+ * The revealed inset keeps 40% of slack below and to the sides so that shadows
+ * and the circled label's overflowing stroke are not shaved off once the
+ * transition has finished.
+ */
+.reveal-mask {
+  opacity: 1;
+}
+
+.reveal-mask > * {
+  opacity: 0;
+  clip-path: inset(0 -40% 100% -40%);
+  transform: translateY(10px);
+  transition:
+    opacity var(--duration-reveal) var(--ease-out),
+    transform var(--duration-reveal) var(--ease-out),
+    clip-path var(--duration-reveal) var(--ease-out);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.reveal-mask.is-visible > * {
+  opacity: 1;
+  clip-path: inset(0 -40% -40% -40%);
+  transform: none;
+}
+
+/*
+ * Section headers, where the TEXT arrives rather than the box around it.
+ *
+ * Three different moves inside one header, because a label, a headline and a
+ * paragraph are three different kinds of text and should not enter the same
+ * way:
+ *
+ *   label     tracking settles. It starts wide and tightens as it fades in,
+ *             which reads as the words being set rather than dropped in.
+ *   headline  built a word at a time, each word rising from its own baseline.
+ *   lede      resolves out of blur, the way body text comes into focus after
+ *             the thing above it has been read.
+ *
+ * The wrapper does nothing itself: everything here is on the text inside it.
+ */
+.reveal-words {
+  opacity: 1;
+}
+
+.reveal-words .circled {
+  opacity: 0;
+  letter-spacing: 0.36em;
+  transition:
+    opacity var(--duration-reveal) var(--ease-out),
+    letter-spacing var(--duration-reveal) var(--ease-out);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.reveal-words.is-visible .circled {
+  opacity: 1;
+  /* Back to the resting tracking defined on `.circled`. */
+  letter-spacing: 0.14em;
+}
+
+/*
+ * Each word is its own box so it can be moved on its own. `translateY` is in em
+ * rather than px so a 44px section title and a 30px one on mobile travel a
+ * proportional distance instead of the small one looking flung.
+ */
+.reveal-words .word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.42em);
+  transition:
+    opacity var(--duration-reveal) var(--ease-out),
+    transform var(--duration-reveal) var(--ease-out);
+  transition-delay: calc(var(--reveal-delay, 0ms) + 120ms + var(--word-index, 0) * 55ms);
+}
+
+.reveal-words.is-visible .word {
   opacity: 1;
   transform: none;
+}
+
+.reveal-words .lede {
+  opacity: 0;
+  filter: blur(7px);
+  transform: translateY(8px);
+  transition:
+    opacity var(--duration-reveal) var(--ease-out),
+    filter var(--duration-reveal) var(--ease-out),
+    transform var(--duration-reveal) var(--ease-out);
+  /* Last, and deliberately after the headline has finished building. */
+  transition-delay: calc(var(--reveal-delay, 0ms) + 320ms);
+}
+
+.reveal-words.is-visible .lede {
+  opacity: 1;
+  filter: blur(0);
+  transform: none;
+}
+
+/* The real sentence, exposed to screen readers and to nothing else. The visual
+   per-word spans are hidden from the accessibility tree in `split-words.tsx`. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/*
+ * Lists and card rows. The wrapper itself does nothing; its children arrive one
+ * at a time, which is the difference between a list appearing and a list being
+ * dealt out.
+ */
+.reveal-stagger {
+  opacity: 1;
+}
+
+/*
+ * The staggered items are the reveal's own children, or, when the reveal wraps
+ * a single list, that list's children. The second case is what lets a `ul` or a
+ * `dl` keep its correct markup instead of being flattened for the animation's
+ * convenience.
+ */
+.reveal-stagger > *,
+.reveal-stagger > :is(ul, ol, dl) > * {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity var(--duration-reveal) var(--ease-out),
+    transform var(--duration-reveal) var(--ease-out);
+}
+
+/* The list itself is scaffolding, not an item: if it faded too, the whole list
+   would dim once and then again row by row. */
+.reveal-stagger > :is(ul, ol, dl) {
+  opacity: 1;
+  transform: none;
+}
+
+.reveal-stagger.is-visible > *,
+.reveal-stagger.is-visible > :is(ul, ol, dl) > * {
+  opacity: 1;
+  transform: none;
+}
+
+.reveal-stagger.is-visible > :nth-child(1),
+.reveal-stagger.is-visible > :is(ul, ol, dl) > :nth-child(1) {
+  transition-delay: calc(var(--reveal-delay, 0ms) + 0ms);
+}
+
+.reveal-stagger.is-visible > :nth-child(2),
+.reveal-stagger.is-visible > :is(ul, ol, dl) > :nth-child(2) {
+  transition-delay: calc(var(--reveal-delay, 0ms) + 90ms);
+}
+
+.reveal-stagger.is-visible > :nth-child(3),
+.reveal-stagger.is-visible > :is(ul, ol, dl) > :nth-child(3) {
+  transition-delay: calc(var(--reveal-delay, 0ms) + 180ms);
+}
+
+.reveal-stagger.is-visible > :nth-child(4),
+.reveal-stagger.is-visible > :is(ul, ol, dl) > :nth-child(4) {
+  transition-delay: calc(var(--reveal-delay, 0ms) + 260ms);
+}
+
+.reveal-stagger.is-visible > :nth-child(5),
+.reveal-stagger.is-visible > :is(ul, ol, dl) > :nth-child(5) {
+  transition-delay: calc(var(--reveal-delay, 0ms) + 330ms);
+}
+
+/* Anything past the fifth arrives together. A six-item list dealt one at a time
+   leaves the reader waiting on the animation instead of reading. */
+.reveal-stagger.is-visible > :nth-child(n + 6),
+.reveal-stagger.is-visible > :is(ul, ol, dl) > :nth-child(n + 6) {
+  transition-delay: calc(var(--reveal-delay, 0ms) + 390ms);
+}
+
+/* Nothing may stay invisible if the observer never runs. A page that hides its
+   own content when JavaScript fails is worse than a page with no animation. */
+.no-js .reveal,
+.no-js .reveal-mask > *,
+.no-js .reveal-stagger > *,
+.no-js .reveal-stagger > :is(ul, ol, dl) > *,
+.no-js .reveal-words :is(.circled, .word, .lede) {
+  opacity: 1;
+  transform: none;
+  clip-path: none;
+  filter: none;
+}
+
+/* The off-screen sentence keeps its own clip: it must stay hidden even when
+   everything else is forced visible. */
+.no-js .sr-only {
+  clip-path: inset(50%);
 }
 
 /* ---------- footer ---------- */
@@ -781,6 +1373,37 @@ a:focus-visible,
   font-size: 15px;
   background: var(--surface-white);
   border-top: 1px solid var(--line-soft);
+}
+
+/* ---------- reduced motion ----------
+ *
+ * The scroll reveals are handled by the token file, where the duration drops to
+ * zero. The hero is not: it uses `animation` with a delay, and a zero-duration
+ * animation still honours its delay, which would hold the hero hidden for a
+ * second and then snap it in. That is worse than the animation it replaces.
+ *
+ * Switching the animations off entirely is correct because every one of these
+ * elements is styled at its finished state and the keyframes only say where it
+ * came from. With no animation the hero is simply present.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .site-nav,
+  .hero-label,
+  .hero-label svg path,
+  .headline-line > span,
+  .hero-sub,
+  .hero-mark,
+  .hero-actions > *,
+  .hero-artifact,
+  .band-hero .excerpt-line,
+  .band-hero::before {
+    animation: none;
+  }
+
+  .button:hover,
+  .button:focus-visible {
+    transform: none;
+  }
 }
 
 /* ---------- responsive ---------- */

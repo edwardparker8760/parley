@@ -18,7 +18,13 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: var(--surface-white);
+  /*
+   * Warm off-white is the DOMINANT surface, not white. Pure white is reserved
+   * for cards and panels that need to lift off the page. A white page with
+   * white cards on it has no depth, and reads clinical no matter what is
+   * printed on it.
+   */
+  background: var(--surface-sunken);
   color: var(--text-primary);
   font-family: var(--font-display);
   -webkit-font-smoothing: antialiased;

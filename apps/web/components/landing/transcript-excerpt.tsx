@@ -20,6 +20,8 @@
  * shape reserved for "a guardrail fired", never for a failure.
  */
 
+import type { CSSProperties } from "react";
+
 interface Row {
   readonly round: number;
   readonly party: "BUYER" | "SELLER";
@@ -56,7 +58,16 @@ export function TranscriptExcerpt() {
 
       <div className="excerpt-body mono">
         {ROWS.map((row, index) => (
-          <div key={index} className="excerpt-line">
+          /*
+           * The row index drives the entrance cascade, so the ladder types
+           * itself in the order it actually happened rather than appearing as a
+           * finished block. The stagger is what makes it read as a recording.
+           */
+          <div
+            key={index}
+            className="excerpt-line"
+            style={{ "--row-index": index } as CSSProperties}
+          >
             <span className="excerpt-round">r{row.round}</span>
             <span className={`excerpt-party ${row.party.toLowerCase()}`}>{row.party}</span>
             <span className="excerpt-price">{row.price}</span>

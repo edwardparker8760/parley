@@ -178,14 +178,46 @@ a:focus-visible {
   outline-offset: 2px;
 }
 
+/* The switcher's controls are links, not buttons, because choosing a recording
+   is navigation. They are otherwise the same control, so they share `.launcher`
+   and only have to drop the underline. */
+a.launcher {
+  text-decoration: none;
+}
+
 .launcher-name {
   font-weight: 600;
   font-size: 14px;
 }
 
+/* The scenario's shape, sitting on the same line as its letter: "Scenario B"
+   means nothing on its own, "Scenario B Narrow ZOPA" means something. */
+.launcher-shape {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.launcher.active .launcher-shape,
+.launcher:hover .launcher-shape {
+  /* On the lime fill the muted grey drops below contrast, and this text is the
+     label doing the explaining. */
+  color: var(--text-primary);
+}
+
 .launcher-label {
   font-size: 12px;
   color: var(--muted);
+}
+
+.launcher.active .launcher-label,
+.launcher:hover .launcher-label {
+  color: var(--text-primary);
+}
+
+.switcher-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 
 .running-dot {
@@ -223,6 +255,146 @@ a:focus-visible {
 
 .outcome-running {
   color: var(--neutral);
+}
+
+/* ---------- briefing strip ----------
+   The frame, at the top, above everything, on every run.
+
+   Deliberately compact. The screen is one fixed 100vh page with no scrolling
+   outside the transcript, so every pixel this takes comes off the panels below
+   it. It earns them back: without this, the panels are numbers with no subject.
+
+   White on the sunken page background, so it reads as the one thing that is not
+   a panel: it is not another view of the data, it is the caption for all of
+   them. */
+
+.briefing {
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius-card);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.briefing-lead {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  max-width: 130ch;
+}
+
+/* Buyer, the gap, seller. The middle column is wide because it holds the one
+   sentence that says whether any of this could have worked. */
+.briefing-limits {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+}
+
+.briefing-side {
+  border-radius: var(--radius-chip);
+  padding: 6px 10px;
+}
+
+.briefing-side.buyer {
+  background: var(--party-buyer-tint);
+}
+
+.briefing-side.seller {
+  background: var(--party-seller-tint);
+}
+
+.briefing-side h3 {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.briefing-side.buyer h3 {
+  color: var(--buyer);
+}
+
+.briefing-side.seller h3 {
+  color: var(--seller);
+}
+
+.briefing-figure {
+  margin: 1px 0 0;
+  font-size: 14px;
+}
+
+/* The number itself, at the size of the thing the whole screen is about. */
+.briefing-figure strong {
+  font-family: var(--mono);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.briefing-side.buyer .briefing-figure strong {
+  color: var(--buyer);
+}
+
+.briefing-side.seller .briefing-figure strong {
+  color: var(--seller);
+}
+
+.briefing-detail {
+  margin: 1px 0 0;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.briefing-situation {
+  margin: 0;
+  text-align: center;
+  font-size: 13.5px;
+  line-height: 1.4;
+  font-weight: var(--weight-emphasis);
+}
+
+/*
+ * The outcome, in one sentence.
+ *
+ * It carries no status hue of its own. A green verdict and a red verdict would
+ * read as "good" and "bad", and a walk-away is not a failure: it is the system
+ * working. So both get the same neutral fill, and the WORDS carry the
+ * difference, which is the same rule the rest of the screen follows.
+ */
+.briefing-verdict {
+  margin: 0;
+  background: var(--status-neutral-tint);
+  border-left: 4px solid var(--neutral);
+  border-radius: var(--radius-chip);
+  padding: 7px 12px;
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: var(--weight-emphasis);
+}
+
+.briefing-verdict-tag {
+  display: inline-block;
+  margin-right: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.briefing-units {
+  margin: 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+@media (max-width: 1100px) {
+  .briefing-limits {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ---------- recorded-run banner ----------
@@ -369,9 +541,20 @@ a:focus-visible {
   letter-spacing: 1px;
 }
 
+/*
+ * THE LIMITS ARE THE FRAME. THE OFFERS ARE THE ACTION.
+ *
+ * These weights were the other way round: hairline dashes for the two limits
+ * and a heavy stroke for the offers. That drew the eye to the wandering lines
+ * and away from the two fixed numbers they are wandering between, which is the
+ * story. The offers only mean something in relation to these.
+ *
+ * Still dashed, because dashed means "a private limit, not a message": the
+ * agents cannot see these lines. Heavier now, so they read as walls.
+ */
 .reservation-line {
-  stroke-width: 1.5;
-  stroke-dasharray: 6 5;
+  stroke-width: 3.5;
+  stroke-dasharray: 9 6;
 }
 
 .reservation-line.buyer {
@@ -384,7 +567,7 @@ a:focus-visible {
 
 .price-line {
   fill: none;
-  stroke-width: 2.5;
+  stroke-width: 1.75;
 }
 
 .price-line.buyer {
@@ -407,6 +590,14 @@ a:focus-visible {
   font-size: 10px;
   font-family: var(--mono);
 }
+
+/* The limit labels carry the two numbers the whole panel is about, so they are
+   sized and weighted like a label on a wall rather than like an axis tick. */
+.chart-label.limit {
+  font-size: 12px;
+  font-weight: 700;
+}
+
 
 .chart-label.buyer {
   fill: var(--buyer);
@@ -516,6 +707,18 @@ a:focus-visible {
   color: var(--status-stopped);
   font-family: var(--mono);
   font-size: 11px;
+}
+
+/* The same event in English, under the code that records it. Not mono and not
+   uppercase: it is a sentence, and it should look like one so the eye reads it
+   rather than skipping it as more machine output. */
+.clamp-plain {
+  display: block;
+  margin-top: 2px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .llm-badge {

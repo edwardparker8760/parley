@@ -21,7 +21,6 @@
  */
 
 import type { NegotiationView } from "@parley/orchestrator";
-import { microToUsdc } from "./format-micro-usdc";
 
 const WIDTH = 600;
 const HEIGHT = 300;
@@ -65,6 +64,16 @@ export function ConvergencePriceChart(props: { view: NegotiationView }) {
       ? null
       : Number(view.observer.sellerReservationMicroUsdc);
 
+  /*
+   * Which limit is drawn higher on the chart. It is not always the buyer: in a
+   * scenario with no overlap the seller's floor sits ABOVE the buyer's ceiling,
+   * which is exactly what makes a deal impossible.
+   */
+  const buyerIsHigher =
+    buyerReservation === null || sellerReservation === null
+      ? true
+      : buyerReservation >= sellerReservation;
+
   const prices = [
     ...buyer.map((point) => point.price),
     ...seller.map((point) => point.price),
@@ -104,7 +113,8 @@ export function ConvergencePriceChart(props: { view: NegotiationView }) {
       <h2>
         Convergence
         <span className="panel-note">
-          dashed lines are each side&apos;s private limit, shown to the audience only
+          the two dashed lines are the owners&apos; limits, which no agent can see
+          or cross. The thin lines are the offers moving between them.
         </span>
       </h2>
 
@@ -126,6 +136,17 @@ export function ConvergencePriceChart(props: { view: NegotiationView }) {
           </g>
         ) : null}
 
+        {/*
+          Each limit says WHOSE it is and WHAT it is, in the same micro-USDC the
+          briefing and every clamp event use. "buyer max 0.0009" named neither
+          clearly: it read as an axis annotation rather than as one of the two
+          walls the offers are trapped between.
+
+          The labels sit on OPPOSITE sides of their own lines, the higher one
+          above and the lower one below. In the narrow scenario the two limits
+          are 45 apart, which is a few pixels, and two labels anchored the same
+          way print on top of each other.
+        */}
         {buyerReservation !== null ? (
           <g>
             <line
@@ -136,11 +157,11 @@ export function ConvergencePriceChart(props: { view: NegotiationView }) {
               className="reservation-line buyer"
             />
             <text
-              x={WIDTH - PAD.right + 6}
-              y={y(buyerReservation) + 4}
-              className="chart-label buyer"
+              x={WIDTH - PAD.right + 8}
+              y={y(buyerReservation) + (buyerIsHigher ? -4 : 13)}
+              className="chart-label limit buyer"
             >
-              buyer max {microToUsdc(view.observer.buyerReservationMicroUsdc ?? "0")}
+              BUYER ceiling {view.observer.buyerReservationMicroUsdc}
             </text>
           </g>
         ) : null}
@@ -155,11 +176,11 @@ export function ConvergencePriceChart(props: { view: NegotiationView }) {
               className="reservation-line seller"
             />
             <text
-              x={WIDTH - PAD.right + 6}
-              y={y(sellerReservation) + 4}
-              className="chart-label seller"
+              x={WIDTH - PAD.right + 8}
+              y={y(sellerReservation) + (buyerIsHigher ? 13 : -4)}
+              className="chart-label limit seller"
             >
-              seller floor {microToUsdc(view.observer.sellerReservationMicroUsdc ?? "0")}
+              SELLER floor {view.observer.sellerReservationMicroUsdc}
             </text>
           </g>
         ) : null}

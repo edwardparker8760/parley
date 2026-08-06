@@ -4,40 +4,55 @@
  * The one screen. Composition only: every panel owns its own rendering.
  *
  * It renders identically whether the data came from a live SQLite run or from
- * the bundled snapshot, because both arrive as the same `NegotiationView`. The
+ * a bundled recording, because both arrive as the same `NegotiationView`. The
  * only differences are what the header offers and what the banner says, and
  * both come from props rather than from a check inside a panel.
  *
- * `?negotiation=<id>` renders a completed negotiation from the ledger with no
- * live process, which is both the replay feature and the recovery path if SSE
- * misbehaves while the video is being shot.
+ * ## The header always offers something
+ *
+ * A live instance gets the launchers, which start a negotiation. A deployed
+ * instance gets the switcher, which moves between the recordings it bundles.
+ * What it must never do is offer neither: an instance that can only replay is
+ * still an instance a visitor should be able to operate.
+ *
+ * `?negotiation=<id>` renders a completed negotiation with no live process,
+ * which is the switcher's mechanism, the replay feature, and the recovery path
+ * if SSE misbehaves while the video is being shot.
  */
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { NegotiationView } from "@parley/orchestrator";
 import { useNegotiationEventStream } from "@/hooks/use-negotiation-event-stream";
-import type { SnapshotProvenance } from "@/lib/negotiation-source";
+import type { RecordedRun, SnapshotProvenance } from "@/lib/negotiation-source";
 import { ScenarioLauncherButtons } from "@/components/dashboard/scenario-launcher-buttons";
 import type { StrategyName } from "@/components/dashboard/scenario-launcher-buttons";
+import { RecordedRunSwitcher } from "@/components/dashboard/recorded-run-switcher";
 import { LiveTranscriptLadder } from "@/components/dashboard/live-transcript-ladder";
 import { ConvergencePriceChart } from "@/components/dashboard/convergence-price-chart";
 import { GuardrailLimitsPanel } from "@/components/dashboard/guardrail-limits-panel";
 import { SettlementStatusPanel } from "@/components/dashboard/settlement-status-panel";
 import { WalkawayPostmortemPanel } from "@/components/dashboard/walkaway-postmortem-panel";
 import { RecordedRunBanner } from "@/components/dashboard/recorded-run-banner";
+import { NegotiationBriefingStrip } from "@/components/dashboard/negotiation-briefing-strip";
 
 export function DashboardScreen(props: {
   readonly canRunLive: boolean;
+  /** The recordings this instance can switch between. Empty when live. */
+  readonly runs: readonly RecordedRun[];
   readonly provenance: SnapshotProvenance | null;
-  /** Pre-rendered on the server for a snapshot deployment. */
+  /** Pre-rendered on the server, for a recording or for `?negotiation=`. */
   readonly initialView: NegotiationView | null;
+  /** A server-side read that failed, most likely an id that is not bundled. */
+  readonly initialError: string | null;
 }) {
   const searchParams = useSearchParams();
-  const replayId = props.canRunLive ? searchParams.get("negotiation") : null;
+  const replayId = searchParams.get("negotiation");
   const stream = useNegotiationEventStream(replayId, props.initialView);
   const [strategy, setStrategy] = useState<StrategyName>("engine");
   const view = stream.view;
+  const showing = stream.negotiationId ?? replayId;
+  const error = props.initialError ?? stream.error;
 
   return (
     <main className="screen">
@@ -58,6 +73,8 @@ export function DashboardScreen(props: {
             onStrategyChange={setStrategy}
             onRun={(scenario) => void stream.start(scenario, strategy)}
           />
+        ) : props.runs.length > 0 ? (
+          <RecordedRunSwitcher runs={props.runs} activeId={showing} />
         ) : null}
 
         <div className="run-meta">
@@ -72,19 +89,23 @@ export function DashboardScreen(props: {
         </div>
       </header>
 
-      {/* Above everything, always, whenever the data is a recording. */}
+      {/* The frame, above everything. A viewer who arrived here directly needs
+          to know what is being traded and under whose limits BEFORE meeting a
+          ladder of numbers, or the ladder is noise. */}
+      {view === null ? null : <NegotiationBriefingStrip view={view} />}
+
+      {/* Then whether any of it is live, whenever the data is a recording. */}
       {props.provenance === null ? null : (
         <RecordedRunBanner provenance={props.provenance} />
       )}
 
-      {stream.error !== null ? (
-        <p className="error-banner">{stream.error}</p>
-      ) : null}
+      {error !== null ? <p className="error-banner">{error}</p> : null}
 
       {view === null ? (
         <p className="empty-state">
-          Pick a scenario. A is a wide overlap, B is narrow, C has none at all
-          and must end with both sides walking away.
+          {props.canRunLive
+            ? "Pick a scenario. A is a wide overlap, B is narrow, C has none at all and must end with both sides walking away."
+            : "Pick a recorded run above."}
         </p>
       ) : (
         <div className="grid">

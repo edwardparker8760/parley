@@ -3,7 +3,11 @@
  *
  * Usage:
  *   pnpm --filter @parley/orchestrator export-snapshot <negotiationId> \
- *     [--db parley-ledger.db] [--out apps/web/data/negotiation-snapshot.json]
+ *     [--db parley-ledger.db] [--out apps/web/data/negotiation-snapshot-<a|b|c>.json]
+ *
+ * With no `--out`, the file is named after the run's OWN scenario, which is the
+ * name the web app imports. A fixed default would happily write scenario B into
+ * the file the app reads as scenario A.
  *
  * ## Why this exists rather than a hand-written fixture
  *
@@ -21,7 +25,8 @@
  */
 
 import { writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   DealRepository,
   LlmInvocationRepository,
@@ -32,7 +37,22 @@ import {
 import { buildNegotiationView } from "./build-negotiation-view.js";
 
 const DEFAULT_DB = "parley-ledger.db";
-const DEFAULT_OUT = "apps/web/data/negotiation-snapshot.json";
+
+/*
+ * The repo root, found from this module rather than from the working directory.
+ * `pnpm --filter @parley/orchestrator export-snapshot` runs with the package as
+ * its cwd, so a default written relative to cwd resolves inside
+ * packages/orchestrator and fails on a directory that does not exist. Anchoring
+ * to the module means the natural invocation works from anywhere.
+ *
+ *   dist/export-snapshot-cli.js -> dist -> orchestrator -> packages -> root
+ */
+const REPO_ROOT = fileURLToPath(new URL("../../../", import.meta.url));
+
+/** The path the web app imports for a given scenario letter. */
+function defaultOutFor(scenario: string): string {
+  return join(REPO_ROOT, "apps", "web", "data", `negotiation-snapshot-${scenario.toLowerCase()}.json`);
+}
 
 function flag(name: string): string | undefined {
   const index = process.argv.indexOf(name);
@@ -49,7 +69,7 @@ function main(): void {
   }
 
   const dbPath = flag("--db") ?? DEFAULT_DB;
-  const outPath = resolve(flag("--out") ?? DEFAULT_OUT);
+  const requestedOut = flag("--out");
 
   const db = openLedger({ location: dbPath });
 
@@ -62,6 +82,7 @@ function main(): void {
   }
 
   const view = buildNegotiationView(db, negotiationId);
+  const outPath = resolve(requestedOut ?? defaultOutFor(view.scenario));
 
   // Provenance, every field read from the ledger rather than assumed.
   const llmRows = new LlmInvocationRepository(db).listByNegotiation(negotiationId);

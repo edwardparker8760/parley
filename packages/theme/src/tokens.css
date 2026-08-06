@@ -141,11 +141,21 @@
      shadow to read as separate sheets and not enough to look like a modal. */
   --shadow-card: 0 2px 8px rgba(20, 20, 19, 0.06), 0 12px 32px rgba(20, 20, 19, 0.05);
   --shadow-raised: 0 4px 14px rgba(20, 20, 19, 0.09), 0 20px 48px rgba(20, 20, 19, 0.07);
+  /* One step above --shadow-raised, for the single object above the fold that
+     has to read as a real artifact sitting on the page rather than a panel of
+     text. Deliberately the heaviest elevation in the system: nothing else
+     should use it, or it stops meaning "this one". */
+  --shadow-artifact: 0 2px 6px rgba(20, 20, 19, 0.07), 0 18px 44px rgba(20, 20, 19, 0.13);
 
   /* ---- motion ------------------------------------------------------------ */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --duration-fast: 140ms;
   --duration-reveal: 620ms;
+  /* The landing hero's entrance, which plays on load. Longer than a reveal
+     because it is choreographed rather than reactive: elements arrive in a
+     deliberate order and a short duration makes that read as a stutter. */
+  --duration-enter: 760ms;
+  --duration-enter-slow: 1000ms;
 }
 
 /*
@@ -157,5 +167,7 @@
   :root {
     --duration-fast: 0ms;
     --duration-reveal: 0ms;
+    --duration-enter: 0ms;
+    --duration-enter-slow: 0ms;
   }
 }

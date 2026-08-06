@@ -17,7 +17,18 @@ export function createSqliteSource(): NegotiationSource {
   return {
     kind: "sqlite",
     canRunLive: true,
-    provenance: null,
+
+    listRuns() {
+      // Empty on purpose. This source can start a real negotiation, so its
+      // controls are the launchers; the ledger's accumulated history is a
+      // development artifact and not something to page through on screen.
+      return [];
+    },
+
+    provenanceFor() {
+      // Nothing here is a recording, so nothing here needs a banner saying so.
+      return null;
+    },
 
     defaultNegotiationId() {
       // Nothing to show until someone runs a scenario. The page renders its

@@ -1,0 +1,481 @@
+{
+  "provenance": {
+    "runId": "b-baseline-mse6fg7h",
+    "scenario": "B",
+    "strategy": "baseline",
+    "transcriptClockStartedAt": "2026-08-03T00:00:00.000Z",
+    "exportedAt": "2026-08-06T06:30:54.822Z",
+    "llmMode": "off",
+    "llmModel": "",
+    "llmCallCount": 0,
+    "settlementAdapter": "local-stub",
+    "settlementIsStub": true,
+    "settlementTxHash": null,
+    "generatedBy": "pnpm --filter @parley/orchestrator export-snapshot"
+  },
+  "view": {
+    "negotiationId": "b-baseline-mse6fg7h",
+    "scenario": "B",
+    "roundCap": 12,
+    "status": "SETTLED",
+    "messages": [
+      {
+        "seq": 0,
+        "round": 1,
+        "party": "BUYER",
+        "type": "OFFER",
+        "unitPriceMicroUsdc": "500",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Opening at 0.0005/call (5 USDC total).",
+        "reasonCode": null,
+        "clamps": [],
+        "llm": null
+      },
+      {
+        "seq": 1,
+        "round": 1,
+        "party": "SELLER",
+        "type": "OFFER",
+        "unitPriceMicroUsdc": "1500",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Opening at 0.0015/call (15 USDC total).",
+        "reasonCode": null,
+        "clamps": [],
+        "llm": null
+      },
+      {
+        "seq": 2,
+        "round": 2,
+        "party": "BUYER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "700",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Conceding to 0.0007/call (7 USDC total), 10 rounds left.",
+        "reasonCode": null,
+        "clamps": [],
+        "llm": null
+      },
+      {
+        "seq": 3,
+        "round": 2,
+        "party": "SELLER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "1340",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Conceding to 0.00134/call (13.4 USDC total), 10 rounds left.",
+        "reasonCode": null,
+        "clamps": [],
+        "llm": null
+      },
+      {
+        "seq": 4,
+        "round": 3,
+        "party": "BUYER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "828",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Conceding to 0.000828/call (8.28 USDC total), 9 rounds left.",
+        "reasonCode": null,
+        "clamps": [],
+        "llm": null
+      },
+      {
+        "seq": 5,
+        "round": 3,
+        "party": "SELLER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "1238",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Conceding to 0.001238/call (12.38 USDC total), 9 rounds left.",
+        "reasonCode": null,
+        "clamps": [],
+        "llm": null
+      },
+      {
+        "seq": 6,
+        "round": 4,
+        "party": "BUYER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "900",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Moved to 0.0009/call and that is my limit; I cannot go further. 8 rounds left.",
+        "reasonCode": null,
+        "clamps": [
+          {
+            "party": "BUYER",
+            "bound": "MAX_UNIT_PRICE",
+            "field": "unitPrice",
+            "proposed": "910",
+            "clamped": "900",
+            "explanation": "Buyer's owner set a hard ceiling of 900 per call."
+          }
+        ],
+        "llm": null
+      },
+      {
+        "seq": 7,
+        "round": 4,
+        "party": "SELLER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "1171",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Conceding to 0.001171/call (11.71 USDC total), 8 rounds left.",
+        "reasonCode": null,
+        "clamps": [],
+        "llm": null
+      },
+      {
+        "seq": 8,
+        "round": 5,
+        "party": "BUYER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "900",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Moved to 0.0009/call and that is my limit; I cannot go further. 7 rounds left.",
+        "reasonCode": null,
+        "clamps": [
+          {
+            "party": "BUYER",
+            "bound": "MAX_UNIT_PRICE",
+            "field": "unitPrice",
+            "proposed": "954",
+            "clamped": "900",
+            "explanation": "Buyer's owner set a hard ceiling of 900 per call."
+          }
+        ],
+        "llm": null
+      },
+      {
+        "seq": 9,
+        "round": 5,
+        "party": "SELLER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "1117",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Conceding to 0.001117/call (11.17 USDC total), 7 rounds left.",
+        "reasonCode": null,
+        "clamps": [],
+        "llm": null
+      },
+      {
+        "seq": 10,
+        "round": 6,
+        "party": "BUYER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "900",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Moved to 0.0009/call and that is my limit; I cannot go further. 6 rounds left.",
+        "reasonCode": null,
+        "clamps": [
+          {
+            "party": "BUYER",
+            "bound": "MAX_UNIT_PRICE",
+            "field": "unitPrice",
+            "proposed": "943",
+            "clamped": "900",
+            "explanation": "Buyer's owner set a hard ceiling of 900 per call."
+          }
+        ],
+        "llm": null
+      },
+      {
+        "seq": 11,
+        "round": 6,
+        "party": "SELLER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "1074",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Conceding to 0.001074/call (10.74 USDC total), 6 rounds left.",
+        "reasonCode": null,
+        "clamps": [],
+        "llm": null
+      },
+      {
+        "seq": 12,
+        "round": 7,
+        "party": "BUYER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "900",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Moved to 0.0009/call and that is my limit; I cannot go further. 5 rounds left.",
+        "reasonCode": null,
+        "clamps": [
+          {
+            "party": "BUYER",
+            "bound": "MAX_UNIT_PRICE",
+            "field": "unitPrice",
+            "proposed": "934",
+            "clamped": "900",
+            "explanation": "Buyer's owner set a hard ceiling of 900 per call."
+          }
+        ],
+        "llm": null
+      },
+      {
+        "seq": 13,
+        "round": 7,
+        "party": "SELLER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "1040",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Conceding to 0.00104/call (10.4 USDC total), 5 rounds left.",
+        "reasonCode": null,
+        "clamps": [],
+        "llm": null
+      },
+      {
+        "seq": 14,
+        "round": 8,
+        "party": "BUYER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "900",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Moved to 0.0009/call and that is my limit; I cannot go further. 4 rounds left.",
+        "reasonCode": null,
+        "clamps": [
+          {
+            "party": "BUYER",
+            "bound": "MAX_UNIT_PRICE",
+            "field": "unitPrice",
+            "proposed": "928",
+            "clamped": "900",
+            "explanation": "Buyer's owner set a hard ceiling of 900 per call."
+          }
+        ],
+        "llm": null
+      },
+      {
+        "seq": 15,
+        "round": 8,
+        "party": "SELLER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "1012",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Conceding to 0.001012/call (10.12 USDC total), 4 rounds left.",
+        "reasonCode": null,
+        "clamps": [],
+        "llm": null
+      },
+      {
+        "seq": 16,
+        "round": 9,
+        "party": "BUYER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "900",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Moved to 0.0009/call and that is my limit; I cannot go further. 3 rounds left.",
+        "reasonCode": null,
+        "clamps": [
+          {
+            "party": "BUYER",
+            "bound": "MAX_UNIT_PRICE",
+            "field": "unitPrice",
+            "proposed": "922",
+            "clamped": "900",
+            "explanation": "Buyer's owner set a hard ceiling of 900 per call."
+          }
+        ],
+        "llm": null
+      },
+      {
+        "seq": 17,
+        "round": 9,
+        "party": "SELLER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "990",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Conceding to 0.00099/call (9.9 USDC total), 3 rounds left.",
+        "reasonCode": null,
+        "clamps": [],
+        "llm": null
+      },
+      {
+        "seq": 18,
+        "round": 10,
+        "party": "BUYER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "900",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Moved to 0.0009/call and that is my limit; I cannot go further. 2 rounds left.",
+        "reasonCode": null,
+        "clamps": [
+          {
+            "party": "BUYER",
+            "bound": "MAX_UNIT_PRICE",
+            "field": "unitPrice",
+            "proposed": "918",
+            "clamped": "900",
+            "explanation": "Buyer's owner set a hard ceiling of 900 per call."
+          }
+        ],
+        "llm": null
+      },
+      {
+        "seq": 19,
+        "round": 10,
+        "party": "SELLER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "972",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Conceding to 0.000972/call (9.72 USDC total), 2 rounds left.",
+        "reasonCode": null,
+        "clamps": [],
+        "llm": null
+      },
+      {
+        "seq": 20,
+        "round": 11,
+        "party": "BUYER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "900",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Moved to 0.0009/call and that is my limit; I cannot go further. 1 rounds left.",
+        "reasonCode": null,
+        "clamps": [
+          {
+            "party": "BUYER",
+            "bound": "MAX_UNIT_PRICE",
+            "field": "unitPrice",
+            "proposed": "914",
+            "clamped": "900",
+            "explanation": "Buyer's owner set a hard ceiling of 900 per call."
+          }
+        ],
+        "llm": null
+      },
+      {
+        "seq": 21,
+        "round": 11,
+        "party": "SELLER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "958",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Conceding to 0.000958/call (9.58 USDC total), 1 rounds left.",
+        "reasonCode": null,
+        "clamps": [],
+        "llm": null
+      },
+      {
+        "seq": 22,
+        "round": 12,
+        "party": "BUYER",
+        "type": "COUNTEROFFER",
+        "unitPriceMicroUsdc": "900",
+        "quantity": 10000,
+        "deliveryWindowHours": 24,
+        "slaTier": "standard",
+        "rationale": "Moved to 0.0009/call and that is my limit; I cannot go further. 0 rounds left.",
+        "reasonCode": null,
+        "clamps": [
+          {
+            "party": "BUYER",
+            "bound": "MAX_UNIT_PRICE",
+            "field": "unitPrice",
+            "proposed": "911",
+            "clamped": "900",
+            "explanation": "Buyer's owner set a hard ceiling of 900 per call."
+          }
+        ],
+        "llm": null
+      },
+      {
+        "seq": 23,
+        "round": 12,
+        "party": "SELLER",
+        "type": "ACCEPT",
+        "unitPriceMicroUsdc": null,
+        "quantity": null,
+        "deliveryWindowHours": null,
+        "slaTier": null,
+        "rationale": "Their 0.0009/call is acceptable and inside my limits. Taking it.",
+        "reasonCode": null,
+        "clamps": [],
+        "llm": null
+      }
+    ],
+    "guardrails": {
+      "buyer": {
+        "maxUnitPriceMicroUsdc": "900",
+        "maxTotalSpendMicroUsdc": "9000000",
+        "targetQuantity": 10000,
+        "minSlaTier": "basic",
+        "maxDeliveryWindowHours": 72,
+        "clampCount": 9
+      },
+      "seller": {
+        "costBasisMicroUsdc": "700",
+        "minMarginPct": 13,
+        "derivedFloorMicroUsdc": "855",
+        "availableQuantity": 11000,
+        "maxSlaTier": "premium",
+        "minDeliveryWindowHours": 12,
+        "clampCount": 0
+      }
+    },
+    "observer": {
+      "zopaExists": true,
+      "zopaLoMicroUsdc": "855",
+      "zopaHiMicroUsdc": "900",
+      "blockingCause": null,
+      "buyerReservationMicroUsdc": "900",
+      "sellerReservationMicroUsdc": "855"
+    },
+    "settlement": {
+      "status": "SETTLED_STUB",
+      "adapter": "local-stub",
+      "amountMicroUsdc": "9000000",
+      "termsHash": "0x630acfad45d44e0455e79de41b7ed625c3640bcd8070e4b66ab77933b0ce331a",
+      "reference": "0xstub-630acfad45d44e04",
+      "txHash": null,
+      "isStub": true,
+      "explorerUrl": null,
+      "latencyMs": 815,
+      "error": null
+    },
+    "postMortems": []
+  }
+}

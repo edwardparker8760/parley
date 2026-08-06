@@ -61,9 +61,15 @@ test("sqlite is imported lazily, so it stays out of a snapshot deployment", () =
   assert.match(selector, /require\("\.\/sqlite-negotiation-source"\)/);
 });
 
-test("the snapshot source reads a bundled import, not the filesystem", () => {
+test("the snapshot source reads bundled imports, not the filesystem", () => {
   const source = read("lib", "snapshot-negotiation-source.ts");
-  assert.match(source, /^import snapshot from "@\/data\/negotiation-snapshot\.json"/m);
+  for (const letter of ["a", "b", "c"]) {
+    assert.match(
+      source,
+      new RegExp(`^import snapshot[A-Z] from "@/data/negotiation-snapshot-${letter}\\.json"`, "m"),
+      `scenario ${letter.toUpperCase()} must be a bundled import`,
+    );
+  }
   assert.doesNotMatch(source, /readFileSync|node:fs/);
 });
 
@@ -78,37 +84,76 @@ test("the live endpoints refuse rather than fail when there is nothing to run", 
   }
 });
 
-test("the bundled snapshot is a real export and carries its provenance", () => {
-  const snapshot = JSON.parse(read("data", "negotiation-snapshot.json"));
+test("every bundled snapshot is a real export and carries its provenance", () => {
+  for (const letter of ["a", "b", "c"]) {
+    const snapshot = JSON.parse(read("data", `negotiation-snapshot-${letter}.json`));
+    const where = `negotiation-snapshot-${letter}.json`;
 
-  for (const field of [
-    "runId",
-    "scenario",
-    "strategy",
-    "transcriptClockStartedAt",
-    "exportedAt",
-    "llmMode",
-    "llmCallCount",
-    "settlementAdapter",
-    "settlementIsStub",
-    "generatedBy",
-  ]) {
-    assert.ok(
-      Object.hasOwn(snapshot.provenance, field),
-      `provenance is missing ${field}, which the banner renders`,
-    );
+    for (const field of [
+      "runId",
+      "scenario",
+      "strategy",
+      "transcriptClockStartedAt",
+      "exportedAt",
+      "llmMode",
+      "llmCallCount",
+      "settlementAdapter",
+      "settlementIsStub",
+      "generatedBy",
+    ]) {
+      assert.ok(
+        Object.hasOwn(snapshot.provenance, field),
+        `${where}: provenance is missing ${field}, which the banner renders`,
+      );
+    }
+
+    // It has to be a negotiation, not an empty shell.
+    assert.ok(snapshot.view.messages.length > 0, `${where} contains no messages`);
+    assert.ok(["SETTLED", "WALKED_AWAY"].includes(snapshot.view.status), where);
+    assert.equal(snapshot.provenance.runId, snapshot.view.negotiationId, where);
+
+    // The file name has to match what is inside it, or the switcher offers
+    // scenario B and serves scenario A.
+    assert.equal(snapshot.provenance.scenario, letter.toUpperCase(), where);
+
+    // Absent evidence of real money must never read as evidence of real money.
+    assert.equal(typeof snapshot.provenance.settlementIsStub, "boolean", where);
+    if (snapshot.provenance.settlementAdapter === "none") {
+      assert.equal(snapshot.provenance.settlementIsStub, true, where);
+    }
   }
+});
 
-  // It has to be a negotiation, not an empty shell.
-  assert.ok(snapshot.view.messages.length > 0, "snapshot contains no messages");
-  assert.ok(["SETTLED", "WALKED_AWAY"].includes(snapshot.view.status));
-  assert.equal(snapshot.provenance.runId, snapshot.view.negotiationId);
+test("the three bundled runs are distinct, and cover the outcomes worth showing", () => {
+  const loaded = ["a", "b", "c"].map((letter) =>
+    JSON.parse(read("data", `negotiation-snapshot-${letter}.json`)),
+  );
 
-  // Absent evidence of real money must never read as evidence of real money.
-  assert.equal(typeof snapshot.provenance.settlementIsStub, "boolean");
-  if (snapshot.provenance.settlementAdapter === "none") {
-    assert.equal(snapshot.provenance.settlementIsStub, true);
-  }
+  const ids = loaded.map((s) => s.view.negotiationId);
+  assert.equal(new Set(ids).size, 3, "two buttons pointing at the same run is one button");
+
+  /*
+   * The whole reason to bundle three is that they END differently. If these
+   * ever collapse to the same outcome the switcher is offering a choice that
+   * makes no difference, and the argument the dashboard exists to make is gone.
+   */
+  const statuses = loaded.map((s) => s.view.status);
+  assert.ok(statuses.includes("SETTLED"), "no bundled run shows a deal being struck");
+  assert.ok(statuses.includes("WALKED_AWAY"), "no bundled run shows the agents failing to agree");
+
+  // And one of them must show the guardrail actually firing, which is the
+  // claim that cannot be made by a run where nothing was ever clamped.
+  const clamps = loaded.map((s) =>
+    s.view.messages.reduce((total, message) => total + (message.clamps ?? []).length, 0),
+  );
+  assert.ok(
+    clamps.some((count) => count > 0),
+    "no bundled run shows a clamp, so the guardrail is unproven on screen",
+  );
+  assert.ok(
+    clamps.some((count) => count === 0),
+    "every bundled run gets clamped, so nothing shows an agent that stayed inside its limits unaided",
+  );
 });
 
 test("the recorded-run banner renders provenance literally and unconditionally", () => {
@@ -137,11 +182,29 @@ test("the recorded-run banner renders provenance literally and unconditionally",
   );
 });
 
-test("a snapshot deployment does not offer buttons that cannot work", () => {
+test("a snapshot deployment offers the switcher instead of the launchers, never nothing", () => {
   const screen = read("components", "dashboard", "dashboard-screen.tsx");
+
+  // The launchers still may not appear where nothing can be launched.
   assert.match(
     screen,
     /props\.canRunLive \? \(\s*<ScenarioLauncherButtons/,
     "the launchers must be hidden when nothing can be launched",
   );
+
+  /*
+   * ...but hiding them must hand over to the switcher rather than leaving an
+   * empty header. A deployed dashboard with no controls at all is the failure
+   * this test exists to prevent: it looked correct, it passed every other
+   * check, and a visitor could not do a single thing with it.
+   */
+  assert.match(
+    screen,
+    /\) : props\.runs\.length > 0 \? \(\s*<RecordedRunSwitcher/,
+    "an instance that cannot launch must still offer its recordings",
+  );
+
+  // And the switcher must move between runs by URL, so a run can be linked to.
+  const switcher = read("components", "dashboard", "recorded-run-switcher.tsx");
+  assert.match(switcher, /href=\{`\/app\?negotiation=/, "each run needs its own address");
 });

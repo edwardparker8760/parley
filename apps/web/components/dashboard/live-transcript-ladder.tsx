@@ -17,6 +17,7 @@
 import { useEffect, useRef } from "react";
 import type { TranscriptRowView } from "@parley/orchestrator";
 import { unitPriceLabel } from "./format-micro-usdc";
+import { clampSentence } from "@/lib/describe-negotiation";
 
 export function LiveTranscriptLadder(props: {
   rows: readonly TranscriptRowView[];
@@ -65,10 +66,17 @@ export function LiveTranscriptLadder(props: {
                 </td>
                 <td className="col-rationale">
                   {row.rationale}
+                  {/*
+                    The code and the sentence, in that order. The code is the
+                    precise record and stays; the sentence under it is what the
+                    code MEANS, and it is the entire product, so it appears
+                    wherever a clamp appears rather than only in the narration.
+                  */}
                   {row.clamps.map((clamp, index) => (
                     <span key={index} className="clamp-badge">
                       GUARDRAIL: {clamp.party} proposed {clamp.proposed}, forced to{" "}
                       {clamp.clamped} ({clamp.bound})
+                      <span className="clamp-plain">{clampSentence(clamp)}</span>
                     </span>
                   ))}
                   {row.llm !== null && row.llm.rejectedPriceMicroUsdc !== null ? (

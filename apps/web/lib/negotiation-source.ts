@@ -17,11 +17,17 @@
  * variable is a working replay, not a crash. Choosing the live path has to be
  * deliberate, which is the right way round for the option that needs a disk.
  *
- * ## Why the interface says whether it can run
+ * ## Two different questions, deliberately separated
  *
- * A snapshot source cannot start a negotiation, and the UI must not offer a
- * button that quietly does nothing. `canRunLive` is read by the page, which
- * disables the launchers and says why, rather than failing on click.
+ * `canRunLive` asks whether this instance can START a negotiation. `listRuns()`
+ * asks what it can SHOW. They used to be the same question, and treating them
+ * as one is what made the deployed dashboard inert: a snapshot instance cannot
+ * run anything, so the controls were hidden, so a visitor arrived at a screen
+ * with nothing to press.
+ *
+ * A snapshot instance can still offer a real choice between the recordings it
+ * bundles. It must not offer a button that quietly does nothing, which is a
+ * different rule from "it must offer no buttons".
  */
 
 import type { NegotiationView } from "@parley/orchestrator";
@@ -63,18 +69,38 @@ export interface NegotiationSnapshot {
   readonly view: NegotiationView;
 }
 
+/**
+ * One recorded run this instance can display, reduced to what the switcher
+ * needs to label a button. The outcome is included because it is the whole
+ * reason to offer the choice: a visitor is picking between "they agreed" and
+ * "they could not", not between three identical-looking runs.
+ */
+export interface RecordedRun {
+  readonly id: string;
+  readonly scenario: string;
+  readonly strategy: string;
+  readonly status: string;
+}
+
 export interface NegotiationSource {
   readonly kind: "sqlite" | "snapshot";
   /**
-   * False for the snapshot source. The page reads this to decide whether to
-   * offer the scenario launchers at all.
+   * False for the snapshot source: it can show a negotiation but never start
+   * one. The page reads this to decide whether to offer the LAUNCHERS, not
+   * whether to offer controls at all.
    */
   readonly canRunLive: boolean;
   /**
-   * Present only for the snapshot source. When set, the dashboard shows a
-   * persistent banner rendering it literally.
+   * Every recording bundled with this instance, in the order they should be
+   * offered. Empty for the sqlite source, whose runs are made on demand and
+   * whose history is not something the switcher should page through.
    */
-  readonly provenance: SnapshotProvenance | null;
+  listRuns(): readonly RecordedRun[];
+  /**
+   * Where a given run's data came from. Null when the run is live, because a
+   * live run needs no provenance banner: nothing about it is a recording.
+   */
+  provenanceFor(negotiationId: string): SnapshotProvenance | null;
   /** The negotiation to display when none is named in the URL. */
   defaultNegotiationId(): string | null;
   read(negotiationId: string): NegotiationView;
