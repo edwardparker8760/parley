@@ -73,6 +73,38 @@ test("the snapshot source reads bundled imports, not the filesystem", () => {
   assert.doesNotMatch(source, /readFileSync|node:fs/);
 });
 
+test("nothing a deployed instance serves imports the ledger at module scope", () => {
+  /*
+   * `@parley/orchestrator` re-exports through `@parley/ledger`, which imports
+   * `node:sqlite`. A static import of either, anywhere in the graph a snapshot
+   * deployment loads, would put SQLite in the cold-start path of a function
+   * that has no database, and would make the deploy depend on the host's Node
+   * build shipping `node:sqlite` at all.
+   *
+   * Type-only imports are fine: they are erased before anything runs.
+   */
+  for (const file of [
+    join("app", "page.tsx"),
+    join("app", "app", "page.tsx"),
+    join("app", "api", "run-scenario", "route.ts"),
+    join("app", "api", "negotiation-stream", "route.ts"),
+    join("app", "api", "negotiation", "[id]", "route.ts"),
+    join("lib", "select-negotiation-source.ts"),
+    join("lib", "snapshot-negotiation-source.ts"),
+  ]) {
+    const source = read(file);
+    for (const line of source.split("\n")) {
+      if (!/^import\s/.test(line)) continue;
+      if (/^import type\s/.test(line)) continue;
+      assert.doesNotMatch(
+        line,
+        /@parley\/(orchestrator|ledger)/,
+        `${file} imports the ledger graph at module scope: ${line.trim()}`,
+      );
+    }
+  }
+});
+
 test("the live endpoints refuse rather than fail when there is nothing to run", () => {
   for (const route of [
     join("app", "api", "run-scenario", "route.ts"),

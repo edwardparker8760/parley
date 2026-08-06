@@ -10,7 +10,6 @@
  */
 
 import { NextResponse } from "next/server";
-import { isScenarioName } from "@parley/orchestrator";
 import { canRunLive } from "@/lib/select-negotiation-source";
 
 export const dynamic = "force-dynamic";
@@ -35,7 +34,18 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
   }
 
+  /*
+   * Both imports are lazy, and the scenario allowlist is lazy for the same
+   * reason the registry is: `@parley/orchestrator` re-exports through
+   * `@parley/ledger`, which imports `node:sqlite`. A top-level import here
+   * would pull SQLite into the module graph of every deployed function,
+   * including one that has no database and is about to answer 409. It would
+   * also make the deployment depend on the host's Node build shipping
+   * `node:sqlite`, which is exactly the coupling the snapshot source exists to
+   * remove.
+   */
   const { startScenarioRun } = await import("@/lib/negotiation-run-registry");
+  const { isScenarioName } = await import("@parley/orchestrator");
 
   let body: unknown;
   try {
