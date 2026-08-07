@@ -160,10 +160,32 @@ export function CustomLimitsPanel(props: {
         </ul>
       ) : null}
 
-      {/* Which agent runs. It belongs here rather than only in the top bar,
-          because on a band you chose yourself it decides whether you can see a
-          clamp at all: the engine never reaches its own limit, so it is clamped
-          zero times however tight you make the band. */}
+      {/*
+        Which agent runs, and why it is not a developer option.
+
+        The landing page claims "A better agent needs the limit less". This
+        toggle is where that claim is produced rather than asserted: same
+        limits, two agents, and the clamp count is the difference. Presented as
+        a developer switch it reads as debug UI; presented as the experiment it
+        is, it is the most convincing thing on the page.
+      */}
+      <div className="strategy-proof">
+        <h3>Which agent runs, and why it matters</h3>
+        <p>
+          The landing page claims <strong>a better agent needs the limit
+          less</strong>. This is where you check it. Run the same limits twice,
+          once with each agent, and compare the clamp counts in the owner limits
+          panel above.
+        </p>
+        <p>
+          On a narrow band the blunt <em>baseline</em> agent settles, but only
+          because its owner&apos;s ceiling stopped it nine times on the way. The{" "}
+          <em>engine</em>, on identical limits, stops short on its own and is
+          clamped zero times. Neither one ever crosses its limit. That is the
+          whole claim, and it is the same limits both times.
+        </p>
+      </div>
+
       <div className="custom-strategy">
         <span className="custom-strategy-label">Run it with</span>
         {(["engine", "baseline"] as const).map((option) => (

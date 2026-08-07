@@ -1421,3 +1421,18 @@ a:focus-visible,
     padding: var(--space-8) var(--space-5);
   }
 }
+
+/* The bridge from the benchmark claim to the dashboard that reproduces it. */
+.prove-it {
+  margin: 28px 0 0;
+  padding: 16px 18px;
+  border-left: 3px solid var(--accent-lime-strong);
+  background: var(--surface-sunken);
+  font-size: 16px;
+  line-height: 1.65;
+  max-width: 72ch;
+}
+
+.prove-it a {
+  font-weight: 600;
+}

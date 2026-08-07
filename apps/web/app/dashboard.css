@@ -996,14 +996,14 @@ a.launcher {
 }
 
 .cold-start-steps strong {
-  color: var(--fg);
+  color: var(--text);
   font-weight: 600;
 }
 
 .cold-start-close {
   margin: 0;
   padding-top: 16px;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--panel-edge);
   font-size: 14px;
   line-height: 1.55;
   color: var(--muted);
@@ -1015,7 +1015,7 @@ a.launcher {
   margin: 0;
   font-size: 12px;
   font-weight: 600;
-  color: var(--fg);
+  color: var(--text);
 }
 
 .error-banner {
@@ -1034,7 +1034,7 @@ a.launcher {
   max-width: 1100px;
   margin: 24px auto 48px;
   padding: 24px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--panel-edge);
   border-radius: 10px;
   background: var(--panel);
 }
@@ -1066,7 +1066,7 @@ a.launcher {
 }
 
 .custom-side {
-  border: 1px solid var(--line);
+  border: 1px solid var(--panel-edge);
   border-radius: 8px;
   padding: 14px 16px 16px;
   margin: 0;
@@ -1100,10 +1100,10 @@ a.launcher {
   font: inherit;
   font-size: 13px;
   text-align: right;
-  border: 1px solid var(--line);
+  border: 1px solid var(--panel-edge);
   border-radius: 5px;
   background: var(--bg);
-  color: var(--fg);
+  color: var(--text);
 }
 
 /* The derived number, set apart from the typed ones: it is the only figure in
@@ -1111,7 +1111,7 @@ a.launcher {
 .derived-floor {
   margin: 12px 0 0;
   padding-top: 12px;
-  border-top: 1px dashed var(--line);
+  border-top: 1px dashed var(--panel-edge);
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -1140,7 +1140,7 @@ a.launcher {
   border-radius: 6px;
   font-size: 13px;
   line-height: 1.5;
-  border: 1px solid var(--line);
+  border: 1px solid var(--panel-edge);
 }
 
 .custom-problems {
@@ -1156,11 +1156,11 @@ a.launcher {
   font: inherit;
   font-size: 14px;
   font-weight: 600;
-  border: 1px solid var(--line);
+  border: 1px solid var(--panel-edge);
   border-radius: 6px;
   cursor: pointer;
   background: var(--bg);
-  color: var(--fg);
+  color: var(--text);
 }
 
 .custom-run:disabled {
@@ -1171,7 +1171,7 @@ a.launcher {
 .attack-invite {
   margin-top: 26px;
   padding-top: 18px;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--panel-edge);
 }
 
 .attack-invite h3 {
@@ -1197,7 +1197,7 @@ a.launcher {
 }
 
 .attack-invite strong {
-  color: var(--fg);
+  color: var(--text);
 }
 
 .attack-invite-close {
@@ -1211,14 +1211,14 @@ a.launcher {
   margin: 0 auto 12px;
   padding: 10px 14px;
   border-radius: 8px;
-  border: 1px dashed var(--line);
+  border: 1px dashed var(--panel-edge);
   font-size: 13px;
   line-height: 1.55;
   color: var(--muted);
 }
 
 .custom-run-banner strong {
-  color: var(--fg);
+  color: var(--text);
 }
 
 .custom-settlement-figure {
@@ -1258,4 +1258,31 @@ a.launcher {
    the browser jumps to it. */
 #your-limits {
   scroll-margin-top: 16px;
+}
+
+/* The agent toggle is an experiment, not a developer switch, so it gets a
+   heading and the reason rather than a bare pair of buttons. */
+.strategy-proof {
+  margin-top: 26px;
+  padding-top: 18px;
+  border-top: 1px solid var(--panel-edge);
+}
+
+.strategy-proof h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.strategy-proof p {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+  max-width: 72ch;
+}
+
+.strategy-proof strong,
+.strategy-proof em {
+  color: var(--text);
 }

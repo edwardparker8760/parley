@@ -85,3 +85,60 @@ test("the scan looked at the files that matter", () => {
     assert.ok(files.includes(required), `${required} was not scanned`);
   }
 });
+
+test("every CSS variable the dashboard uses is actually defined somewhere", () => {
+  /*
+   * The colour tests catch hex literals. They do not catch `var(--fg)` when no
+   * `--fg` exists: the declaration is simply dropped, the element inherits, and
+   * the page looks nearly right. Seventeen such references shipped into
+   * dashboard.css in one sitting and no test noticed, because none of them was
+   * a hex code.
+   */
+  const files = [
+    join(APP_ROOT, "app", "dashboard.css"),
+    join(APP_ROOT, "app", "landing.css"),
+    join(APP_ROOT, "app", "base.css"),
+  ].map((path) => readFileSync(path, "utf8"));
+
+  const themeCss = readFileSync(
+    join(APP_ROOT, "..", "..", "packages", "theme", "src", "tokens.css"),
+    "utf8",
+  );
+
+  const defined = new Set();
+  for (const source of [...files, themeCss]) {
+    for (const match of source.matchAll(/^\s*(--[a-z0-9-]+)\s*:/gim)) {
+      defined.add(match[1]);
+    }
+  }
+
+  /*
+   * Some variables are legitimately set from JSX rather than from a stylesheet:
+   * per-item animation indices like `--word-index` are a value the component
+   * knows and the CSS cannot. They are real definitions, so the scan has to see
+   * them or it reports three false positives and gets ignored.
+   */
+  for (const file of sourceFiles(APP_ROOT)) {
+    if (!/\.tsx?$/.test(file)) continue;
+    const source = readFileSync(file, "utf8");
+    for (const match of source.matchAll(/["'](--[a-z0-9-]+)["']\s*:/gi)) {
+      defined.add(match[1]);
+    }
+  }
+
+  const missing = new Set();
+  for (const source of files) {
+    for (const match of source.matchAll(/var\(\s*(--[a-z0-9-]+)/gi)) {
+      if (!defined.has(match[1])) missing.add(match[1]);
+    }
+  }
+
+  assert.deepEqual(
+    [...missing].sort(),
+    [],
+    `these variables are used but never defined: ${[...missing].join(", ")}`,
+  );
+
+  // Not vacuous: the scan must have found real variables to check against.
+  assert.ok(defined.size > 20, `only ${defined.size} variables found`);
+});

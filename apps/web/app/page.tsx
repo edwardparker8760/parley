@@ -252,6 +252,22 @@ export default function Page() {
               <BenchmarkTable />
             </RevealOnScroll>
 
+            {/* The headline above is a claim about two agents. The dashboard
+                now lets a visitor produce it themselves on limits they chose,
+                which is a stronger thing than a table they have to believe. */}
+            <RevealOnScroll variant="lift" delayMs={120}>
+              <p className="prove-it">
+                You can run this yourself.{" "}
+                <a href="/app#your-limits">Set your own limits</a>, put the
+                buyer&apos;s ceiling just above the seller&apos;s floor, and run
+                the same numbers twice. The blunt agent settles, but only because
+                its owner&apos;s ceiling stopped it nine times on the way. The
+                engine, on identical limits, never reaches its ceiling at all and
+                is stopped zero times. That is the sentence above, produced on
+                demand rather than asserted.
+              </p>
+            </RevealOnScroll>
+
             {/* Counting figures, so they count up: one after another. */}
             <RevealOnScroll variant="stagger" delayMs={140}>
               <BuildFigures />
