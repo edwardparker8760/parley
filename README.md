@@ -41,7 +41,7 @@ that configuration.
 git clone https://github.com/edwardparker8760/parley.git
 cd parley
 pnpm install            # also builds every package
-pnpm test               # 88 tests
+pnpm test               # 125 tests
 pnpm run:scenario C     # the one that proves the guardrails bind
 ```
 
@@ -127,7 +127,7 @@ selected by `SETTLEMENT_MODE`:
 | Mode | What happens | How you can tell |
 |---|---|---|
 | `local-stub` (default) | Nothing moves on chain. A deterministic reference is derived from the terms hash. | Status is `SETTLED_STUB`, `isStub` is true, the reference starts with `0xstub-`, and the CLI prints `[SIMULATED: no real money moved]`. |
-| `arc-x402` | Real EIP-3009 authorisation via Circle Gateway on Arc Testnet, batch settled by Circle. **Implemented, not yet run with real money: no wallet is funded.** | Status is `PENDING` with a real transaction reference and an `arcscan` explorer link, and `isStub` is false. |
+| `arc-x402` | Real EIP-3009 authorisation via Circle Gateway on Arc Testnet, batch settled by Circle. **Run for real once, on 2026-08-06.** | Status is `PENDING` with a real Circle transfer id and `isStub` false. No explorer link at that moment, because no on-chain hash exists until the batch lands; `transfer-status` retrieves it afterwards. |
 
 Real settlement pays the seller's 402-protected endpoint (`packages/seller-service`),
 which prices each request from its own copy of the deal and refuses any request
@@ -140,10 +140,17 @@ Selecting `arc-x402` without funded wallet keys **fails at startup**. It never
 downgrades quietly to the stub, because a silent downgrade is how a fabricated
 transaction hash ends up in a demo.
 
-As of the current commit, no wallet has been provisioned or funded, so every
-recorded settlement is a stub. Run `pnpm --filter @parley/wallets balances` to
-check funding before switching modes. Measured stub latency and the state of the
-real path are recorded in [`docs/settlement-latency.md`](docs/settlement-latency.md).
+One deal has been settled for real: 9.23 USDC on 2026-08-06, authorised in
+857ms, batch settled on chain 12 min 43 s later, transaction
+`0xcccd6d68ed7395faf486bac891df2bf135bdd6c71fdda012009667170f5be6aa`. **Every
+other recorded settlement is a stub**, including the three bundled dashboard
+recordings, and each is labelled `SIMULATED` on screen.
+
+The two latencies are separate and stay separate: Circle batches and there is
+no flush, so "authorised in 857ms" is not "confirmed in 857ms". Run
+`pnpm --filter @parley/wallets balances` to check funding before switching
+modes. Both latencies, the gas actually paid, and the three bugs the real run
+exposed are in [`docs/settlement-latency.md`](docs/settlement-latency.md).
 
 **No payment occurs on any walk-away path.** That is enforced by construction
 (the adapter is only reachable from the ACCEPT branch) and asserted by a
@@ -190,7 +197,7 @@ Claims in this README are cheap; these are the things that check them.
 | `LLM_MODE=off` is a real rollback | Byte-identical ladders with the model on and off |
 | A stub is never mistaken for real | `isStub` persisted on the receipt, `0xstub-` reference prefix, `SIMULATED` badge, and a factory that fails loudly rather than downgrading |
 
-`pnpm test` runs all 88. `pnpm benchmark` regenerates the engine-versus-baseline
+`pnpm test` runs all 125. `pnpm benchmark` regenerates the engine-versus-baseline
 comparison in [`docs/engine-benchmark.md`](docs/engine-benchmark.md).
 
 ## Status
