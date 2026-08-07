@@ -43,6 +43,19 @@ export function NegotiationBriefingStrip(props: { view: NegotiationView }) {
         limit, and neither can be talked past its own.
       </p>
 
+      {/* Units BEFORE the numbers, not after them. This sat at the bottom of
+          the strip, so every figure above it was read without a unit and the
+          explanation arrived once the reader had already given up on it. */}
+      {/* Scoped to THIS strip on purpose. The transcript panel renders the same
+          money as decimals (`0.000522/call`), so a blanket "prices below are
+          millionths" would be contradicted by the first thing underneath it. */}
+      <p className="briefing-units-lead">
+        The two limits in this panel are per call, in millionths of a dollar, so{" "}
+        <strong>{briefing.buyerCeilingMicro}</strong> means{" "}
+        {briefing.buyerCeilingMicro} millionths of a dollar for one call. Totals
+        are in whole USDC.
+      </p>
+
       {/* Buyer, the gap between them, seller. The layout is the story: two
           fixed limits with the room for a deal sitting between them. */}
       <div className="briefing-limits">
@@ -78,8 +91,8 @@ export function NegotiationBriefingStrip(props: { view: NegotiationView }) {
       </p>
 
       <p className="briefing-units">
-        Per-call prices are micro-USDC, millionths of a dollar, the whole numbers
-        the ledger stores. Totals are USDC.
+        These whole numbers are what the ledger actually stores, which is why
+        the screen shows them rather than 0.0012.
       </p>
     </section>
   );

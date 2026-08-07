@@ -34,11 +34,99 @@ test("the briefing strip renders above every panel, on every run", () => {
 
   // Its only condition may be "there is a negotiation to describe". Anything
   // else would let a run render its numbers with no setup.
-  assert.match(
-    screen,
-    /view === null \? null : <NegotiationBriefingStrip view=\{view\} \/>/,
+  //
+  // Asserted on the CONDITION, not on an exact source line. This test used to
+  // pin the literal string `view === null ? null : <NegotiationBriefingStrip
+  // view={view} />`, which made it a copy of the implementation and no kind of
+  // check at all: it passed happily while a live instance rendered no framing
+  // whatsoever before its first run, because `view` is null then and null was
+  // exactly what the pinned line produced. A test that quotes the code cannot
+  // notice the code is wrong.
+  assert.ok(
+    !/canRunLive[\s\S]{0,80}<NegotiationBriefingStrip/.test(screen),
     "the briefing must not be behind a mode, source or provenance check",
   );
+  assert.ok(
+    !/provenance[\s\S]{0,80}<NegotiationBriefingStrip/.test(screen),
+    "the briefing must not be behind a provenance check",
+  );
+});
+
+test("the cold screen, before any run exists, still explains what this is", () => {
+  /*
+   * The regression this file was written for and missed. A live instance has
+   * no view until somebody presses a button, so the briefing strip cannot
+   * render, so the FIRST screen a stranger meets was a title, three buttons
+   * and one sentence. The explainer is the half that works with no data.
+   */
+  const screen = read("components", "dashboard", "dashboard-screen.tsx");
+  assert.match(
+    screen,
+    /view === null \?[\s\S]{0,400}<ColdStartExplainer/,
+    "the null-view branch must render the explainer, not a bare sentence",
+  );
+
+  const explainer = read("components", "dashboard", "cold-start-explainer.tsx");
+
+  // What is traded, who the two sides are, and what the limits do. Any cold
+  // visitor needs all three before a single number means anything.
+  assert.match(explainer, /bulk inference capacity/);
+  assert.match(explainer, /buying/);
+  assert.match(explainer, /selling/);
+  assert.match(explainer, /owner/i);
+  assert.match(explainer, /Neither agent can see the other/i);
+  assert.match(explainer, /arithmetic/);
+
+  // It must not reach for a figure it cannot have. There is no run yet.
+  // Checked against code only: the doc comment explains why the briefing strip
+  // needs a view, and that prose is not a data read.
+  const explainerCode = explainer
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/^\s*\/\/.*$/gm, "");
+  assert.ok(
+    !/view\.|props\.view|briefingFor|verdictFor/.test(explainerCode),
+    "the explainer runs with no negotiation, so it must not read one",
+  );
+});
+
+test("the screen says which control starts a run, in a verb", () => {
+  const launchers = read("components", "dashboard", "scenario-launcher-buttons.tsx");
+
+  // "Scenario A" is a label. "Start scenario A" is an instruction. A visitor
+  // should not have to guess that a card is a button.
+  assert.match(launchers, /Start scenario \{scenario\.name\}/);
+  assert.match(launchers, /start a negotiation/i);
+});
+
+test("no term of art reaches the screen unexplained", () => {
+  /*
+   * ZOPA appeared five times across the launchers, the switcher and the chart,
+   * and is the densest jargon on a screen aimed at people who have not read
+   * the codebase. Internal identifiers keep the name; rendered text does not.
+   */
+  for (const [dir, file] of [
+    ["dashboard", "scenario-launcher-buttons.tsx"],
+    ["dashboard", "recorded-run-switcher.tsx"],
+    ["dashboard", "convergence-price-chart.tsx"],
+    ["dashboard", "cold-start-explainer.tsx"],
+    ["dashboard", "negotiation-briefing-strip.tsx"],
+  ]) {
+    const source = read("components", dir, file);
+
+    // What a reader sees: not comments (which discuss the jargon precisely
+    // because it was removed), not identifiers like `zopaExists`, not class
+    // names like `zopa-band`.
+    const rendered = source
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/^\s*\/\/.*$/gm, "")
+      .replace(/\b\w*[Zz]opa\w*\b/g, (match) => (/^ZOPA$/.test(match) ? match : ""))
+      .replace(/className="[^"]*"/g, "");
+
+    assert.ok(
+      !/\bZOPA\b/.test(rendered),
+      `${file} renders the word ZOPA; say what it means instead`,
+    );
+  }
 });
 
 test("the briefing states the setup: goods, both limits, and the situation", () => {
@@ -109,8 +197,14 @@ test("a settled run says the price, the round and the amount; a walk-away says n
 test("the situation sentence names the overlap, or its absence, in numbers", () => {
   const { briefingFor } = require_describe();
 
-  // B's two ranges are 45 apart, which is the whole reason it is the narrow one.
-  assert.match(briefingFor(snapshot("b").view).situation, /overlap by 45, from 855 to 900/);
+  // B's two ranges are 45 apart, which is the whole reason it is the narrow
+  // one. All three numbers must appear; the phrasing around them is free to
+  // change, and did, when "overlap by 45" was reworded to lead with the prices
+  // a reader can act on rather than with the width.
+  const narrow = briefingFor(snapshot("b").view).situation;
+  for (const figure of ["855", "900", "45"]) {
+    assert.match(narrow, new RegExp(`\\b${figure}\\b`), `the situation must name ${figure}`);
+  }
 
   const impossible = briefingFor(snapshot("c").view).situation;
   assert.match(impossible, /do not overlap at all/);
@@ -178,7 +272,12 @@ function require_describe() {
     .replace(/: NegotiationBriefing\b/g, "")
     .replace(/: NegotiationView\b/g, "")
     .replace(/: ClampMarkerView\b/g, "")
-    .replace(/\): string \{/g, ") {")
+    // Return annotations, including unions like `): string | null {`. Written
+    // generally because the narrow version (`\): string \{`) silently broke
+    // four unrelated tests the first time a function returned anything else,
+    // and the failure surfaced as `SyntaxError: Unexpected token ':'` with no
+    // hint that this loader was the cause.
+    .replace(/\):\s*[A-Za-z[\]|\s]+\{/g, ") {")
     .replace(/const parts: string\[\] = \[\]/g, "const parts = []")
     .replace(/^export /gm, "");
 

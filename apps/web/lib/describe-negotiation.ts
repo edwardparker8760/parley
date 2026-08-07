@@ -84,8 +84,8 @@ function situationFor(view: NegotiationView): string {
   // Exact, because both operands are integer micro-USDC strings.
   const width = BigInt(observer.zopaHiMicroUsdc) - BigInt(observer.zopaLoMicroUsdc);
   return (
-    `These two ranges overlap by ${width}, from ${observer.zopaLoMicroUsdc} to ` +
-    `${observer.zopaHiMicroUsdc}, so a deal is possible somewhere in that gap.`
+    `Any price from ${observer.zopaLoMicroUsdc} to ${observer.zopaHiMicroUsdc} ` +
+    `satisfies both owners, a window ${width} wide, so a deal is possible.`
   );
 }
 
@@ -110,6 +110,14 @@ export function verdictFor(view: NegotiationView): string {
       : `Agreed at ${accepted.unitPriceMicroUsdc} per call` +
         (round === null ? "." : ` in round ${round}.`);
 
+  /*
+   * Where that price sits between the two limits. Without this the reader has
+   * the settled number and the two limits on screen and is left to do the
+   * comparison themselves, which is the one comparison the whole product is
+   * about: the deal landed INSIDE both owners' limits, and that is why it was
+   * allowed to settle at all.
+   */
+  const placement = placementClause(view);
   const limits = limitClause(view);
 
   const settlement = view.settlement;
@@ -119,7 +127,27 @@ export function verdictFor(view: NegotiationView): string {
       : `${microToUsdc(settlement.amountMicroUsdc)} USDC settled` +
         (settlement.isStub ? ", simulated: no real money moved." : ".");
 
-  return `${opening} ${limits} ${money}`;
+  return `${opening} ${placement} ${limits} ${money}`;
+}
+
+/**
+ * The settled price, located between the seller's floor and the buyer's
+ * ceiling, in that order, because that is the order they appear on screen.
+ *
+ * Returns "" rather than a hedge when anything is missing: a sentence that
+ * says "the price sits somewhere" is worse than no sentence.
+ */
+function placementClause(view: NegotiationView): string {
+  if (acceptedOffer(view) === null) return "";
+
+  const floor = view.guardrails.seller.derivedFloorMicroUsdc;
+  const ceiling = view.guardrails.buyer.maxUnitPriceMicroUsdc;
+  if (floor === null || ceiling === null) return "";
+
+  return (
+    `That sits between the seller's floor of ${floor} and the buyer's ceiling ` +
+    `of ${ceiling}, so both owners' limits were respected.`
+  );
 }
 
 /**

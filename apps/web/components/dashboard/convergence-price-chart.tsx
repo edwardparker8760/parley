@@ -130,8 +130,11 @@ export function ConvergencePriceChart(props: { view: NegotiationView }) {
               height={Math.max(1, y(zopaLo) - y(zopaHi))}
               className="zopa-band"
             />
+            {/* "ZOPA" is the term of art and means nothing to a visitor. The
+                band is the set of prices both owners can live with, so it is
+                labelled that. */}
             <text x={PAD.left + 8} y={y(zopaHi) + 14} className="chart-label zopa-label">
-              ZOPA
+              prices both owners accept
             </text>
           </g>
         ) : null}

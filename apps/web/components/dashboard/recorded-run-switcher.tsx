@@ -26,9 +26,9 @@ import type { RecordedRun } from "@/lib/negotiation-source";
 
 /** What each scenario is, in the words the landing page uses for it. */
 const SHAPE: Record<string, string> = {
-  A: "Wide ZOPA",
-  B: "Narrow ZOPA",
-  C: "No ZOPA",
+  A: "limits overlap a lot",
+  B: "limits barely overlap",
+  C: "limits do not overlap",
 };
 
 function outcomeLabel(run: RecordedRun): string {

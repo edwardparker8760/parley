@@ -23,10 +23,19 @@ import type { ScenarioName } from "@/hooks/use-negotiation-event-stream";
 
 export type StrategyName = "engine" | "baseline";
 
+/*
+ * Labels say what WILL HAPPEN, not what the setup is called.
+ *
+ * These read "Wide ZOPA", "Narrow ZOPA", "No ZOPA" before. ZOPA is the term of
+ * art for the overlap between the two owners' limits, and it is the single
+ * densest piece of jargon on the screen: a visitor met it three times before
+ * meeting a single plain sentence. Worse, it named the SETUP, so the buttons
+ * said nothing about what pressing one does.
+ */
 const SCENARIOS: readonly { name: ScenarioName; label: string }[] = [
-  { name: "A", label: "Wide ZOPA" },
-  { name: "B", label: "Narrow ZOPA" },
-  { name: "C", label: "No ZOPA" },
+  { name: "A", label: "Their limits overlap a lot. They should agree." },
+  { name: "B", label: "Their limits barely overlap. Agreement is tight." },
+  { name: "C", label: "Their limits do not overlap. Both must walk away." },
 ];
 
 export function ScenarioLauncherButtons(props: {
@@ -38,6 +47,14 @@ export function ScenarioLauncherButtons(props: {
 }) {
   return (
     <div className="launcher-bar">
+      {/* The instruction, above the controls. A stranger should not have to
+          infer that these cards are the start button. */}
+      <p className="launcher-instruction">
+        {props.running
+          ? "Running. The transcript below fills in as the agents exchange offers."
+          : "Press one of these to start a negotiation:"}
+      </p>
+
       <div className="launchers">
         {SCENARIOS.map((scenario) => (
           <button
@@ -47,7 +64,7 @@ export function ScenarioLauncherButtons(props: {
             onClick={() => props.onRun(scenario.name)}
             className={props.active === scenario.name ? "launcher active" : "launcher"}
           >
-            <span className="launcher-name">Scenario {scenario.name}</span>
+            <span className="launcher-name">Start scenario {scenario.name}</span>
             <span className="launcher-label">{scenario.label}</span>
           </button>
         ))}

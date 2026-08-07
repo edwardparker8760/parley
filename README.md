@@ -33,6 +33,10 @@ No prompt can talk an agent past its owner's limits.
 
 ## Quickstart
 
+**Never seen this repo before?** [`docs/how-to-run.md`](docs/how-to-run.md) is
+the step by step version: every command, and what should appear on screen if it
+worked.
+
 Needs Node 20+ and pnpm. No API key and no wallet are required: the defaults are
 `LLM_MODE=off` and `SETTLEMENT_MODE=local-stub`, and every scenario runs fully in
 that configuration.

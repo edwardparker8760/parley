@@ -35,6 +35,7 @@ import { SettlementStatusPanel } from "@/components/dashboard/settlement-status-
 import { WalkawayPostmortemPanel } from "@/components/dashboard/walkaway-postmortem-panel";
 import { RecordedRunBanner } from "@/components/dashboard/recorded-run-banner";
 import { NegotiationBriefingStrip } from "@/components/dashboard/negotiation-briefing-strip";
+import { ColdStartExplainer } from "@/components/dashboard/cold-start-explainer";
 
 export function DashboardScreen(props: {
   readonly canRunLive: boolean;
@@ -102,11 +103,13 @@ export function DashboardScreen(props: {
       {error !== null ? <p className="error-banner">{error}</p> : null}
 
       {view === null ? (
-        <p className="empty-state">
-          {props.canRunLive
-            ? "Pick a scenario. A is a wide overlap, B is narrow, C has none at all and must end with both sides walking away."
-            : "Pick a recorded run above."}
-        </p>
+        /*
+         * The cold screen. This used to be a single sentence, which meant the
+         * only state a first-time visitor can arrive at was the one state that
+         * explained nothing. The briefing strip above cannot help here: it
+         * reads its figures off a run, and there is no run yet.
+         */
+        <ColdStartExplainer />
       ) : (
         <div className="grid">
           {/* Left column is an explicit stack rather than grid auto-placement:
