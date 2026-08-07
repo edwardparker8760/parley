@@ -6,7 +6,22 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./domain-types": {
+      "types": "./dist/domain-types.d.ts",
+      "default": "./dist/domain-types.js"
+    },
+    "./money-micro-usdc": {
+      "types": "./dist/money-micro-usdc.d.ts",
+      "default": "./dist/money-micro-usdc.js"
+    },
+    "./arc-network-constants": {
+      "types": "./dist/arc-network-constants.d.ts",
+      "default": "./dist/arc-network-constants.js"
+    }
   },
   "scripts": {
     "build": "tsc -b"

@@ -1027,3 +1027,235 @@ a.launcher {
   color: var(--status-stopped);
   font-size: 13px;
 }
+
+/* ---------- set your own limits ---------- */
+
+.custom-limits {
+  max-width: 1100px;
+  margin: 24px auto 48px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+}
+
+.custom-limits-head h2 {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.custom-limits-head p {
+  margin: 0 0 20px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--muted);
+  max-width: 68ch;
+}
+
+.custom-limits-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .custom-limits-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.custom-side {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px 16px 16px;
+  margin: 0;
+}
+
+.custom-side legend {
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.custom-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+  font-size: 13px;
+}
+
+.custom-field span {
+  color: var(--muted);
+}
+
+.custom-field input,
+.custom-field select {
+  width: 130px;
+  padding: 4px 8px;
+  font: inherit;
+  font-size: 13px;
+  text-align: right;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+/* The derived number, set apart from the typed ones: it is the only figure in
+   the panel nobody chose. */
+.derived-floor {
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.derived-floor-label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.derived-floor strong {
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.derived-floor-note {
+  flex-basis: 100%;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.custom-verdict {
+  margin: 16px 0 0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  border: 1px solid var(--line);
+}
+
+.custom-problems {
+  margin: 14px 0 0;
+  padding-left: 20px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.custom-run {
+  margin-top: 18px;
+  padding: 9px 18px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  cursor: pointer;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.custom-run:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.attack-invite {
+  margin-top: 26px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.attack-invite h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.attack-invite p,
+.attack-invite li {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+  max-width: 72ch;
+}
+
+.attack-invite ul {
+  margin: 10px 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.attack-invite strong {
+  color: var(--fg);
+}
+
+.attack-invite-close {
+  margin: 12px 0 0;
+  font-style: italic;
+}
+
+/* A custom run must not read as one of the recordings. */
+.custom-run-banner {
+  max-width: 1400px;
+  margin: 0 auto 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px dashed var(--line);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.custom-run-banner strong {
+  color: var(--fg);
+}
+
+.custom-settlement-figure {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.custom-settlement-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.custom-strategy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  font-size: 12px;
+}
+
+.custom-strategy-label {
+  color: var(--muted);
+}
+
+/* The one way in to the panel below the fold. */
+.jump-to-limits {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
+/* The anchor target sits below a 100vh screen, so give it breathing room when
+   the browser jumps to it. */
+#your-limits {
+  scroll-margin-top: 16px;
+}

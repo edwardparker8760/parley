@@ -37,7 +37,7 @@ import {
 } from "@parley/ledger";
 import type { Database } from "@parley/ledger";
 import { SCENARIOS, isScenarioName } from "./scenario-definitions.js";
-import type { ScenarioDefinition } from "./scenario-definitions.js";
+import type { ScenarioDefinition, ScenarioName } from "./scenario-definitions.js";
 import type {
   GuardrailsView,
   NegotiationView,
@@ -224,19 +224,30 @@ function toPostMortemViews(db: Database, negotiationId: string): PostMortemView[
 export function buildNegotiationView(
   db: Database,
   negotiationId: string,
+  /**
+   * The definition this negotiation actually ran under, for a run whose limits
+   * did not come from the scenario table.
+   *
+   * Every limit and the whole overlap calculation below are read from the
+   * definition, not from the ledger, so a custom run rebuilt from `SCENARIOS`
+   * would render scenario A's ceiling and floor over somebody else's
+   * negotiation: a screen that looks authoritative and is wrong.
+   */
+  definitionOverride?: ScenarioDefinition,
 ): NegotiationView {
   const negotiation = new NegotiationRepository(db).findById(negotiationId);
   if (negotiation === undefined) {
     throw new Error(`Unknown negotiation "${negotiationId}".`);
   }
-  if (!isScenarioName(negotiation.scenario)) {
+  if (definitionOverride === undefined && !isScenarioName(negotiation.scenario)) {
     throw new Error(
       `Negotiation "${negotiationId}" names scenario "${negotiation.scenario}", ` +
         `which is not one of A, B, C.`,
     );
   }
 
-  const definition = SCENARIOS[negotiation.scenario];
+  const definition =
+    definitionOverride ?? SCENARIOS[negotiation.scenario as ScenarioName];
   const transcript = new MessageRepository(db).listByNegotiation(negotiationId);
   const clamps = new ClampEventRepository(db).listByNegotiation(negotiationId);
   const llmRows = new LlmInvocationRepository(db).listByNegotiation(negotiationId);

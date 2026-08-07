@@ -28,7 +28,7 @@ import type { TurnLoopResult } from "./negotiation-turn-loop.js";
 import { finaliseNegotiationOutcome } from "./finalise-negotiation-outcome.js";
 import type { FinaliseResult } from "./finalise-negotiation-outcome.js";
 import { SCENARIOS } from "./scenario-definitions.js";
-import type { ScenarioName } from "./scenario-definitions.js";
+import type { ScenarioDefinition, ScenarioName } from "./scenario-definitions.js";
 
 export interface RunScenarioOptions {
   readonly scenario: ScenarioName;
@@ -77,6 +77,24 @@ export interface RunScenarioOptions {
   readonly seedKey?: string;
   /** Where the ledger lives, when the caller opened it. Enables live reads. */
   readonly db?: Database;
+  /**
+   * Run these guardrails instead of the named scenario's.
+   *
+   * This is what lets a visitor set their own limits. The three scenarios stay
+   * exactly as they are; this is an additional door, not a change to them.
+   *
+   * The whole definition is replaced rather than individual fields, because
+   * openings, terms and beta have to be consistent with the bands they run
+   * inside. A caller that overrode only `buyerGuardrails` could produce an
+   * opening offer outside its own band, which the egress guard would treat as
+   * a broken clamp and throw on.
+   *
+   * `buildNegotiationView` takes the SAME override. It derives the limits and
+   * the overlap from the definition, so a custom run read back with the
+   * scenario's definition would render scenario A's numbers over a completely
+   * different negotiation.
+   */
+  readonly definition?: ScenarioDefinition;
 }
 
 export interface RunScenarioResult extends TurnLoopResult {
@@ -116,7 +134,7 @@ function nextFreeNegotiationId(
 export async function runScenario(
   options: RunScenarioOptions,
 ): Promise<RunScenarioResult> {
-  const definition = SCENARIOS[options.scenario];
+  const definition = options.definition ?? SCENARIOS[options.scenario];
 
   // An injected database is what lets the dashboard read the ladder WHILE it is
   // being written: same connection, same process, no polling a file that a

@@ -17,6 +17,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@parley/guardrails':
+        specifier: workspace:*
+        version: link:../../packages/guardrails
       '@parley/ledger':
         specifier: workspace:*
         version: link:../../packages/ledger

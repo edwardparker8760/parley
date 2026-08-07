@@ -13,7 +13,20 @@
  */
 
 import type { MicroUsdc, SlaTier, Terms } from "@parley/shared";
-import { slaTierRank } from "@parley/shared";
+/*
+ * Deep import, not the `@parley/shared` barrel, and it matters.
+ *
+ * The barrel re-exports `config-from-env`, which reads `.env` and therefore
+ * imports `node:path` and `node:fs`. Pulling the barrel in here made this
+ * module, and everything that imports it, unbundleable for the browser: the
+ * dashboard's "set your own limits" panel derives the seller's floor as you
+ * type, using THIS function, so that the number on screen is the number the
+ * run will enforce.
+ *
+ * `domain-types` is pure, so this import costs nothing at runtime and keeps the
+ * floor arithmetic available everywhere it is needed.
+ */
+import { slaTierRank } from "@parley/shared/domain-types";
 
 /**
  * Cost adjustment factors, in basis points added to the cost basis.

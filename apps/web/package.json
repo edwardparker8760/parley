@@ -10,6 +10,7 @@
     "test": "node --test ./test/*.test.js"
   },
   "dependencies": {
+    "@parley/guardrails": "workspace:*",
     "@parley/ledger": "workspace:*",
     "@parley/orchestrator": "workspace:*",
     "@parley/settlement": "workspace:*",
