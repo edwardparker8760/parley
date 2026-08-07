@@ -226,23 +226,42 @@ verified byte-identical to the live run, 18 of 18. That proves the record and
 replay mechanism works against a real model rather than only against a stub,
 which had not been shown before.
 
-**It is not usable for the demo video yet**, and the reason is worth stating so
-nobody assumes otherwise. The tape is keyed by prompt hash, and these prompts
-come from the latency harness, not from a real negotiation, because the LLM
-layer is not yet wired into `propose-next-offer` (phase 05 step 9). Once it is,
-the engine will produce different prompts, the hashes will not match, and strict
-replay will raise a tape miss.
+**It is not the demo tape**, and the reason is worth stating so nobody assumes
+otherwise. The tape is keyed by prompt hash, and these prompts come from the
+latency harness, not from a real negotiation: it was recorded before the LLM
+layer was wired into the turn loop. Once the wiring landed the engine produced
+different prompts, the hashes stopped matching, and strict replay would raise a
+tape miss against this file.
 
 That is the designed behaviour: a stale tape fails loudly rather than answering
-a question it was never asked. **Re-record after the wiring lands**, then the
-tape becomes the demo artefact.
+a question it was never asked.
+
+**The demo artefacts are the three scenario tapes**, `llm-tape-scenario-{a,b,c}.json`,
+recorded from real negotiations in the same commit as the wiring (`bfadb20`) and
+re-verified by clean strict replay on 2026-08-07. `llm-tape.json` is kept as the
+evidence that record-and-replay works against a real model, which is a separate
+claim and still true.
 
 ## Unresolved
 
 1. TPM and RPD remain secondary figures. RPM is confirmed at 15 from a live 429
    payload; confirm the other two the same way or in AI Studio.
-2. The LLM layer is still not wired into `propose-next-offer`, so `LLM_MODE=full`
-   does not yet affect a scenario run. The tape must be re-recorded once it is.
+2. ~~The LLM layer is still not wired into `propose-next-offer`, so
+   `LLM_MODE=full` does not yet affect a scenario run. The tape must be
+   re-recorded once it is.~~ **Resolved 2026-08-04, verified 2026-08-07.** The
+   wiring landed in `bfadb20`, and the three scenario tapes were cut in that
+   same commit, so they were never stale. The prompt builder has not changed
+   since.
+
+   Verified by replay rather than by reading the log: all three scenarios were
+   replayed against their tapes on 2026-08-07 with no tape miss, A and B
+   settling and C walking away. That is proof rather than inference, because
+   tapes are keyed by prompt hash and `strict` mode throws on a miss, so a
+   clean replay cannot happen against a stale tape.
+
+   The caveat above still stands for the future: any change to the prompt
+   builder or the concession schedule invalidates all three, and they must be
+   re-cut before recording, not after.
 3. Cold-start behaviour was seen once, on a fresh key. Whether it recurs per
    session, per key, or per project is unknown; warm up before recording rather
    than relying on it not happening.
