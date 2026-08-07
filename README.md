@@ -200,10 +200,30 @@ Phases 01-08 of the implementation plan are complete. See:
 ## Honest limitations
 
 - Arc **testnet** only. No mainnet configuration exists in this repo.
-- **Settlement runs on the local stub.** The Arc x402 adapter is implemented
-  against a verified SDK surface and tested offline, but no wallet has been
-  funded, so no real settlement has been executed and no real latency measured.
-  Every settlement figure you will see is a stub figure, and the UI says so.
+- **One real settlement has been executed on Arc Testnet, and it landed on
+  chain.** On 2026-08-06 a funded buyer paid a real negotiated deal through
+  Circle Gateway x402: 9.23 USDC, buyer `0x38D6faC8...` to seller
+  `0x4Fc4cec3...`, Circle transfer `cad9fe1e-7201-40d0-b4d9-ce6a7c3655d4`. The
+  buyer's Gateway balance fell by exactly 9,230,000 atomic units, so this is
+  not a stub figure.
+
+  Two latencies, and they are not interchangeable:
+
+  | | |
+  |---|---|
+  | authorisation accepted | **857 ms** |
+  | batch settled on chain | **12 min 43 s** later |
+  | transaction | [`0xcccd6d68...f5be6aa`](https://testnet.arcscan.app/tx/0xcccd6d68ed7395faf486bac891df2bf135bdd6c71fdda012009667170f5be6aa) |
+
+  Circle batches and there is no flush, so the run that pays exits long before
+  the hash exists. "Authorised in 857 ms, settled on chain 12 minutes later" is
+  the accurate sentence; "confirmed in 857 ms" is not. `pnpm --filter
+  @parley/settlement transfer-status <id>` is how the hash is retrieved after
+  the fact.
+
+  Everything **else** in this repo, including every figure in the dashboard and
+  the three bundled recordings, still comes from the local stub and is labelled
+  `SIMULATED` on screen.
 - **Prompts go to a third-party API.** When `LLM_MODE` is not `off`, each agent's
   own band and offer history are sent to Google's Gemini endpoint. Fine for
   testnet demo data; it is not a production privacy posture.
