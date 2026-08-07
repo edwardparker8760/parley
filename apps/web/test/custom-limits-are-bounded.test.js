@@ -178,11 +178,103 @@ test("the invited attacks name the agent that actually shows a clamp", () => {
    * them looking for something that correctly never happens.
    */
   const panel = read("components", "dashboard", "custom-limits-panel.tsx");
-  const clampInvite = panel.slice(panel.indexOf("Leave a sliver"));
-  assert.match(clampInvite, /baseline/);
 
-  // Collapsed first: this is JSX, so the sentence is broken across lines by the
-  // formatter and any literal multi-word match would be pinning the wrapping.
-  const flat = panel.replace(/\s+/g, " ");
-  assert.match(flat, /engine[\s\S]{0,120}clamp never fires/);
+  /*
+   * The prose this used to check became a one-click preset. The guarantee is
+   * unchanged and matters more now: pressing the sliver button must actually
+   * run the baseline agent, because the engine is clamped zero times however
+   * narrow the band and the label promises nine clamps.
+   */
+  const sliverAt = panel.indexOf("A sliver, with the baseline agent");
+  assert.ok(sliverAt > 0, "the sliver preset must exist and name the agent");
+
+  // The strategy field inside that preset object, not somewhere else in the file.
+  const presetBlock = panel.slice(sliverAt, sliverAt + 600);
+  assert.match(
+    presetBlock,
+    /strategy: "baseline"/,
+    "the sliver preset must run baseline, or its label is false",
+  );
+
+  // And its explanation must still say the engine differs, so nobody runs it
+  // with the engine and concludes the clamp is broken.
+  const flat = presetBlock.replace(/\s+/g, " ");
+  assert.match(flat, /engine[\s\S]{0,80}clamped zero times/);
+});
+
+test("every preset is valid input and matches the outcome its label promises", () => {
+  /*
+   * The presets are one-click challenges, so their labels are promises about
+   * what the visitor is about to see. This pins the arithmetic those promises
+   * rest on. It cannot run the negotiation here (that needs the orchestrator
+   * and a ledger), so it checks the two things that decide the outcome: the
+   * limits parse, and the floor/ceiling relationship is the one claimed.
+   *
+   * The outcomes themselves were verified against the live deployment on
+   * 2026-08-07 and are recorded in the panel's own comment.
+   */
+  const panel = read("components", "dashboard", "custom-limits-panel.tsx");
+
+  // 1. Ceiling below floor. Must be impossible, and must say 600 and 700.
+  assert.match(panel, /Ceiling below floor: 600 against 700/);
+  const impossible = validateCustomLimits({
+    ...DEFAULT_CUSTOM_LIMITS,
+    buyerMaxUnitPrice: "600",
+  });
+  assert.equal(impossible.ok, true);
+  assert.ok(
+    previewFloor({ ...DEFAULT_CUSTOM_LIMITS, buyerMaxUnitPrice: "600" }) > 600n,
+    "preset 1 must actually put the floor above the ceiling",
+  );
+
+  // 2. A sliver, and it MUST name the baseline agent: the engine is clamped
+  // zero times however narrow the band, so the label would be false otherwise.
+  assert.match(panel, /A sliver, with the baseline agent: 720 against 700/);
+  assert.match(panel, /strategy: "baseline"/);
+  const sliver = { ...DEFAULT_CUSTOM_LIMITS, buyerMaxUnitPrice: "720" };
+  assert.equal(validateCustomLimits(sliver).ok, true);
+  assert.equal(previewFloor(sliver), 700n, "the sliver preset assumes a floor of 700");
+
+  // 3. Margin raised past the ceiling. 150% on 500 must clear 1200.
+  const raised = {
+    ...DEFAULT_CUSTOM_LIMITS,
+    buyerMaxUnitPrice: "1200",
+    sellerMinMarginPct: "150",
+  };
+  assert.equal(validateCustomLimits(raised).ok, true);
+  const raisedFloor = previewFloor(raised);
+  assert.equal(raisedFloor, 1250n);
+  assert.ok(raisedFloor > 1200n, "preset 3 must make a deal impossible");
+
+  // Each preset must be reachable as a button that runs, not just prose.
+  assert.match(panel, /className="preset-run"/);
+  assert.match(panel, /props\.onRun\(preset\.limits, preset\.strategy\)/);
+});
+
+test("the primary run button is filled, and disabled looks different in kind", () => {
+  /*
+   * "Run with these limits" was a pale outlined box that read as disabled and
+   * sat visually below the secondary agent chips. It is the primary action.
+   * Disabled is hollow rather than dimmed, because a half-opacity solid button
+   * still looks pressable.
+   */
+  const css = readFileSync(join(APP_ROOT, "app", "dashboard.css"), "utf8");
+  const rule = (selector) => {
+    const at = css.indexOf(`${selector} {`);
+    assert.ok(at >= 0, `missing rule ${selector}`);
+    return css.slice(at, css.indexOf("}", at));
+  };
+
+  const enabled = rule(".custom-run");
+  assert.match(enabled, /background:\s*var\(--text-primary\)/);
+  assert.match(enabled, /color:\s*var\(--text-on-fill\)/);
+
+  const disabled = rule(".custom-run:disabled");
+  assert.match(disabled, /background:\s*transparent/);
+  assert.match(disabled, /dashed/);
+  assert.doesNotMatch(
+    disabled,
+    /opacity/,
+    "disabled must differ in kind, not be a dimmed copy of enabled",
+  );
 });

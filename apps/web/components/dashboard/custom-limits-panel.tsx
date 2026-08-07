@@ -29,6 +29,62 @@ import {
 } from "@/lib/custom-limits";
 import type { CustomLimitsInput } from "@/lib/custom-limits";
 
+/**
+ * The three challenges, as numbers rather than as instructions.
+ *
+ * EVERY ONE OF THESE WAS RUN against the deployed API before its label was
+ * written, and the label states only what the run actually returned. An
+ * earlier version of this panel described the second one as showing the clamp
+ * fire without naming the agent, which was false: the engine is clamped zero
+ * times however narrow the band. Reading about a test is not running it, and a
+ * label that promises the wrong outcome is worse than no label, because the
+ * visitor concludes the product is broken rather than that the copy was.
+ *
+ * Verified 2026-08-07 against the live deployment:
+ *
+ *   1. ceiling 600, floor 700, engine   -> WALKED_AWAY, 2 post-mortems, 0 clamps
+ *   2. ceiling 720, floor 700, baseline -> SETTLED, 9 buyer clamps
+ *   3. margin 150 -> floor 1250 vs ceiling 1200, engine -> WALKED_AWAY, 2 post-mortems
+ */
+interface Preset {
+  readonly id: string;
+  readonly label: string;
+  readonly explanation: string;
+  readonly strategy: "engine" | "baseline";
+  readonly limits: CustomLimitsInput;
+}
+
+const PRESETS: readonly Preset[] = [
+  {
+    id: "no-overlap",
+    label: "Ceiling below floor: 600 against 700",
+    explanation:
+      "No price satisfies both owners. Both agents establish that and walk away rather than force a deal: two post-mortems, nothing agreed, nothing paid.",
+    strategy: "engine",
+    limits: { ...DEFAULT_CUSTOM_LIMITS, buyerMaxUnitPrice: "600" },
+  },
+  {
+    id: "sliver-baseline",
+    label: "A sliver, with the baseline agent: 720 against 700",
+    explanation:
+      "A 20-wide window. The blunt agent settles inside it, but only because the buyer's ceiling stopped it nine times on the way. Run the same numbers with the engine and it is clamped zero times, because it stops short on its own.",
+    strategy: "baseline",
+    limits: { ...DEFAULT_CUSTOM_LIMITS, buyerMaxUnitPrice: "720" },
+  },
+  {
+    id: "margin-past-ceiling",
+    label: "Raise the margin until no deal is possible",
+    explanation:
+      "Margin 150% on a cost of 500 puts the floor at 1250, above the buyer's ceiling of 1200. The floor is derived, so raising the margin is enough to make agreement impossible, and the agents agree with the arithmetic.",
+    strategy: "engine",
+    limits: {
+      ...DEFAULT_CUSTOM_LIMITS,
+      buyerMaxUnitPrice: "1200",
+      sellerMinMarginPct: "150",
+    },
+  },
+];
+
 export function CustomLimitsPanel(props: {
   running: boolean;
   onRun: (limits: CustomLimitsInput, strategy: "engine" | "baseline") => void;
@@ -215,45 +271,46 @@ export function CustomLimitsPanel(props: {
         {props.running ? "Negotiating..." : "Run with these limits"}
       </button>
 
+      {/* The pointer down to the challenges. Someone who never scrolls past
+          the run button would otherwise never learn they exist. */}
+      <p className="challenge-pointer">
+        Or skip the form: <a href="#try-to-break-it">three one-click tests</a>{" "}
+        below try to break the guardrails on purpose.
+      </p>
+
       {/* The invitation. The claim is only worth anything if it survives
           somebody actively trying to break it, so say so and tell them how. */}
-      <aside className="attack-invite">
+      <aside id="try-to-break-it" className="attack-invite">
         <h3>Try to break it</h3>
         <p>
           Nothing an agent says can move its owner&apos;s limit, because the
           limit is arithmetic applied after the agent has decided. That is a
           claim, so test it:
         </p>
-        {/*
-          Every example below was run against this route before being written
-          here. The second one originally promised clamps from any narrow band,
-          which was wrong: the engine is clamped zero times however tight the
-          band gets, because it stops short of its own limit by design. Naming
-          the wrong agent would have sent people looking for a clamp that
-          correctly never comes, and concluding the panel was broken.
-        */}
-        <ul>
-          <li>
-            <strong>Put the buyer&apos;s ceiling below the seller&apos;s
-            floor.</strong> Try 600 against the default floor of 700. No price
-            satisfies both owners, so watch both agents establish that and walk
-            away rather than force a deal. Two post-mortems, no agreed price,
-            nothing paid.
-          </li>
-          <li>
-            <strong>Leave a sliver, and switch to the baseline agent.</strong>{" "}
-            Set the ceiling to 720 against a floor of 700 and run it with{" "}
-            <em>baseline</em>. It walks straight at its owner&apos;s limit and
-            the ceiling stops it nine times, then it settles inside the band
-            anyway. Run the same numbers with <em>engine</em> and the clamp
-            never fires, because that agent stops short on its own.
-          </li>
-          <li>
-            <strong>Raise the margin until the floor climbs past the
-            ceiling.</strong> The floor updates as you type, so you can watch
-            the exact percentage where a deal stops being possible. Then run it
-            and confirm the agents agree with the arithmetic.
-          </li>
+        {/* Each one fills the form, picks the agent and runs, because a judge
+            who clicks is convinced in a way a judge who reads is not. */}
+        <ul className="preset-list">
+          {PRESETS.map((preset) => (
+            <li key={preset.id}>
+              <button
+                type="button"
+                className="preset-run"
+                disabled={props.running}
+                onClick={() => {
+                  // Fill the form too, not just run it: the visitor must be
+                  // able to see the numbers that produced what they are about
+                  // to watch, and change one to keep going.
+                  setTouched(true);
+                  setLimits(preset.limits);
+                  setStrategy(preset.strategy);
+                  props.onRun(preset.limits, preset.strategy);
+                }}
+              >
+                {preset.label}
+              </button>
+              <span className="preset-explanation">{preset.explanation}</span>
+            </li>
+          ))}
         </ul>
         <p className="attack-invite-close">
           The agents never see each other&apos;s limits, so neither can aim at

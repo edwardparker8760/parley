@@ -1151,20 +1151,40 @@ a.launcher {
 }
 
 .custom-run {
+  /* The primary action on this screen, styled like the landing page's
+     .button-primary: solid ink fill, white text. It was a pale outlined box
+     that read as disabled, and sat visually below the engine/baseline chips
+     above it, which are secondary controls. */
   margin-top: 18px;
-  padding: 9px 18px;
+  padding: 11px 24px;
   font: inherit;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
-  border: 1px solid var(--panel-edge);
-  border-radius: 6px;
+  border: 1px solid var(--text-primary);
+  border-radius: var(--radius-pill);
   cursor: pointer;
-  background: var(--bg);
-  color: var(--text);
+  background: var(--text-primary);
+  color: var(--text-on-fill);
+  transition: background 120ms ease, color 120ms ease, box-shadow 120ms ease;
 }
 
+.custom-run:hover:not(:disabled),
+.custom-run:focus-visible:not(:disabled) {
+  background: var(--accent-lime);
+  border-color: var(--accent-lime);
+  color: var(--text-primary);
+}
+
+/*
+ * Disabled must not merely be a dimmer version of enabled: at 0.5 opacity a
+ * solid dark button still looks pressable. Hollow it out instead, so the
+ * difference is a change of KIND (no fill, dashed edge, not-allowed cursor)
+ * rather than a change of degree.
+ */
 .custom-run:disabled {
-  opacity: 0.5;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px dashed var(--line-soft);
   cursor: not-allowed;
 }
 
@@ -1285,4 +1305,68 @@ a.launcher {
 .strategy-proof strong,
 .strategy-proof em {
   color: var(--text);
+}
+
+/* ---------- one-click challenges ---------- */
+
+.challenge-pointer {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.preset-list {
+  list-style: none;
+  margin: 12px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.preset-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Secondary to .custom-run: outlined rather than filled, so the form's own
+   run button stays the primary action and these read as shortcuts. */
+.preset-run {
+  align-self: flex-start;
+  padding: 7px 15px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  border: 1px solid var(--text-primary);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.preset-run:hover:not(:disabled),
+.preset-run:focus-visible:not(:disabled) {
+  background: var(--accent-lime);
+  border-color: var(--accent-lime);
+}
+
+.preset-run:disabled {
+  border-style: dashed;
+  border-color: var(--line-soft);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+.preset-explanation {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 72ch;
+}
+
+#try-to-break-it {
+  scroll-margin-top: 16px;
 }
