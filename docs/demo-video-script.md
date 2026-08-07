@@ -97,9 +97,10 @@ Screen: **Scenario A**, let it settle, point at the settlement panel.
 > 402-protected seller endpoint, and **Circle's x402 facilitator** verifies and
 > settles the authorisation.
 >
-> And that amber badge is doing real work. This run is on the local stub, no
-> wallet is funded, so no real money moved and the screen says so. The adapter
-> for the real path is built and tested; it needs a faucet request, not code.
+> And that amber badge is doing real work. This run is on the stub, so no money
+> moved here and the screen says so. The real path has run once, off camera:
+> 9.23 USDC on Arc Testnet, authorised in 857 milliseconds, batch settled on
+> chain twelve minutes later.
 
 ## 2:45-3:00, close
 

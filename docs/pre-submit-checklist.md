@@ -3,7 +3,8 @@
 Run top to bottom. Submission is the only irreversible action in this project,
 which is why this runs before it and not after.
 
-Status column filled 2026-08-04. Items only a human can do are marked OWNER.
+Status column filled 2026-08-04, re-checked 2026-08-07 after the first real
+settlement. Items only a human can do are marked OWNER.
 
 ## Repository hygiene
 
@@ -23,7 +24,7 @@ Status column filled 2026-08-04. Items only a human can do are marked OWNER.
 | | Check | Status |
 |---|---|---|
 | 9 | `git clone` to a fresh directory, `pnpm install` | PASS |
-| 10 | `pnpm test` green, with a **non-zero** test count | PASS: 88 |
+| 10 | `pnpm test` green, with a **non-zero** test count | PASS: 125 |
 | 11 | `pnpm run:scenario C` runs and walks away | PASS |
 | 12 | All three scenarios run | PASS |
 
@@ -39,9 +40,12 @@ Status column filled 2026-08-04. Items only a human can do are marked OWNER.
 |---|---|---|
 | 13 | Scenario C produces zero settlement calls | PASS: counting-spy test |
 | 14 | Guardrail property tests green with visible counts | PASS: 11 guardrails, 26 orchestrator |
+| 14a | Settlement adapter tests green | PASS: 14, including the batch-landing transition |
 | 15 | Captured-model test: zero out-of-band offers across A, B, C | PASS |
 | 16 | Every stub settlement carries `SIMULATED` on screen | PASS: badge renders from the persisted `isStub` column |
-| 17 | No README claim exceeds what runs | PASS: settlement stated as stub, LLM discretion stated as a 2% window |
+| 17 | No README claim exceeds what runs | PASS: one real settlement claimed and evidenced, everything else stated as stub, LLM discretion stated as a 2% window |
+| 17a | The two settlement latencies are never conflated | PASS: README, deck, landing page and video script all state 857ms authorisation and 12m43s on-chain settlement separately |
+| 17b | Every claim of a real payment carries its transaction hash | PASS: `0xcccd6d68...f5be6aa`, re-checkable with `pnpm --filter @parley/settlement transfer-status cad9fe1e-7201-40d0-b4d9-ce6a7c3655d4` |
 
 ## Video and submission
 

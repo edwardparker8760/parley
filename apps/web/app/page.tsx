@@ -276,12 +276,14 @@ export default function Page() {
             <RevealOnScroll variant="stagger" delayMs={80}>
               <ul className="plain-list">
                 <li>
-                  <b>No real money has moved.</b>
+                  <b>Real money has moved exactly once.</b>
                   <span>
-                    Settlement runs on a local stub. The Arc adapter is implemented
-                    and tested, but no wallet has been funded, so every settlement
-                    figure anywhere in this project is a stub figure and the
-                    interface says so on screen.
+                    One negotiated deal was paid on Arc Testnet on 6 August 2026:
+                    9.23 USDC, authorised in 857ms, settled on chain 12 minutes
+                    and 43 seconds later. Every other settlement figure anywhere
+                    in this project, including all three recorded runs on this
+                    site, comes from the local stub, and the interface says so on
+                    screen.
                   </span>
                 </li>
                 <li>

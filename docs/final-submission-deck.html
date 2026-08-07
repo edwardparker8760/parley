@@ -273,13 +273,15 @@
         <li><span class="check">&#10003;</span> Utility, concession schedule, dual ZOPA detection</li>
         <li><span class="check">&#10003;</span> Bounded LLM, wired in, every consultation logged</li>
         <li><span class="check">&#10003;</span> Settlement on accept, post-mortems on walk-away</li>
+        <li><span class="check">&#10003;</span> One real payment on Arc Testnet: 9.23 USDC, authorised in 857ms, settled on chain 12m43s later</li>
         <li><span class="check">&#10003;</span> One-screen dashboard, live and replayable</li>
       </ul>
     </div>
     <div class="card warn">
       <h3>Not claimed</h3>
       <ul>
-        <li>Settlement runs on the <b>local stub</b>. The Arc adapter is implemented and tested offline, but no wallet is funded, so no real money has moved and every receipt is badged <b>SIMULATED</b>.</li>
+        <li>The real path has run <b>once</b>. Every other settlement figure, including all three recorded runs, comes from the <b>local stub</b> and is badged <b>SIMULATED</b>.</li>
+        <li>Authorisation and on-chain settlement are <b>separate latencies</b>. Circle batches and there is no flush, so "authorised in 857ms" is not "confirmed in 857ms".</li>
         <li>Testnet only.</li>
         <li>Prompts go to a third-party API.</li>
         <li>No identity or reputation layer. Scoped, then cut on day one of six.</li>

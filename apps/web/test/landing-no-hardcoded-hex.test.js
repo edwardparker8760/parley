@@ -129,7 +129,32 @@ test("the page renders every required section", () => {
   }
   // The honest limitations section is not optional and not decorative.
   assert.ok(page.includes("What is not true"));
-  assert.ok(page.includes("No real money has moved"));
+
+  /*
+   * This used to pin the exact sentence "No real money has moved". That was
+   * true until 2026-08-06, when one deal was really paid on Arc Testnet, and
+   * the assertion then blocked the page from being corrected rather than
+   * protecting anything. Pin the SUBSTANCE instead: whatever the wording, the
+   * page must still admit that everything on it comes from the stub.
+   */
+  assert.match(page, /\bstub\b/, "the limits section must still name the stub");
+  assert.match(
+    page,
+    /every other settlement figure/i,
+    "the page must scope its one real payment, or the reader will assume all of them are real",
+  );
+
+  /*
+   * The specific lie this section exists to prevent. 857ms is the AUTHORISATION
+   * latency; the batch took 12m43s to land on chain. Circle batches and there
+   * is no flush, so "confirmed"/"settled" next to that number would be a claim
+   * about Circle's schedule that this project cannot make.
+   */
+  const conflated = /(confirmed|settled)[^.]{0,40}857/i;
+  assert.ok(
+    !conflated.test(page),
+    "857ms is authorisation, not confirmation: do not describe it as settled or confirmed",
+  );
 });
 
 test("the scan looked at the files that matter", () => {
