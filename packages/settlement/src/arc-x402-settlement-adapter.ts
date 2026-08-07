@@ -7,9 +7,11 @@
  *
  * ## The flow, and why it has the shape it has
  *
- *   1. `supports(url)` first. A cheap precondition: if the seller is not
- *      offering Gateway batching, fail now with a clear message rather than
- *      after a signature.
+ *   1. The seller's unpriced quote first. A cheap precondition: if the seller
+ *      is not there, does not know this deal, or disagrees about the amount,
+ *      fail now with a clear message rather than after a signature. See the
+ *      note in `settle` for why this is the quote and not
+ *      `GatewayClient.supports()`.
  *   2. `pay(url)` runs the whole 402 dance: request, 402, find the batching
  *      option, sign an EIP-3009 authorization, retry with the signature. The
  *      seller prices the route from its own copy of the deal, so the amount is
@@ -68,19 +70,23 @@ export interface ArcX402SettlementAdapterOptions {
   readonly sellerServiceUrl: string;
   /** Injected in tests. Defaults to a real GatewayClient. */
   readonly client?: GatewayLike;
+  /** Injected in tests. Defaults to the global fetch, for the quote probe. */
+  readonly fetchImpl?: typeof globalThis.fetch;
 }
 
 /** The slice of GatewayClient this adapter uses. Narrow, so it is stubbable. */
 export interface GatewayLike {
-  supports(url: string): Promise<{ supported: boolean } & Record<string, unknown>>;
   pay<T>(
     url: string,
     options?: { method?: "GET" | "POST" | "PUT" | "DELETE"; body?: unknown },
   ): Promise<{ amount: bigint; transaction: string; status: number; data: T }>;
-  searchTransfers(params?: Record<string, unknown>): Promise<{
-    data?: { id: string; status: string; amount: string; createdAt: string }[];
-  } & Record<string, unknown>>;
-  getTransferById(id: string): Promise<{ id: string; status: string } & Record<string, unknown>>;
+  /**
+   * `txHash` is null until Circle's batch lands, then it is the real on-chain
+   * hash. That transition is the entire point of `waitForSettlement`.
+   */
+  getTransferById(id: string): Promise<
+    { id: string; status: string; txHash?: string | null } & Record<string, unknown>
+  >;
 }
 
 export class ArcX402SettlementAdapter implements SettlementAdapter {
@@ -134,15 +140,64 @@ export class ArcX402SettlementAdapter implements SettlementAdapter {
     return `${this.#options.sellerServiceUrl.replace(/\/+$/, "")}/deals/${dealId}/capacity`;
   }
 
+  #quoteUrl(dealId: string): string {
+    return `${this.#options.sellerServiceUrl.replace(/\/+$/, "")}/deals/${dealId}/quote`;
+  }
+
+  /**
+   * The seller's own amount for this deal, or null if it cannot be obtained.
+   *
+   * Null covers every "the seller is not there" case: connection refused, a
+   * 404 for a deal it does not know, malformed JSON. They all mean the same
+   * thing to the caller, and they all produce the same actionable message.
+   */
+  async #fetchQuotedAmount(dealId: string): Promise<bigint | null> {
+    const fetchImpl = this.#options.fetchImpl ?? globalThis.fetch;
+    try {
+      const response = await fetchImpl(this.#quoteUrl(dealId));
+      if (!response.ok) return null;
+      const body = (await response.json()) as { amountMicroUsdc?: unknown };
+      if (typeof body.amountMicroUsdc !== "string") return null;
+      return BigInt(body.amountMicroUsdc);
+    } catch {
+      return null;
+    }
+  }
+
   async settle(request: SettlementRequest): Promise<SettlementReceipt> {
     const url = this.#capacityUrl(request.dealId);
     const expected = expectedAmount(request);
 
-    const support = await this.gateway.supports(url);
-    if (support.supported !== true) {
+    /*
+     * The precondition is the seller's QUOTE, not `GatewayClient.supports()`.
+     *
+     * `supports()` probes the paid route with no body, and the paid route
+     * answers 409 to a request that carries no terms hash, before it will
+     * quote any price at all. So the probe sees "not 402" and reports the
+     * seller as not offering Gateway batching, on a seller that offers it
+     * perfectly well: the same route answers 402 the moment the correct hash
+     * is presented. Measured against the live service on 2026-08-06.
+     *
+     * Weakening the seller to satisfy the probe was the wrong direction.
+     * Refusing to price before the terms hash matches is the property that
+     * makes a payment inseparable from the negotiation that produced it.
+     *
+     * The quote route is unpriced and needs no body, so it can answer. It is
+     * also a STRONGER precondition than the boolean it replaces: it proves the
+     * service is up, that it knows this deal, and that it agrees on the amount,
+     * and it catches a price disagreement BEFORE a signature rather than after.
+     */
+    const quoted = await this.#fetchQuotedAmount(request.dealId);
+    if (quoted === null) {
       throw new SettlementNotConfiguredError(
-        `${url} does not offer Gateway batching. Is @parley/seller-service ` +
-          `running, and pointed at the same ledger?`,
+        `${this.#quoteUrl(request.dealId)} did not answer with a quote. Is ` +
+          `@parley/seller-service running, and pointed at the same ledger?`,
+      );
+    }
+    if (quoted !== expected) {
+      throw new Error(
+        `The seller quotes ${quoted} atomic units but the deal is ${expected}. ` +
+          `Refusing to sign a payment for a different deal than the one agreed.`,
       );
     }
 
@@ -168,7 +223,20 @@ export class ArcX402SettlementAdapter implements SettlementAdapter {
       // Circle settles the batch on its own schedule and there is no flush.
       status: "PENDING",
       reference: result.transaction,
-      txHash: result.transaction,
+      /*
+       * NOT `result.transaction`. That value is Circle's transfer id, a UUID,
+       * and the transfer record carries `txHash: null` until the batch lands.
+       * Assigning it here produced an "explorer URL" of the form
+       * `.../tx/<uuid>`, which arcscan answers 200 for because it is a single
+       * page app: a link that looks like proof of an on-chain transaction and
+       * is not one. There is no hash at authorization time, so there is none
+       * to record. `waitForSettlement` is what observes the real one.
+       *
+       * The field is OMITTED rather than set: `txHash` is `string | undefined`
+       * on the receipt, and `finalise-negotiation-outcome.ts` builds an
+       * explorer URL only when it is not undefined. Leaving it out is what
+       * makes the explorer link correctly absent.
+       */
       amountMicroUsdc: expected,
       termsHash: request.termsHash,
       isStub: false,
@@ -177,43 +245,71 @@ export class ArcX402SettlementAdapter implements SettlementAdapter {
   }
 
   /**
-   * Poll until the transfer reaches a settled state, or the budget runs out.
+   * Poll one transfer until it reaches a settled state, or the budget runs out.
    *
    * Separate from `settle` on purpose: settlement must not block the demo, and
    * batch latency is Circle's to determine. The phase 08 video script needs
    * this number measured, so this returns what it observed rather than
    * pretending the wait succeeded.
+   *
+   * ## Why this polls an ID and not `searchTransfers`
+   *
+   * It used to call `searchTransfers({ from, network })` and read `page.data[0]`.
+   * Two things were wrong with that, both measured against the live API on
+   * 2026-08-07:
+   *
+   *   1. The SDK answers `{ transfers: [...] }`, not `{ data: [...] }`. So
+   *      `page.data?.[0]` was ALWAYS undefined, and this method could only ever
+   *      run out its timeout and report `unknown`. It never observed anything.
+   *   2. The response came back carrying transfers between addresses unrelated
+   *      to ours, so the `from` filter is not doing what the name suggests.
+   *      "Newest transfer from this address" was therefore not a safe way to
+   *      identify our own payment even once the shape was fixed.
+   *
+   * `getTransferById` takes the id that `settle` already returned as the
+   * receipt's `reference`, and answers about exactly that transfer. There is no
+   * shape to guess and no race with somebody else's payment.
    */
   async waitForSettlement(options: {
-    fromAddress: string;
+    transferId: string;
     timeoutMs: number;
     pollIntervalMs?: number;
     now?: () => number;
-  }): Promise<{ status: string; transferId: string | null; waitedMs: number }> {
+  }): Promise<{
+    status: string;
+    transferId: string;
+    /** The real on-chain hash, once the batch has landed. Null before that. */
+    txHash: string | null;
+    waitedMs: number;
+  }> {
     const clock = options.now ?? (() => Date.now());
     const interval = options.pollIntervalMs ?? 3000;
     const startedAt = clock();
 
     let lastStatus = "unknown";
-    let transferId: string | null = null;
+    let txHash: string | null = null;
 
     while (clock() - startedAt < options.timeoutMs) {
-      const page = await this.gateway.searchTransfers({
-        from: options.fromAddress,
-        network: this.#options.network,
-      });
-      const newest = page.data?.[0];
-      if (newest !== undefined) {
-        transferId = newest.id;
-        lastStatus = newest.status;
-        if (SETTLED_STATES.includes(newest.status) || newest.status === "failed") {
-          return { status: newest.status, transferId, waitedMs: clock() - startedAt };
-        }
+      const transfer = await this.gateway.getTransferById(options.transferId);
+      lastStatus = transfer.status;
+      txHash = transfer.txHash ?? null;
+      if (SETTLED_STATES.includes(transfer.status) || transfer.status === "failed") {
+        return {
+          status: transfer.status,
+          transferId: options.transferId,
+          txHash,
+          waitedMs: clock() - startedAt,
+        };
       }
       await new Promise((resolve) => setTimeout(resolve, interval));
     }
 
-    return { status: lastStatus, transferId, waitedMs: clock() - startedAt };
+    return {
+      status: lastStatus,
+      transferId: options.transferId,
+      txHash,
+      waitedMs: clock() - startedAt,
+    };
   }
 }
 

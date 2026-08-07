@@ -51,7 +51,18 @@ async function main(): Promise<void> {
 
   console.log(`\ndepositing ${amount} USDC into Gateway...`);
   const result = await gateway.deposit(amount);
-  console.log(`  done: ${JSON.stringify(result)}`);
+  /*
+   * The SDK returns bigints in this result, and `JSON.stringify` throws on a
+   * bigint rather than skipping it. That threw AFTER the deposit had already
+   * landed on chain, so the script reported "deposit failed" for a deposit that
+   * succeeded, which is the most expensive kind of wrong: the operator's next
+   * move is to retry a transfer they have already paid for.
+   */
+  console.log(
+    `  done: ${JSON.stringify(result, (_key, value) =>
+      typeof value === "bigint" ? value.toString() : value,
+    )}`,
+  );
 
   const after = await gateway.getBalances();
   console.log(

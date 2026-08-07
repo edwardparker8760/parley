@@ -41,25 +41,40 @@ const REQUEST: SettlementRequest = {
 const EXPECTED_ATOMIC = 9_840_000n;
 
 interface Recorded {
-  supportsUrl: string | null;
+  quoteUrl: string | null;
   payUrl: string | null;
   payBody: unknown;
 }
 
+/**
+ * Stands in for the seller's unpriced quote route, which is the adapter's
+ * precondition. `quotedAmount: null` means the seller is not reachable.
+ */
+function fakeQuote(
+  recorded: Recorded,
+  quotedAmount: bigint | null,
+): typeof globalThis.fetch {
+  return (async (input: string | URL | Request) => {
+    recorded.quoteUrl = String(input);
+    if (quotedAmount === null) throw new Error("connection refused");
+    return {
+      ok: true,
+      async json() {
+        return { amountMicroUsdc: quotedAmount.toString() };
+      },
+    } as Response;
+  }) as typeof globalThis.fetch;
+}
+
 function fakeGateway(
   overrides: {
-    supported?: boolean;
     amount?: bigint;
     transaction?: string;
     payThrows?: Error;
   } = {},
 ): { gateway: GatewayLike; recorded: Recorded } {
-  const recorded: Recorded = { supportsUrl: null, payUrl: null, payBody: null };
+  const recorded: Recorded = { quoteUrl: null, payUrl: null, payBody: null };
   const gateway: GatewayLike = {
-    async supports(url) {
-      recorded.supportsUrl = url;
-      return { supported: overrides.supported ?? true };
-    },
     async pay<T>(url: string, options?: { body?: unknown }) {
       recorded.payUrl = url;
       recorded.payBody = options?.body;
@@ -71,17 +86,19 @@ function fakeGateway(
         data: { grant: "bulk-inference-capacity" } as T,
       };
     },
-    async searchTransfers() {
-      return { data: [] };
-    },
     async getTransferById(id) {
-      return { id, status: "received" };
+      // Circle's pre-batch shape: authorised, no on-chain hash yet.
+      return { id, status: "received", txHash: null };
     },
   };
   return { gateway, recorded };
 }
 
-function buildAdapter(gateway: GatewayLike): ArcX402SettlementAdapter {
+function buildAdapter(
+  gateway: GatewayLike,
+  recorded: Recorded,
+  quotedAmount: bigint | null = EXPECTED_ATOMIC,
+): ArcX402SettlementAdapter {
   return new ArcX402SettlementAdapter({
     buyerPrivateKey: KEY,
     sellerAddress: "0xseller",
@@ -90,6 +107,7 @@ function buildAdapter(gateway: GatewayLike): ArcX402SettlementAdapter {
     facilitatorUrl: "https://gateway-api-testnet.circle.com",
     sellerServiceUrl: "http://127.0.0.1:4021",
     client: gateway,
+    fetchImpl: fakeQuote(recorded, quotedAmount),
   });
 }
 
@@ -105,21 +123,33 @@ test("micro-USDC converts to a dollar string exactly, with no float anywhere", (
 
 test("settle pays the deal's own URL and binds the payment to the terms hash", async () => {
   const { gateway, recorded } = fakeGateway();
-  const receipt = await buildAdapter(gateway).settle(REQUEST);
+  const receipt = await buildAdapter(gateway, recorded).settle(REQUEST);
 
-  assert.equal(recorded.supportsUrl, "http://127.0.0.1:4021/deals/deal-1/capacity");
+  assert.equal(recorded.quoteUrl, "http://127.0.0.1:4021/deals/deal-1/quote");
   assert.equal(recorded.payUrl, "http://127.0.0.1:4021/deals/deal-1/capacity");
   assert.deepEqual(recorded.payBody, { termsHash: "0xabc123" });
 
   assert.equal(receipt.amountMicroUsdc, EXPECTED_ATOMIC);
   assert.equal(receipt.termsHash, "0xabc123");
   assert.equal(receipt.isStub, false);
-  assert.equal(receipt.txHash, "0xtx-real");
+
+  // The SDK's `transaction` is Circle's transfer id, so it is the REFERENCE.
+  assert.equal(receipt.reference, "0xtx-real");
+
+  /*
+   * And it is NOT the transaction hash. Recording it as one produced an
+   * explorer URL of the form `.../tx/<uuid>`, which arcscan answers 200 for
+   * because it is a single page app: a link that looks like proof of an
+   * on-chain transaction and is not one. Observed on the real 2026-08-06 run,
+   * where Circle's own transfer record carried `txHash: null` for the same id.
+   * There is no hash until the batch lands, so there must be none here.
+   */
+  assert.equal(receipt.txHash, undefined);
 });
 
 test("a real settlement is PENDING, not SETTLED: Circle batches and cannot be flushed", async () => {
-  const { gateway } = fakeGateway();
-  const receipt = await buildAdapter(gateway).settle(REQUEST);
+  const { gateway, recorded } = fakeGateway();
+  const receipt = await buildAdapter(gateway, recorded).settle(REQUEST);
 
   // This is the honesty control. An authorization has been accepted; the batch
   // has not necessarily landed. Reporting SETTLED here would be a claim about
@@ -128,29 +158,47 @@ test("a real settlement is PENDING, not SETTLED: Circle batches and cannot be fl
   assert.notEqual(receipt.status, "SETTLED");
 });
 
-test("a seller that does not offer Gateway batching fails loudly", async () => {
-  const { gateway } = fakeGateway({ supported: false });
+test("a seller that cannot be reached fails loudly, before any signature", async () => {
+  const { gateway, recorded } = fakeGateway();
   await assert.rejects(
-    () => buildAdapter(gateway).settle(REQUEST),
+    () => buildAdapter(gateway, recorded, null).settle(REQUEST),
     (error: unknown) => {
       assert.ok(error instanceof SettlementNotConfiguredError);
-      assert.match((error as Error).message, /does not offer Gateway batching/);
+      assert.match((error as Error).message, /did not answer with a quote/);
       return true;
     },
   );
+  assert.equal(recorded.payUrl, null, "nothing may be paid when the quote failed");
+});
+
+/*
+ * The precondition is the seller's quote rather than `GatewayClient.supports()`
+ * because supports() probes the paid route with no body, and the paid route
+ * answers 409 to a request carrying no terms hash, before it will quote a
+ * price. Measured against the live service on 2026-08-06: bare probe 409,
+ * probe with the correct hash 402. The old check called a working seller
+ * broken. This one also catches a price disagreement BEFORE a signature.
+ */
+test("a seller that quotes a different amount is refused before signing", async () => {
+  const { gateway, recorded } = fakeGateway();
+  await assert.rejects(
+    () => buildAdapter(gateway, recorded, 1n).settle(REQUEST),
+    /Refusing to sign a payment for a different deal/,
+  );
+  assert.equal(recorded.payUrl, null, "a disputed price must never be signed for");
 });
 
 test("paying a different amount than the deal is refused, not recorded", async () => {
-  const { gateway } = fakeGateway({ amount: 1n });
+  const { gateway, recorded } = fakeGateway({ amount: 1n });
   await assert.rejects(
-    () => buildAdapter(gateway).settle(REQUEST),
+    () => buildAdapter(gateway, recorded).settle(REQUEST),
     /refusing to record this as settlement/,
   );
 });
 
 test("a transport failure propagates and never downgrades to the stub", async () => {
-  const { gateway } = fakeGateway({ payThrows: new Error("facilitator down") });
-  const adapter = buildAdapter(gateway);
+  const { gateway, recorded } = fakeGateway({ payThrows: new Error("facilitator down") });
+  const adapter = buildAdapter(gateway, recorded);
 
   await assert.rejects(() => adapter.settle(REQUEST), /facilitator down/);
   // The adapter still says it is not a stub. Nothing about a failure may make
@@ -175,17 +223,55 @@ test("the adapter refuses to exist without somewhere to pay", () => {
 });
 
 test("waitForSettlement reports what it observed, including a timeout", async () => {
-  const { gateway } = fakeGateway();
-  const adapter = buildAdapter(gateway);
+  const { gateway, recorded } = fakeGateway();
+  const adapter = buildAdapter(gateway, recorded);
 
-  // No transfers come back, so the wait must expire and SAY it expired rather
-  // than returning a settled-looking answer.
+  // The transfer stays `received`, so the wait must expire and SAY it expired,
+  // reporting the last status it actually saw rather than a settled-looking
+  // answer. A null txHash on a timeout is the truthful result: no batch landed.
   const outcome = await adapter.waitForSettlement({
-    fromAddress: "0xbuyer",
+    transferId: "cad9fe1e-7201-40d0-b4d9-ce6a7c3655d4",
     timeoutMs: 10,
     pollIntervalMs: 1,
   });
-  assert.equal(outcome.status, "unknown");
-  assert.equal(outcome.transferId, null);
+  assert.equal(outcome.status, "received");
+  assert.equal(outcome.txHash, null);
   assert.ok(outcome.waitedMs >= 10);
+});
+
+test("waitForSettlement surfaces the real on-chain hash once the batch lands", async () => {
+  const { gateway, recorded } = fakeGateway();
+  const adapter = buildAdapter(gateway, recorded);
+
+  /*
+   * The values are the real ones from the 2026-08-06 Arc Testnet run: the
+   * transfer sat at `received` with `txHash: null` for roughly 13 minutes and
+   * then became `completed` carrying a genuine hash. This test pins the
+   * transition that the previous implementation could never observe, because
+   * it read `page.data[0]` from a response whose array is named `transfers`.
+   */
+  let polls = 0;
+  gateway.getTransferById = async (id) => {
+    polls += 1;
+    return polls < 3
+      ? { id, status: "received", txHash: null }
+      : {
+          id,
+          status: "completed",
+          txHash:
+            "0xcccd6d68ed7395faf486bac891df2bf135bdd6c71fdda012009667170f5be6aa",
+        };
+  };
+
+  const outcome = await adapter.waitForSettlement({
+    transferId: "cad9fe1e-7201-40d0-b4d9-ce6a7c3655d4",
+    timeoutMs: 5000,
+    pollIntervalMs: 1,
+  });
+  assert.equal(outcome.status, "completed");
+  assert.equal(outcome.transferId, "cad9fe1e-7201-40d0-b4d9-ce6a7c3655d4");
+  assert.equal(
+    outcome.txHash,
+    "0xcccd6d68ed7395faf486bac891df2bf135bdd6c71fdda012009667170f5be6aa",
+  );
 });

@@ -12,7 +12,8 @@
     "build": "tsc -b",
     "smoke": "node ./dist/settle-fake-deal-smoke-script.js",
     "test": "tsc -b && node --test ./dist/*.test.js",
-    "deposit": "node ./dist/deposit-to-gateway-script.js"
+    "deposit": "node ./dist/deposit-to-gateway-script.js",
+    "transfer-status": "node ./dist/check-transfer-status-script.js"
   },
   "dependencies": {
     "@circle-fin/x402-batching": "^3.2.0",
