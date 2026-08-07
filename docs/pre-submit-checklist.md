@@ -15,7 +15,7 @@ settlement. Items only a human can do are marked OWNER.
 | 3 | No AI attribution anywhere in history | `git log --format=%B \| grep -icE "co-authored-by: claude\|generated with\|claude code"` | PASS: 0 |
 | 4 | Author identity correct on every commit | `git log --format="%an <%ae>" \| sort -u` | PASS: `edwardparker8760 <edwardparker8760032@gmail.com>` only |
 | 5 | Zero em-dash and en-dash | `grep -rlP '[\x{2013}\x{2014}]'` over tracked files | PASS: 0 |
-| 6 | No secrets committed | grep for `sk-`, `AIza`, `gho_`, `0x` + 64 hex, `CIRCLE_API_KEY=<value>` | PASS: 0 |
+| 6 | No secrets committed | grep for `sk-`, `AIza`, `gho_`, `0x` + 64 hex, `CIRCLE_API_KEY=<value>` | PASS: the only 64-hex strings are the published terms hash and transaction hash, which are public by design. A private key would be 64 hex too, so this check must be read, not just counted |
 | 7 | No mainnet configuration | grep for `gateway-api.circle.com`, mainnet chain ids | PASS: testnet only |
 | 8 | Repo is public | `gh repo view --json visibility` | PASS: PUBLIC |
 
@@ -27,6 +27,7 @@ settlement. Items only a human can do are marked OWNER.
 | 10 | `pnpm test` green, with a **non-zero** test count | PASS: 125 |
 | 11 | `pnpm run:scenario C` runs and walks away | PASS |
 | 12 | All three scenarios run | PASS |
+| 12a | **Every command written in the README, this file and the video script actually runs** | PASS 2026-08-07, after failing. `pnpm --filter @parley/dashboard start` was documented in four places and that package no longer exists, so the first command a stranger runs failed. The dashboard URL was wrong too: it is `/app`, not `/`. Checked by running them, not by reading them |
 
 > Item 10 says "non-zero" because it was the bug this checklist caught. `pnpm
 > test` used to run `node --test dist/*.test.js` with no `dist` present: zero
@@ -57,8 +58,8 @@ settlement. Items only a human can do are marked OWNER.
 | 21 | Watched back for a stub presented as real | OWNER |
 | 22 | Circle tools named aloud: Arc, Gateway, Nanopayments/x402, facilitator | OWNER, scripted in `demo-video-script.md` |
 | 23 | Video publicly viewable | OWNER |
-| 24 | Deck updated and accessible without login | OWNER |
-| 25 | Pushed to `origin/main` | OWNER |
+| 24 | Deck updated and accessible without login | PARTIAL: deck HTML and PDF both regenerated 2026-08-07 and current with the repo, which is public. OWNER still confirms the submission link opens logged out |
+| 25 | Pushed to `origin/main` | PASS 2026-08-07 at `34097a1`. Re-run before submitting if anything changes |
 | 26 | Submitted on the Encode platform | OWNER |
 
 ## Before recording
@@ -71,13 +72,17 @@ Close, specifically:
 - every browser tab except the dashboard
 - notification popups
 
-Then `pnpm --filter @parley/dashboard start` in a fresh terminal, and confirm the
-only thing on screen is `http://localhost:4020`.
+Then `pnpm --filter @parley/web start` in a fresh terminal, and confirm the only
+thing on screen is `http://localhost:4020/app`.
 
 ## Known-good demo commands
 
+Verified against the running app on 2026-08-07, which is the only reason to
+trust a command block in a checklist.
+
 ```bash
-pnpm --filter @parley/dashboard start          # the screen
+pnpm --filter @parley/web build                # required before `start`
+pnpm --filter @parley/web start                # the screen, /app is the dashboard
 pnpm --filter @parley/orchestrator test        # the safety proof, 26 tests
 pnpm run:scenario C                            # terminal fallback if the UI dies
 ```

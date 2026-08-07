@@ -9,9 +9,12 @@ recording". One visible API key in a public video is unrecoverable.
 ## Setup, done before the take
 
 ```bash
-pnpm --filter @parley/dashboard build
-pnpm --filter @parley/dashboard start        # http://localhost:4020
+pnpm --filter @parley/web build
+pnpm --filter @parley/web start        # dashboard at http://localhost:4020/app
 ```
+
+Build first, then `start`. Do not record against `dev`: it compiles a route on
+first visit, so the opening seconds of the take would be a spinner.
 
 Have a second terminal ready, cleared, in the repo root. Nothing else on screen:
 no editor, no `.env` open anywhere, no browser tab but the dashboard.

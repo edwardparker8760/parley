@@ -49,7 +49,7 @@ Scenario C ends with both agents walking away, both post-mortems printed, and no
 payment attempted. Then, for the screen:
 
 ```bash
-pnpm --filter @parley/dashboard start   # http://localhost:4020
+pnpm --filter @parley/web dev   # http://localhost:4020/app
 ```
 
 Optional, and neither is needed for the demo: copy `.env.example` to `.env` and
@@ -155,9 +155,13 @@ One screen: convergence chart, owner limits, settlement or walk-away, and the
 full transcript.
 
 ```bash
-pnpm --filter @parley/dashboard build
-pnpm --filter @parley/dashboard start   # http://localhost:4020
+pnpm --filter @parley/web build
+pnpm --filter @parley/web start   # http://localhost:4020/app
 ```
+
+The landing page is `/`, the dashboard is `/app`. For iterating rather than
+demoing, `pnpm --filter @parley/web dev` serves both on the same port with no
+build step.
 
 Pick a scenario and it runs live, the ladder building at reading speed. The
 engine and baseline agents can be swapped from the screen, which is worth doing
