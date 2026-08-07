@@ -20,7 +20,7 @@
  * if SSE misbehaves while the video is being shot.
  */
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { NegotiationView } from "@parley/orchestrator";
 import { useNegotiationEventStream } from "@/hooks/use-negotiation-event-stream";
@@ -54,6 +54,39 @@ export function DashboardScreen(props: {
   const view = stream.view;
   const showing = stream.negotiationId ?? replayId;
   const error = props.initialError ?? stream.error;
+
+  /*
+   * NEVER OPEN EMPTY.
+   *
+   * A replay instance already opens on scenario A: its source returns a default
+   * negotiation id, so the server renders a complete run before any JavaScript
+   * has an opinion. A LIVE instance had no equivalent, so the first thing a
+   * visitor saw was an explanation floating above a large empty area, which
+   * reads as broken even though nothing is wrong.
+   *
+   * So a live instance starts scenario A itself, once, on first paint. The
+   * screen is then always showing a real negotiation, and the three buttons
+   * become what they should have been from the start: a way to switch between
+   * runs rather than the thing standing between you and seeing anything.
+   *
+   * The ref, not state, is what makes it once. React 18 mounts effects twice in
+   * development strict mode, and a state flag would still be false on the
+   * second invocation because the re-render has not committed yet, so this
+   * would POST twice and start two negotiations.
+   *
+   * Skipped when `?negotiation=` is present: that URL is an explicit request
+   * for one particular run, and auto-starting another would fight it.
+   */
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (autoStarted.current) return;
+    if (!props.canRunLive) return;
+    if (replayId !== null) return;
+    if (props.initialView !== null) return;
+
+    autoStarted.current = true;
+    void stream.start("A", "engine");
+  }, [props.canRunLive, props.initialView, replayId, stream]);
 
   return (
     <main className="screen">

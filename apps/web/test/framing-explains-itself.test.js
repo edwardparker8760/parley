@@ -98,6 +98,60 @@ test("the screen says which control starts a run, in a verb", () => {
   assert.match(launchers, /start a negotiation/i);
 });
 
+test("only the mode that can start a run uses the word Start", () => {
+  /*
+   * The two modes render different controls: live gets launchers that POST,
+   * replay gets links that swap a recording. The replay control said "Scenario
+   * A", which is at least not a lie, but a verb it cannot honour would be: a
+   * visitor presses "Start", a finished recording appears, and they conclude
+   * the button ran something. "View" is what it does.
+   */
+  const switcher = read("components", "dashboard", "recorded-run-switcher.tsx");
+  const rendered = switcher
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/^\s*\/\/.*$/gm, "");
+
+  assert.match(rendered, /View scenario \{run\.scenario\}/);
+  assert.ok(
+    !/>\s*Start|Start scenario/.test(rendered),
+    "the replay switcher must not offer to Start anything",
+  );
+
+  // And it must keep saying so in prose, with the way out.
+  assert.match(rendered, /cannot start a new negotiation/i);
+  assert.match(rendered, /PARLEY_DATA_SOURCE/);
+});
+
+test("neither mode opens on an empty screen", () => {
+  /*
+   * Replay opens on scenario A because its source hands back a default id, so
+   * the server renders a finished run with no JavaScript involved. Live had no
+   * equivalent and opened on an explanation above a large blank area, which
+   * reads as broken. It now starts scenario A itself on first paint.
+   */
+  const snapshotSource = read("lib", "snapshot-negotiation-source.ts");
+  assert.match(
+    snapshotSource,
+    /defaultNegotiationId\(\)\s*\{[\s\S]{0,300}return BUNDLED\[0\]/,
+    "replay mode must default to a bundled run rather than to nothing",
+  );
+
+  const screen = read("components", "dashboard", "dashboard-screen.tsx");
+  assert.match(screen, /autoStarted/, "live mode must auto-start a negotiation");
+  assert.match(
+    screen,
+    /stream\.start\("A", "engine"\)/,
+    "the auto-start must be scenario A",
+  );
+
+  // Guarded by a ref, not state: strict mode mounts effects twice and a state
+  // flag has not committed by the second run, so it would start two runs.
+  assert.match(screen, /useRef\(false\)/);
+
+  // And it must stand down when the URL names a run.
+  assert.match(screen, /replayId !== null\) return/);
+});
+
 test("no term of art reaches the screen unexplained", () => {
   /*
    * ZOPA appeared five times across the launchers, the switcher and the chart,

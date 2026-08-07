@@ -51,8 +51,12 @@ export function RecordedRunSwitcher(props: {
             className={run.id === props.activeId ? "launcher active" : "launcher"}
             aria-current={run.id === props.activeId ? "true" : undefined}
           >
+            {/* "View", not "Start". This instance cannot start anything, and a
+                verb it cannot honour is worse than a dull one: the visitor
+                presses it, a recording appears, and they reasonably conclude
+                the button did something it did not. */}
             <span className="launcher-name">
-              Scenario {run.scenario}
+              View scenario {run.scenario}
               <span className="launcher-shape"> {SHAPE[run.scenario] ?? ""}</span>
             </span>
             <span className="launcher-label">{outcomeLabel(run)}</span>
@@ -63,8 +67,10 @@ export function RecordedRunSwitcher(props: {
       {/* Says plainly what these controls do, so nobody presses one expecting
           to start a negotiation and concludes the button is broken. */}
       <p className="switcher-note">
-        Three recorded runs. This instance replays them; it cannot start a new
-        negotiation.
+        Three recorded runs, already finished. This instance replays them and
+        cannot start a new negotiation. To run the agents live, clone the repo
+        and start it with <code>PARLEY_DATA_SOURCE=sqlite</code>; see
+        docs/how-to-run.md.
       </p>
     </div>
   );
