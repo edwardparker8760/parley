@@ -41,36 +41,44 @@ const SHOTS = [
     time: "0:00 - 0:18",
     name: "The differentiator, first",
     steps: [
-      "Open a fresh browser window at parley-blond.vercel.app/app",
-      "Do not touch anything. Let the recorded run sit on screen.",
-      "Start recording. The address bar must be visible in frame.",
+      "Open a fresh browser window at parley-blond.vercel.app (the LANDING PAGE, not /app).",
+      "Scroll to the very top. The hero fills the frame: headline, the arithmetic-not-instructions line, and the transcript excerpt on the right.",
+      "Do not touch anything. Start recording. The address bar must be visible in frame.",
     ],
     narration:
       "Agent payments already exist. Agent pricing does not. Every agent payment demo pays a price somebody else posted. Parley's two agents discover the price themselves: one buying bulk inference capacity, one selling, haggling inside hard limits their owners set in advance.",
     ttsNotes: [],
-    image: "demo-scenario-a.png",
+    image: null,
     imageNote:
-      "Closest available capture. This is a local run; the deployed page also carries a replay banner across the top. Use it for layout only.",
+      "No capture of the landing hero exists. Frame it so the headline, the marked phrase arithmetic, not instructions, and the transcript excerpt with its CLAMP line are all visible at once.",
+    verify:
+      "Opens on the hero, not /app. The hero already pictures what these two beats say; /app on load is a static block of explanatory text.",
   },
   {
     id: 2,
     time: "0:18 - 0:32",
     name: "The mechanism",
     steps: [
-      "No clicks. Same frame as shot 1.",
-      "Optionally rest the cursor near the two dashed limit lines on the chart.",
+      "Same hero frame as shot 1.",
+      'Rest the cursor near the ">> CLAMP" line in the transcript excerpt as you say "arithmetic disposes".',
+      'ON THE WORDS "so I will test it on screen", click "Open the dashboard" in the hero button row.',
+      "Do not click early. The click and the last four words land together.",
     ],
     narration:
       "The limits are arithmetic, not instructions in a prompt. The model proposes; arithmetic disposes. No prompt talks an agent past its owner's limit. That is a claim, so I will test it on screen.",
     ttsNotes: [],
-    image: "demo-scenario-a.png",
-    imageNote: "Same frame as shot 1. Nothing on screen changes during this line.",
+    image: null,
+    imageNote:
+      "Same hero frame as shot 1, until the click. The navigation to /app is the transition into shot 3.",
+    verify:
+      'The click is what motivates the cut to /app, so the audience is not absorbing a jump. Button label is exactly "Open the dashboard".',
   },
   {
     id: 3,
     time: "0:32 - 1:00",
     name: "Scenario B, the clamp firing",
     steps: [
+      "You arrive here from the click at the end of shot 2.",
       'Click "View scenario B" in the row of three at the top.',
       "Wait for the page to render. It is server-rendered, so there is no spinner.",
       'Point the cursor at the buyer column in the "Owner limits" panel.',
@@ -94,10 +102,10 @@ const SHOTS = [
       'Click the first preset: "Ceiling below floor: 600 against 700".',
       "It runs immediately and returns finished in one response.",
       "SCROLL BACK UP. The result renders ABOVE the panel and nothing auto-scrolls. Rehearse this until it is one motion.",
-      "Hold on the two post-mortems and the walk-away panel.",
+      "Hold on the walk-away panel. NOTE: it is the last panel in the left column and it scrolls; at a viewport under about 1000px tall you must scroll the column to see both cards in full.",
     ],
     narration:
-      "Those were recordings. This is not. I am setting the buyer's ceiling to six hundred, against a seller floor of seven hundred, derived from its cost and margin. No price satisfies both owners. Computed live on the server, and here it is: both agents work it, both walk away, and each files a post-mortem naming the limit that stopped it. Nothing agreed. Nothing paid. That is the system refusing to break, not me promising it will not.",
+      "Those were recordings. This is not. I am setting the buyer's ceiling to six hundred, new numbers, not the ones you just saw, against a seller floor of seven hundred, derived from its cost and margin. No price satisfies both owners. Computed live on the server, and here it is: nine rounds, then the buyer walks away, naming its own ceiling as the reason. Nothing agreed. Nothing paid. That is the system refusing to break, not me promising it will not.",
     ttsNotes: [],
     image: "demo-scenario-c.png",
     imageNote:
@@ -108,14 +116,17 @@ const SHOTS = [
   {
     id: 5,
     time: "1:40 - 2:03",
-    name: "The same claim in code",
+    name: "The same claim in code (CUT THIS BY DEFAULT)",
+    optional: true,
     steps: [
-      "Alt-tab to the second terminal, already cleared, sitting in the repo root.",
+      "DO NOT ALT-TAB DURING THE TAKE. Xbox Game Bar captures a single window; switching breaks the capture.",
+      "If keeping it: record this as a SEPARATE clip, before or after the browser take, and splice it in with CapCut.",
+      "In that separate clip: second terminal, scrollback cleared, sitting in the repo root.",
       "Run: pnpm --filter @parley/orchestrator test",
       "Let the pass list scroll. Hold on the final count.",
     ],
     narration:
-      "And in code: a model that answers every prompt with an absurd price, ninety-nine million, across all three scenarios, puts zero out of band offers on the wire. Property tests, an adversarial corpus, and prompt injection through the counterparty's own text. One hundred forty-six tests, all green.",
+      "And in code: a model that answers every prompt with an absurd price, ninety-nine million, across all three scenarios, puts zero out of band offers on the wire. Property tests, an adversarial corpus, and prompt injection through the counterparty's own text. One hundred forty-eight tests, all green.",
     ttsNotes: [
       'Script says "out-of-band"; hyphens removed so the engine does not read them as pauses.',
     ],
@@ -123,7 +134,7 @@ const SHOTS = [
     imageNote:
       "No capture. Terminal output only. Clear scrollback before recording: this is the shot where old commands are visible.",
     verify:
-      "This command runs 26 tests. 146 is the whole suite, re-run 2026-08-09. The line says one hundred forty-six, so do not cut to this terminal as if it printed that number.",
+      "Cutting this is now the default, not the fallback. It buys 21 seconds, three of which pay for the benchmark hold in shot 7, and it removes the only alt-tab in the take. The hero beat already proved the same property live. Note also: this command runs 26 tests, while the line says one hundred forty-eight, which is the whole suite. Do not cut to this terminal as if it printed that number.",
   },
   {
     id: 6,
@@ -148,11 +159,31 @@ const SHOTS = [
       "Do not compress the two latencies. Authorisation was 857 milliseconds; landing on chain took 12 minutes 43 seconds, which \"about thirteen minutes\" rounds fairly. This shot names all five Circle terms: Arc, USDC, Gateway, x402, facilitator.",
   },
   {
+    id: "6b",
+    time: "3 seconds, silent",
+    name: "Benchmark hold (only if shot 5 was cut)",
+    optional: true,
+    steps: [
+      "Navigate back to the landing page.",
+      "Scroll to the benchmark table.",
+      "HOLD THREE SECONDS IN SILENCE. Say nothing at all.",
+      "Then scroll to the top of the hero for the close.",
+    ],
+    narration: "",
+    ttsNotes: [],
+    image: null,
+    imageNote:
+      "No capture. Frame the scenario B row pair so both lines are readable: baseline needed the limit 9 times, engine 0.",
+    verify:
+      "This is the one claim nothing else in the video makes: on identical limits the blunt agent had to be stopped nine times and the engine never did. It is legible on its own, so narrating it would cost fifteen words the budget does not have. Only take this beat if shot 5 was cut; with shot 5 kept, the take lands at 3:01.",
+  },
+  {
     id: 7,
     time: "2:35 - 2:55",
     name: "Close, holding the URL",
     steps: [
-      "Scroll to the top so the header and the address bar are both readable.",
+      "You should be on the LANDING PAGE hero, the frame the video opened on.",
+      "Address bar must read the bare parley-blond.vercel.app, no sub-path.",
       "STOP MOVING THE MOUSE. Hands off entirely.",
       "Hold completely static for the full twenty seconds.",
       "Keep holding for three seconds of silence after the last word, then stop recording.",
@@ -162,7 +193,9 @@ const SHOTS = [
     ttsNotes: [],
     image: null,
     imageNote:
-      "No capture. The frame is the top of /app with the address bar legible. A judge must be able to type the URL without rewinding.",
+      "No capture. The frame is the landing hero with the address bar legible. A judge must be able to type the URL without rewinding.",
+    verify:
+      "Ending where the video opened closes the loop, and puts the root URL in the address bar rather than a sub-path.",
   },
 ];
 
@@ -229,10 +262,32 @@ function renderShot(shot) {
       }">${esc(shot.imageNote)}</p>`
     : "";
 
-  const wordCount = shot.narration.trim().split(/\s+/).length;
+  const wordCount = shot.narration.trim()
+    ? shot.narration.trim().split(/\s+/).length
+    : 0;
+
+  /* A silent beat gets no copy box: a copy button that yields an empty string
+     is a trap at 2am. It says "no line" and explains why instead. */
+  const sayBlock = wordCount
+    ? `<div class="say-box">
+              <p class="narration">${esc(shot.narration)}</p>
+              <button class="copy" data-copy="${escAttr(shot.narration)}">Copy line</button>
+            </div>
+            ${ttsNotes}`
+    : `<div class="say-box silent">
+              <p class="narration">Nothing to say. This beat is silent.</p>
+            </div>`;
+
+  const classes = [
+    "shot",
+    shot.hero ? "hero" : "",
+    shot.optional ? "optional" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return `
-      <section class="shot${shot.hero ? " hero" : ""}" id="shot-${shot.id}">
+      <section class="${classes}" id="shot-${shot.id}">
         <header class="shot-head">
           <label class="tick">
             <input type="checkbox" data-shot="${shot.id}">
@@ -241,8 +296,9 @@ function renderShot(shot) {
           <div class="shot-title">
             <span class="time">${esc(shot.time)}</span>
             <h2>${esc(shot.name)}</h2>
+            ${shot.optional ? '<span class="badge-opt">optional</span>' : ""}
           </div>
-          <span class="wc">${wordCount} words</span>
+          <span class="wc">${wordCount ? wordCount + " words" : "silent"}</span>
         </header>
 
         <div class="shot-body">
@@ -256,11 +312,7 @@ function renderShot(shot) {
 
           <div class="col-say">
             <h3>Paste into text-to-speech</h3>
-            <div class="say-box">
-              <p class="narration">${esc(shot.narration)}</p>
-              <button class="copy" data-copy="${escAttr(shot.narration)}">Copy line</button>
-            </div>
-            ${ttsNotes}
+            ${sayBlock}
           </div>
 
           <div class="col-see">
@@ -272,10 +324,30 @@ function renderShot(shot) {
       </section>`;
 }
 
-const totalWords = SHOTS.reduce(
-  (n, s) => n + s.narration.trim().split(/\s+/).length,
-  0
-);
+const countWords = (s) => (s.trim() ? s.trim().split(/\s+/).length : 0);
+
+const totalWords = SHOTS.reduce((n, s) => n + countWords(s.narration), 0);
+
+
+/*
+ * Runtime is computed from the SCRIPT's word count, not this sheet's.
+ *
+ * Respelling for speech splits one token into several ("USDC" becomes "U S D C",
+ * "x402" becomes "x four oh two"), which inflates the count here by nine words
+ * without adding any time to the spoken track: the engine says the same sounds
+ * either way. Deriving the estimate from the inflated count reports 3:02 for a
+ * take that runs 2:58, which is the wrong side of the limit to be wrong on.
+ *
+ * These are the canonical counts from docs/demo-video-script.md. Update them
+ * together with the narration.
+ */
+const SCRIPT_WORDS_ALL = 382;
+const SCRIPT_WORDS_CUT = 337;
+
+const runtime = (words, wpm) => {
+  const s = Math.round((words / wpm) * 60);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+};
 
 const html = `<!doctype html>
 <html lang="en">
@@ -349,7 +421,15 @@ const html = `<!doctype html>
     overflow: hidden;
   }
   .shot.hero { border-color: var(--accent); }
+  .shot.optional { border-style: dashed; }
   .shot.done { opacity: .45; }
+  .badge-opt {
+    font-size: .68rem; text-transform: uppercase; letter-spacing: .08em;
+    border: 1px solid var(--dim); color: var(--dim);
+    border-radius: 3px; padding: .1rem .4rem;
+  }
+  .say-box.silent { border-style: dashed; }
+  .say-box.silent .narration { color: var(--dim); font-style: italic; margin: 0; }
 
   .shot-head {
     display: flex;
@@ -477,12 +557,16 @@ const html = `<!doctype html>
   <div class="banner stop">
     <h2>Before you press record</h2>
     <div class="cmd-row">
+      <span class="cmd">https://parley-blond.vercel.app</span>
+      <p class="cmd-note">The opening frame is the LANDING PAGE hero, not /app. Record against this, NOT localhost. The address bar must be in frame for the whole take: a judge who can see the URL can open it, and a localhost recording is a claim nobody can check.</p>
+    </div>
+    <div class="cmd-row">
       <span class="cmd">https://parley-blond.vercel.app/app</span>
-      <p class="cmd-note">Record against this. NOT localhost. The address bar must be in frame for the whole take: a judge who can see the URL can open it, and a localhost recording is a claim nobody can check.</p>
+      <p class="cmd-note">Visit once to warm it, then go back to the landing page. The route is force-dynamic, so a cold first visit can be slow, and you do not want that on the cut at 0:32.</p>
     </div>
     <div class="cmd-row">
       <span class="cmd">pnpm --filter @parley/orchestrator test</span>
-      <p class="cmd-note">Second terminal, scrollback cleared, sitting in the repo root. Only needed for shot 5.</p>
+      <p class="cmd-note">Only for shot 5, which is cut by default. If you keep it, capture it as a SEPARATE clip: Xbox Game Bar captures one window, so alt-tabbing mid-take breaks the recording.</p>
     </div>
     <p class="cmd-note" style="margin-top:.9rem">
       Close every editor window in case a dotenv file is in a tab. Close every terminal whose scrollback touched a dotenv file, provision-wallets, or a faucet page. Close every browser tab except this one recording target. Turn off notification popups.
@@ -497,13 +581,23 @@ const html = `<!doctype html>
     <dl class="facts">
       <div><dt>Resolution</dt><dd>1920 x 1080</dd></div>
       <div><dt>Hard limit</dt><dd>Under 3:00</dd></div>
-      <div><dt>Spoken words</dt><dd>${totalWords}</dd></div>
-      <div><dt>Estimated runtime</dt><dd>2:55</dd></div>
-      <div><dt>Shots</dt><dd>${SHOTS.length}</dd></div>
+      <div><dt>Words, all beats</dt><dd>${SCRIPT_WORDS_ALL}</dd></div>
+      <div><dt>Words, shot 5 cut</dt><dd>${SCRIPT_WORDS_CUT}</dd></div>
+      <div><dt>Runtime, all beats</dt><dd>${runtime(SCRIPT_WORDS_ALL, 130)}</dd></div>
+      <div><dt>Runtime, shot 5 cut</dt><dd>${runtime(SCRIPT_WORDS_CUT, 130)}</dd></div>
       <div><dt>Video host</dt><dd>YouTube, unlisted</dd></div>
     </dl>
     <p class="cmd-note">
-      2:55 is the spoken track at 130 words per minute, which is a slow deliberate pace. The pauses for clicking and scrolling are what push a take over 3:00, not the words. If the first take runs long, cut shot 5 rather than speaking faster. Never cut shot 4, the SIMULATED badge sentence in shot 6, or the static URL hold in shot 7.
+      Runtimes are the spoken track at 130 words per minute, a slow deliberate pace. With every beat kept the take lands at ${runtime(
+        SCRIPT_WORDS_ALL,
+        130
+      )}, which leaves two seconds: that is a coin toss, not a budget, because any pause for a click puts it over. <strong>Cutting shot 5 is the default</strong>, not the fallback. It removes the only alt-tab in the take, and three of the recovered twenty-one seconds pay for the benchmark hold.
+    </p>
+    <p class="cmd-note">
+      Per-shot word counts on the rows below total ${totalWords}, higher than the ${SCRIPT_WORDS_ALL} used above, because respelling for speech splits one token into several. It costs no time to say, so the runtime figures use the script's count.
+    </p>
+    <p class="cmd-note">
+      Never cut shot 4, the SIMULATED badge sentence in shot 6, or the static URL hold in shot 7.
     </p>
   </div>
 ${SHOTS.map(renderShot).join("\n")}

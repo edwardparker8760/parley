@@ -476,6 +476,20 @@ a.launcher {
   flex-direction: column;
   gap: 12px;
   min-height: 0;
+  /*
+   * The column scrolls itself rather than spilling into `.screen`, which is
+   * `overflow: hidden` and therefore eats anything that overflows WITHOUT a
+   * scrollbar to reveal it.
+   *
+   * Measured before this line existed, at a full 1920x1080 viewport: the column
+   * needed 721px and had 619px, so the guardrail panel ended at y=1126 and the
+   * walk-away panel was squashed to 24px of its 211px at y=1138. Both rendered,
+   * both passed every structural assertion, and neither was on screen. The
+   * no-ZOPA sentence at y=899 survived only because a full 1080 viewport is
+   * generous; with ordinary browser chrome it lands under the fold too, which
+   * is why it was reported as clipped and why zooming out "fixed" it.
+   */
+  overflow-y: auto;
 }
 
 .panel {
@@ -531,6 +545,15 @@ a.launcher {
 .chart {
   width: 100%;
   height: auto;
+  /*
+   * The viewBox is 600x300, so at a ~940px column the chart renders 470px tall
+   * and eats three quarters of the column on its own, pushing the guardrail and
+   * walk-away panels off the bottom. Capping the height lets the SVG letterbox
+   * (preserveAspectRatio defaults to xMidYMid meet) instead of dictating the
+   * layout. The two dashed limit lines stay legible at this size, which is the
+   * only thing the chart has to communicate on video.
+   */
+  max-height: 220px;
 }
 
 .chart-bg {

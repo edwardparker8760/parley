@@ -82,6 +82,62 @@ test("the panel that takes the slack is allowed to scroll on its own", () => {
   assert.match(body, /overflow-y:\s*auto/);
 });
 
+/*
+ * ## The second time this bug shipped
+ *
+ * The three tests above all passed while the column overflowed anyway. They
+ * assert that a panel CAN shrink and scroll; they cannot see that the content
+ * above it is too tall for the space, because that is geometry.
+ *
+ * Measured on the deployed build at a full 1920x1080 viewport, running the
+ * "600 against 700" preset: `.column-left` needed 721px and had 619px. With
+ * `overflow: visible` the excess spilled into `.screen`, which is
+ * `overflow: hidden`, so it was clipped with no scrollbar to reveal it. The
+ * guardrail panel ended at y=1126 and the walk-away panel rendered 24px of its
+ * 211px at y=1138. Both post-mortem cards were in the DOM. Neither was on
+ * screen, and the no-ZOPA sentence at y=899 fell under the fold as soon as
+ * ordinary browser chrome reduced the viewport below ~900.
+ *
+ * Two rules prevent the recurrence, and both are asserted here because both are
+ * load-bearing:
+ *
+ *   1. the column scrolls ITSELF, so overflow is always reachable rather than
+ *      silently eaten by the ancestor that clips;
+ *   2. the chart is capped, because a 600x300 viewBox at `width: 100%` renders
+ *      ~470px tall in a ~940px column and takes three quarters of the space
+ *      before any other panel is laid out.
+ *
+ * After both: column 619/619 at 1080, no-ZOPA sentence at y=744, guardrail
+ * panel fully above the fold, walk-away panel visible with both cards.
+ */
+
+test("the left column reveals its own overflow instead of losing it", () => {
+  assert.match(
+    rule(".column-left"),
+    /overflow-y:\s*auto/,
+    "without this the excess spills into .screen, which is overflow:hidden and shows no scrollbar",
+  );
+});
+
+test("the chart is capped, so it cannot crowd out the panels below it", () => {
+  const body = rule(".chart");
+  assert.match(
+    body,
+    /max-height:\s*\d+px/,
+    "an uncapped 600x300 viewBox at width:100% renders ~470px tall and pushes the walk-away panel off screen",
+  );
+
+  // A cap that is not smaller than the natural height is not a cap. The chart
+  // renders about 470px in this column, so anything at or above that is a
+  // no-op that would let the bug back in while the assertion above still
+  // passed.
+  const capped = /max-height:\s*(\d+)px/.exec(body);
+  assert.ok(
+    Number(capped[1]) <= 320,
+    `max-height ${capped[1]}px is too tall to constrain a chart that renders ~470px`,
+  );
+});
+
 test("every panel the page renders sits inside a known container", () => {
   const panels = [
     "ConvergencePriceChart",

@@ -45,7 +45,7 @@ that configuration.
 git clone https://github.com/edwardparker8760/parley.git
 cd parley
 pnpm install            # also builds every package
-pnpm test               # 146 tests
+pnpm test               # 148 tests
 pnpm run:scenario C     # the one that proves the guardrails bind
 ```
 
@@ -201,7 +201,7 @@ Claims in this README are cheap; these are the things that check them.
 | `LLM_MODE=off` is a real rollback | Byte-identical ladders with the model on and off |
 | A stub is never mistaken for real | `isStub` persisted on the receipt, `0xstub-` reference prefix, `SIMULATED` badge, and a factory that fails loudly rather than downgrading |
 
-`pnpm test` runs all 146. `pnpm benchmark` regenerates the engine-versus-baseline
+`pnpm test` runs all 148. `pnpm benchmark` regenerates the engine-versus-baseline
 comparison in [`docs/engine-benchmark.md`](docs/engine-benchmark.md).
 
 ## Status

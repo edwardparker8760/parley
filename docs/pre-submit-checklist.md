@@ -24,7 +24,7 @@ settlement. Items only a human can do are marked OWNER.
 | | Check | Status |
 |---|---|---|
 | 9 | `git clone` to a fresh directory, `pnpm install` | PASS |
-| 10 | `pnpm test` green, with a **non-zero** test count | PASS: 146, re-run 2026-08-09. The count grew from 125 as the dashboard tests were added, and the README said 125 until this run caught it |
+| 10 | `pnpm test` green, with a **non-zero** test count | PASS: 148, re-run 2026-08-09. The count grew from 125 as the dashboard tests were added, and the README said 125 until this run caught it |
 | 11 | `pnpm run:scenario C` runs and walks away | PASS |
 | 12 | All three scenarios run | PASS |
 | 12a | **Every command written in the README, this file and the video script actually runs** | PASS 2026-08-07, after failing. `pnpm --filter @parley/dashboard start` was documented in four places and that package no longer exists, so the first command a stranger runs failed. The dashboard URL was wrong too: it is `/app`, not `/`. Checked by running them, not by reading them |
