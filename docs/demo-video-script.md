@@ -1,79 +1,95 @@
 # Demo video script
 
-**Target: under 3:00.** Record at 1920x1080. The dashboard is the whole visual;
-no code is shown except one test run.
+**Target: under 3:00.** Record at 1920x1080.
+
+**Record against the deployed URL, not localhost.** The address bar should read
+`parley-blond.vercel.app` for the whole take. A judge who can see the URL can
+open it, and a localhost recording is a claim they cannot check.
 
 **Before you press record**, run `docs/pre-submit-checklist.md` section "Before
 recording". One visible API key in a public video is unrecoverable.
 
+## What the deployed instance can and cannot do
+
+This matters, because narrating it wrong is a lie on camera.
+
+The deploy is a **replay instance** (`PARLEY_DATA_SOURCE` unset, so
+`snapshot-negotiation-source.ts` with `canRunLive: false`). Consequences:
+
+- Scenarios A, B and C are **recorded runs**. The controls read "View scenario
+  A", not "Start". A banner says so. Do not say "watch them negotiate" over
+  them; say "this is a recording", which the page already says for you.
+- The **"Try to break it" presets are genuinely live.** `/api/run-custom` opens
+  its own in-memory database per request and is deliberately not gated on
+  `canRunLive`. The run is computed on the server when you click, from the
+  numbers on screen. This is the only live compute in the take, and it is the
+  best thing in the video.
+- A custom run is **never settled** by design. It renders "Agreed, but not
+  settled." Do not promise a payment on that beat.
+
 ## Setup, done before the take
 
-```bash
-pnpm --filter @parley/web build
-pnpm --filter @parley/web start        # dashboard at http://localhost:4020/app
-```
+1. Open `https://parley-blond.vercel.app/app`. Nothing else on screen: no
+   editor, no `.env` anywhere, no second browser tab.
+2. Scroll down once to find the **"Try to break it"** section, then scroll back
+   to the top. You need to know the exact scroll distance, because clicking a
+   preset renders the result **above** the panel and **nothing auto-scrolls**.
+   Rehearse the click-then-scroll-up move until it is one motion.
+3. Have a second terminal ready, cleared, in the repo root, for the one test
+   beat.
 
-Build first, then `start`. Do not record against `dev`: it compiles a route on
-first visit, so the opening seconds of the take would be a spinner.
+Recorded runs appear instantly on navigation; they are server-rendered from the
+bundle, so there is no spinner to wait out. The custom run returns finished in a
+single response, so it also appears at once.
 
-Have a second terminal ready, cleared, in the repo root. Nothing else on screen:
-no editor, no `.env` open anywhere, no browser tab but the dashboard.
+---
 
-Pre-run scenario A once so the ledger is warm; the demo runs are fresh.
+## 0:00-0:18, the differentiator, first
 
-Timings below assume the dashboard's own pacing: a negotiation streams one
-message every 550ms, so scenario A is about 10 seconds of ladder and scenario C
-about 9. Stub settlement resolves in 815ms (`docs/settlement-latency.md`).
+Screen: `/app` as it loads.
 
-## 0:00-0:20, the claim
+> Agent payments already exist. Agent pricing does not. Every agent-payment demo
+> pays a price somebody else posted. Parley's two agents discover the price
+> themselves: one buying bulk inference capacity, one selling, haggling inside
+> hard limits their owners set in advance.
 
-Screen: dashboard, empty state.
+## 0:18-0:32, the mechanism
 
-> Two AI agents negotiate the price of bulk inference capacity. One buys, one
-> sells. Their owners set hard limits in advance, and here is the part that
-> matters: those limits are arithmetic, not instructions in a prompt. The model
-> proposes. Arithmetic disposes. No prompt can talk an agent past its owner's
-> limit, and I will show you that rather than assert it.
+> The limits are arithmetic, not instructions in a prompt. The model proposes;
+> arithmetic disposes. No prompt talks an agent past its owner's limit. That is
+> a claim, so I will test it on screen.
 
-## 0:20-1:00, scenario B with the baseline agent
+## 0:32-1:00, scenario B, the clamp firing
 
-Screen: click **baseline**, then **Scenario B**. Let it stream.
+Screen: click **View scenario B**. Point at the buyer's clamp counter.
 
-> This is a narrow overlap. The blue line is the buyer walking up, orange is the
-> seller walking down. The dashed lines are each side's private limit: neither
-> agent can see the other's, the audience can see both.
->
-> Watch the buyer hit its ceiling. Every red marker is the owner's limit
-> overriding what the agent wanted to offer. It proposed 954, arithmetic sent
-> 900. Nine times in this one negotiation.
+> This is a recorded run and the page says so. Blue is the buyer walking up,
+> orange the seller coming down. The dashed lines are the owners' limits:
+> neither agent sees the other's, you see both. They barely overlap, so the
+> buyer walks into its ceiling of nine hundred. Nine times the guardrail
+> overrode what the agent wanted to send. It still closed, inside both limits.
 
-Point at the "guardrail overrode the strategy **9** times" counter.
+Verified against `negotiation-snapshot-b.json`: buyer ceiling 900, seller
+derived floor 855, buyer `clampCount` 9, seller 0, settled at 9.00 USDC. The
+counter on screen reads "guardrail overrode the strategy **9** times".
 
-> They still close, at a price inside both limits.
+## 1:00-1:40, the hero beat: break it live
 
-## 1:00-1:25, the same scenario with the real engine
+Screen: scroll to **"Try to break it"**, click
+**"Ceiling below floor: 600 against 700"**, scroll straight back up.
 
-Screen: click **engine**, then **Scenario B** again.
+> Those were recordings. This is not. I am setting the buyer's ceiling to six
+> hundred, against a seller floor of seven hundred, derived from its cost and
+> margin. No price satisfies both owners. Computed live on the server, and here
+> it is: both agents work it, both walk away, and each files a post-mortem
+> naming the limit that stopped it. Nothing agreed. Nothing paid. That is the
+> system refusing to break, not me promising it will not.
 
-> Same limits, better agent. The negotiation engine concedes on a schedule that
-> never reaches the band edge, so it is clamped zero times. It stays inside its
-> owner's limits by choice rather than by being stopped. The guardrail is still
-> there; it just never has to fire.
+This is the single most valuable twenty seconds in the video. It is a live
+computation, on the public URL, from numbers the audience watched go in. Protect
+it in the edit.
 
-## 1:25-1:55, scenario C, the proof
-
-Screen: **Scenario C**.
-
-> No overlap exists at all. The seller's floor is above the buyer's ceiling, and
-> you can see it: the dashed lines never cross. Both agents work it for nine
-> rounds, then walk away.
->
-> Both sides file a post-mortem naming the limit that stopped them. And no
-> payment is made. Not "a payment that failed": the settlement adapter is
-> unreachable from the walk-away branch, and a counting test asserts scenario C
-> makes exactly zero settlement calls.
-
-## 1:55-2:20, the safety proof
+## 1:40-2:03, the same claim in code
 
 Screen: second terminal.
 
@@ -81,51 +97,90 @@ Screen: second terminal.
 pnpm --filter @parley/orchestrator test
 ```
 
-> Here is the claim tested rather than argued. A model that answers every single
-> prompt with an absurd price, ninety-nine million, across all three scenarios,
-> puts zero out-of-band offers on the wire. Every refusal is logged with the
-> number arithmetic threw away.
->
-> Property tests over the band, an adversarial corpus, prompt injection through
-> the counterparty's own rationale text. The band is computed before the model is
-> consulted and re-checked twice after.
+> And in code: a model that answers every prompt with an absurd price,
+> ninety-nine million, across all three scenarios, puts zero out-of-band offers
+> on the wire. Property tests, an adversarial corpus, and prompt injection
+> through the counterparty's own text. One hundred forty-six tests, all green.
 
-## 2:20-2:45, settlement and the Circle stack
+146 is the whole suite, re-run 2026-08-09. This command alone runs 26.
 
-Screen: **Scenario A**, let it settle, point at the settlement panel.
+## 2:03-2:35, settlement and the Circle stack
 
-> They converge in nine rounds and settle. Circle's stack does the money:
-> **Arc Testnet** is the chain, **Circle Gateway** holds the buyer's balance and
-> signs, **Nanopayments x402 batching** runs the 402 flow between buyer and a
-> 402-protected seller endpoint, and **Circle's x402 facilitator** verifies and
-> settles the authorisation.
->
-> And that amber badge is doing real work. This run is on the stub, so no money
-> moved here and the screen says so. The real path has run once, off camera:
-> 9.23 USDC on Arc Testnet, authorised in 857 milliseconds, batch settled on
-> chain twelve minutes later.
+Screen: click **View scenario A**, point at the settlement panel and the badge.
 
-## 2:45-3:00, close
+> One real payment has run on **Arc testnet**. Nine point two three **USDC**,
+> through **Circle Gateway**, over the **x402** flow its **facilitator**
+> settles. Permission was granted in under one second. The money reached the
+> chain about thirteen minutes later, because Circle settles in batches. Every
+> recording you saw today is labelled simulated on screen. The run you watched
+> me start was live, and you can type your own numbers into that same form and
+> get the same thing.
 
-> Circle's own starter shows an agent paying a fixed price. Parley's agents
-> discover the price, inside limits a human set, and the limits hold whatever the
-> model says. Testnet only, and the next thing is on-chain reputation so a
-> seller's history survives across marketplaces.
+Do not compress those two latencies into one number. "Permission granted in
+under one second" is the authorisation (857ms). Landing on chain took 12m43s,
+which "about thirteen minutes" rounds fairly. "Confirmed in one second" is false.
+
+Two things this wording is carrying, so do not trim them casually:
+
+1. **`x402` and `facilitator` are spoken only here.** Cut this clause and the
+   video names two fewer Circle tools than the project uses, against a rubric
+   that lists them.
+2. **"The run you watched me start was live" is the sentence that separates
+   this from a screen recording.** An earlier draft said everything but the
+   payment was a recording, which was false and gave away the hero beat. The
+   1:00-1:40 run is computed on the server per request by `/api/run-custom`,
+   from numbers set on camera, and a viewer can reproduce it in their own
+   browser. Say it, and say the invitation after it.
+
+## 2:35-2:55, close, holding the URL
+
+Screen: **stop moving the mouse.** Scroll to the top so the header and the
+address bar are both readable. Hold completely static for the full twenty
+seconds, and for three seconds of silence after the last word.
+
+> Agents that discover the price, inside limits a human set, with the limits
+> holding whatever the model says. It is live at parley dash blond dot vercel
+> dot app. Set your own limits and try to break it.
+
+Say the URL aloud and leave it legible on screen. A judge should be able to type
+it without rewinding.
+
+The close no longer claims "everything you saw runs there", because the three
+scenarios are recordings and that would be the same overclaim the settlement
+beat was just corrected for. It ends on the invitation instead, which is both
+true and the stronger ask.
+
+---
+
+## Budget
+
+378 spoken words.
+
+| Reading pace | Spoken runtime |
+|---|---|
+| 130 wpm, slow and deliberate | 2:55 |
+| 140 wpm | 2:42 |
+| 150 wpm | 2:31 |
+
+At 130 wpm the spoken track alone is 2:55, so the pauses for clicking and
+scrolling are what push a take over 3:00. If your first take runs long, that is
+the pauses, not the words. Use the cut order rather than talking faster.
 
 ## Cut order if the take runs long
 
-1. The 1:00-1:25 engine-versus-baseline beat. It is the most interesting
-   comparison and the least essential claim.
-2. Trim the scenario B ladder; cut to the finished state.
-3. Shorten the Circle stack list to naming the four tools without explanation.
+1. The 1:40-2:03 test beat. Cut to the last two sentences of it, or drop it
+   entirely; the hero beat already demonstrates the same property live.
+2. Shorten the Circle stack list to the four names without explanation.
+3. Trim the scenario B narration to the clamp counter sentence alone.
 
-**Never cut:** scenario C, the zero-out-of-band test, or the SIMULATED badge
-sentence. The first two are the product and the third is the honesty.
+**Never cut:** the 1:00-1:40 hero beat, the SIMULATED badge sentence, or the
+static URL hold. The first is the product, the second is the honesty, the third
+is how anyone checks either.
 
 ## Unresolved questions
 
-1. Where does the platform want the video hosted? Unlisted YouTube is the
-   assumed default.
-2. Is a documented local run enough for "working frontend and backend", or is a
-   deployed URL required? If a URL is required, deploy with
-   `SETTLEMENT_MODE=local-stub` and no funded wallet behind it.
+1. The 0:32-1:00 beat names scenario B's ceiling as "nine hundred" while the
+   hero beat uses "six hundred". Two different numbers thirty seconds apart may
+   confuse on first listen. Worth a rehearsal read to check it lands.
+
+Video host is settled: **unlisted YouTube**.
