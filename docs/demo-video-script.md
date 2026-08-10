@@ -35,10 +35,11 @@ The deploy is a **replay instance** (`PARLEY_DATA_SOURCE` unset, so
 2. Warm `/app` once in this same tab, then go back to the landing page. The
    route is `force-dynamic`, so the first visit of a cold instance can be slower
    than the rest; you do not want that on the cut at 0:32.
-3. On that warm-up visit, scroll down to the **"Try to break it"** section and
-   back to the top. You need to know the exact scroll distance, because clicking
-   a preset renders the result **above** the panel and **nothing auto-scrolls**.
-   Rehearse the click-then-scroll-up move until it is one motion.
+3. On that warm-up visit, run the preset once end to end so you know how the
+   page behaves. The result renders **above** the panel, and the page **does
+   move on its own**: the transcript ladder scrolls its last row into view,
+   which scrolls the window with it. Rehearse letting it settle, then finding
+   the chart and the walk-away panel, until it is one motion.
 4. Decide the terminal question in the 1:40-2:03 beat below before you record
    anything. If you are splicing it in, capture that clip first and set it
    aside.
@@ -96,15 +97,33 @@ counter on screen reads "guardrail overrode the strategy **9** times".
 ## 1:00-1:40, the hero beat: break it live
 
 Screen: scroll to **"Try to break it"**, click
-**"Ceiling below floor: 600 against 700"**, scroll straight back up.
+**"Ceiling below floor: 600 against 700"**.
+
+The page moves on its own when the result arrives: the transcript ladder calls
+`scrollIntoView` on its last row, which scrolls the window. Let it settle, then
+scroll **up** to the chart, and **down** once to the walk-away panel, which is
+the last panel in the left column and now renders at full height with both
+cards.
+
+Two things the narration depends on, both measured rather than assumed:
+
+- The transcript contains **one** WALK_AWAY row, the buyer at round 9. That is
+  correct: the buyer declares it and the run ends, so the seller never gets
+  another turn to send anything.
+- The walk-away panel contains **two** post-mortems, BUYER and SELLER, because
+  `recordWalkAway` writes both after the loop. Confirmed against the live API:
+  `postMortems count: 2`, both `NO_ZOPA_PRICE`, final gap 629 micro-USDC each.
+
+So "the buyer walks away, and both sides file a post-mortem" is exactly what is
+on screen. Saying "both walk away" would not be.
 
 > Those were recordings. This is not. I am setting the buyer's ceiling to six
 > hundred, new numbers, not the ones you just saw, against a seller floor of
 > seven hundred, derived from its cost and margin. No price satisfies both
 > owners. Computed live on the server, and here it is: nine rounds, then the
-> buyer walks away, naming its own ceiling as the reason. Nothing agreed.
-> Nothing paid. That is the system refusing to break, not me promising it will
-> not.
+> buyer walks away, and both sides file a post-mortem naming the limit that
+> stopped them. Nothing agreed. Nothing paid. That is the system refusing to
+> break, not me promising it will not.
 
 This is the single most valuable twenty seconds in the video. It is a live
 computation, on the public URL, from numbers the audience watched go in. Protect
@@ -183,8 +202,8 @@ currently invisible to a viewer.
 
 | | Words | At 130 wpm | Room for a 3s hold? |
 |---|---|---|---|
-| As written, terminal beat kept | 382 | 2:56 | **No.** 2:59, and that assumes zero pause |
-| Terminal beat cut | 337 | 2:36 | **Yes**, ends about 2:39 |
+| As written, terminal beat kept | 387 | 2:59 | **No.** Over the limit before a single pause |
+| Terminal beat cut | 342 | 2:38 | **Yes**, ends about 2:41 |
 
 So it is one or the other, not both. Given the terminal beat now also carries
 the Game Bar problem, cutting it and spending three of the recovered twenty
@@ -228,15 +247,15 @@ true and the stronger ask.
 
 ## Budget
 
-382 spoken words with the terminal beat, 337 without it.
+387 spoken words with the terminal beat, 342 without it.
 
-| Reading pace | All beats (382) | Terminal beat cut (337) |
+| Reading pace | All beats (387) | Terminal beat cut (342) |
 |---|---|---|
-| 130 wpm, slow and deliberate | 2:56 | 2:36 |
-| 140 wpm | 2:44 | 2:24 |
-| 150 wpm | 2:33 | 2:14 |
+| 130 wpm, slow and deliberate | 2:59 | 2:38 |
+| 140 wpm | 2:46 | 2:27 |
+| 150 wpm | 2:35 | 2:17 |
 
-**At 130 wpm the full script is 2:56, which leaves four seconds.** That is not a
+**At 130 wpm the full script is 2:59, which leaves one second.** That is not a
 budget, it is a coin toss: any pause for a click or a scroll puts the take over
 3:00. Treat the full version as viable only at 140 wpm or faster, and treat
 cutting the terminal beat as the default rather than the fallback.

@@ -101,11 +101,12 @@ const SHOTS = [
       'Scroll down to the section headed "Try to break it".',
       'Click the first preset: "Ceiling below floor: 600 against 700".',
       "It runs immediately and returns finished in one response.",
-      "SCROLL BACK UP. The result renders ABOVE the panel and nothing auto-scrolls. Rehearse this until it is one motion.",
-      "Hold on the walk-away panel. NOTE: it is the last panel in the left column and it scrolls; at a viewport under about 1000px tall you must scroll the column to see both cards in full.",
+      "The page moves on its own: the transcript scrolls its last row into view, taking the window with it. Let it settle.",
+      "Scroll UP to the chart and the no-overlap line, then DOWN once to the walk-away panel at the bottom of the left column.",
+      "Hold on the walk-away panel. It now renders at full height with BOTH cards, BUYER and SELLER, and no longer scrolls inside itself.",
     ],
     narration:
-      "Those were recordings. This is not. I am setting the buyer's ceiling to six hundred, new numbers, not the ones you just saw, against a seller floor of seven hundred, derived from its cost and margin. No price satisfies both owners. Computed live on the server, and here it is: nine rounds, then the buyer walks away, naming its own ceiling as the reason. Nothing agreed. Nothing paid. That is the system refusing to break, not me promising it will not.",
+      "Those were recordings. This is not. I am setting the buyer's ceiling to six hundred, new numbers, not the ones you just saw, against a seller floor of seven hundred, derived from its cost and margin. No price satisfies both owners. Computed live on the server, and here it is: nine rounds, then the buyer walks away, and both sides file a post-mortem naming the limit that stopped them. Nothing agreed. Nothing paid. That is the system refusing to break, not me promising it will not.",
     ttsNotes: [],
     image: "demo-scenario-c.png",
     imageNote:
@@ -341,8 +342,8 @@ const totalWords = SHOTS.reduce((n, s) => n + countWords(s.narration), 0);
  * These are the canonical counts from docs/demo-video-script.md. Update them
  * together with the narration.
  */
-const SCRIPT_WORDS_ALL = 382;
-const SCRIPT_WORDS_CUT = 337;
+const SCRIPT_WORDS_ALL = 387;
+const SCRIPT_WORDS_CUT = 342;
 
 const runtime = (words, wpm) => {
   const s = Math.round((words / wpm) * 60);
@@ -572,7 +573,7 @@ const html = `<!doctype html>
       Close every editor window in case a dotenv file is in a tab. Close every terminal whose scrollback touched a dotenv file, provision-wallets, or a faucet page. Close every browser tab except this one recording target. Turn off notification popups.
     </p>
     <p class="cmd-note">
-      Rehearse shot 4 before recording anything. Clicking the preset renders the result ABOVE the panel and nothing auto-scrolls, so you have to scroll back up yourself. That fumble on camera is the most likely retake.
+      Rehearse shot 4 before recording anything. The result renders ABOVE the panel, and the page moves on its own when it arrives: the transcript scrolls its last row into view and takes the window with it. Let it settle, then scroll up to the chart and down once to the walk-away panel. That fumble on camera is the most likely retake.
     </p>
   </div>
 

@@ -530,10 +530,25 @@ a.launcher {
 }
 
 /* The last panel in the stack takes the slack, so the column always fills. */
-.panel-settlement,
-.panel-postmortem {
+.panel-settlement {
   flex: 1 1 auto;
   overflow-y: auto;
+}
+
+/*
+ * The walk-away panel is the exception: it renders at its NATURAL height and
+ * never scrolls inside itself.
+ *
+ * As slack-taker it was handed whatever the column had left, which measured
+ * 77px for 211px of content at 1920x1080, so the two post-mortem cards were a
+ * scroll-within-a-scroll that read as a rendering fault on video. This panel is
+ * the payoff of the demo: it carries both sides naming the limit that stopped
+ * them. It is the one thing on the screen that must never be cropped, so the
+ * COLUMN scrolls for it rather than it scrolling inside a box.
+ */
+.panel-postmortem {
+  flex: 0 0 auto;
+  overflow: visible;
 }
 
 .panel-transcript {
@@ -948,10 +963,16 @@ a.launcher {
   color: var(--seller);
 }
 
+/*
+ * Tightened so the panel's natural height is short enough that reaching it is
+ * one small scroll rather than a hunt. Every line is still full size and
+ * nothing is truncated; only the dead space between lines is smaller.
+ */
 .postmortem p {
-  margin: 2px 0;
+  margin: 1px 0;
   font-size: 12.5px;
   color: var(--muted);
+  line-height: 1.35;
 }
 
 .postmortem .reason-code {
