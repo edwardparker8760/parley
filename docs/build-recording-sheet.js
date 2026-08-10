@@ -148,7 +148,7 @@ const SHOTS = [
       'Point at the amber badge reading "SIMULATED: no real money moved".',
     ],
     narration:
-      "One real payment has run on Arc testnet. Nine point two three U S D C, through Circle Gateway, over the x four oh two flow its facilitator settles. Permission was granted in under one second. The money reached the chain about thirteen minutes later, because Circle settles in batches. Every recording you saw today is labelled simulated on screen. The run you watched me start was live, and you can type your own numbers into that same form and get the same thing.",
+      "One real payment has run on Arc testnet: nine point two three U S D C through Circle Gateway, over the x four oh two flow its facilitator settles. The buyer's Gateway balance dropped by exactly that amount. Gateway settles in batches, so what an explorer shows is the deposit and the batch, not a line naming this deal, and the README says exactly that. Every recording you saw today is labelled simulated on screen. The run you watched me start was live, and you can type your own numbers into that same form and get the same thing.",
     ttsNotes: [
       'USDC respelled "U S D C" so the engine does not read it as one word.',
       'x402 respelled "x four oh two". Read as digits it becomes "x four hundred two", which is not the product name.',
@@ -391,6 +391,215 @@ const CLIP_NAME = {
   7: "parley-07-close-url",
 };
 
+/*
+ * ------------------------------------------------------- text-to-speech chunks
+ *
+ * CapCut refuses any text block over 500 characters, so the voice track is built
+ * one chunk at a time. 450 is the working ceiling here, and the build asserts it
+ * rather than trusting the eye.
+ *
+ * CapCut's engine ignores bold and capitals, so the ONLY pacing controls are
+ * where a chunk ends and what punctuation it ends with. That is why splits sit
+ * at sentence boundaries by default, and at a comma only where a beat is wanted.
+ *
+ * `gap` is the silence to leave AFTER the clip, in seconds.
+ *
+ * ## Why these are authored rather than split automatically
+ *
+ * A regex splitter would break "nine point two three U S D C" or cut a list in
+ * the wrong place. The beats are a judgement call. The safety net is the
+ * assertion below: joining every chunk must reproduce the shot's narration
+ * character for character, so a chunk can never quietly drift from the script.
+ */
+const CHUNKS = {
+  1: [
+    { text: "Agent payments already exist. Agent pricing does not.", gap: 0.5,
+      moment: { en: "Landing hero, headline in frame", vi: "Trang chủ, tiêu đề trong khung" },
+      why: { vi: "Nửa giây là đủ để câu đối lập đọng lại, chưa đủ lâu để thành ngập ngừng." } },
+    { text: "Every agent payment demo pays a price somebody else posted.", gap: 0.5,
+      moment: { en: "Still on hero, no movement", vi: "Vẫn ở trang chủ, không di chuyển" },
+      why: { vi: "Ngắt đều tay, vì đây mới là câu dẫn, chưa phải câu chốt." } },
+    { text: "Parley's two agents discover the price themselves: one buying bulk inference capacity, one selling,", gap: 0.4,
+      moment: { en: "Cursor drifts toward the transcript excerpt", vi: "Rê chuột về phía bảng hội thoại" },
+      why: { vi: "Ngắt ngắn giữa câu, chỉ để câu không dài quá một hơi đọc của máy." } },
+    { text: "haggling inside hard limits their owners set in advance.", gap: 1.2,
+      moment: { en: "Cursor rests near the CLAMP line", vi: "Chuột dừng gần dòng CLAMP" },
+      why: { vi: "Nghỉ 1,2 giây vì đây là hết ý thứ nhất, người xem cần một nhịp trước khi sang phần cơ chế." } },
+  ],
+  2: [
+    { text: "The limits are arithmetic, not instructions in a prompt.", gap: 0.4,
+      moment: { en: "Hero, cursor near the CLAMP line", vi: "Trang chủ, chuột gần dòng CLAMP" },
+      why: { vi: "Ngắt ngắn để câu này dính liền câu chốt phía sau." } },
+    { text: "The model proposes; arithmetic disposes.", gap: 0.8,
+      moment: { en: "Hold on the CLAMP line", vi: "Dừng ở dòng CLAMP" },
+      why: { vi: "Đây là câu chốt ngắn nhất của cả video. Nghỉ 0,8 giây cho nó tự đứng một mình." } },
+    { text: "No prompt talks an agent past its owner's limit.", gap: 0.5,
+      moment: { en: "Hero, still", vi: "Trang chủ, đứng yên" },
+      why: { vi: "Nhịp bình thường, câu này chỉ giải thích thêm cho câu trên." } },
+    { text: "That is a claim, so I will test it on screen.", gap: 1.2,
+      moment: { en: "CLICK \"Open the dashboard\" on the last four words", vi: "BẤM \"Open the dashboard\" đúng bốn chữ cuối" },
+      why: { vi: "1,2 giây để cú bấm và trang mới kịp hiện ra trước khi cảnh sau bắt đầu nói." } },
+  ],
+  3: [
+    { text: "This is a recorded run and the page says so.", gap: 0.5,
+      moment: { en: "/app just loaded, banner visible", vi: "/app vừa mở, thấy dải thông báo" },
+      why: { vi: "Nói ngay câu thành thật này rồi đi tiếp, không cần nhấn mạnh." } },
+    { text: "Blue is the buyer walking up, orange the seller coming down.", gap: 0.5,
+      moment: { en: "Cursor traces the two lines", vi: "Rê chuột theo hai đường" },
+      why: { vi: "Vừa đủ để mắt bám theo hai đường trên biểu đồ." } },
+    { text: "The dashed lines are the owners' limits: neither agent sees the other's, you see both.", gap: 0.6,
+      moment: { en: "Point at the dashed lines", vi: "Chỉ vào hai đường đứt nét" },
+      why: { vi: "Nghỉ hơi lâu hơn vì đây là ý khó nhất của cảnh: hai bên mù thông tin của nhau." } },
+    { text: "They barely overlap, so the buyer walks into its ceiling of nine hundred.", gap: 0.5,
+      moment: { en: "Move toward the Owner limits panel", vi: "Di chuyển tới bảng Owner limits" },
+      why: { vi: "Nhịp đều, đang dẫn tới con số 9 lần." } },
+    { text: "Nine times the guardrail overrode what the agent wanted to send.", gap: 0.6,
+      moment: { en: "HOLD on \"overrode the strategy 9 times\"", vi: "DỪNG ở dòng \"overrode the strategy 9 times\"" },
+      why: { vi: "Nghỉ 0,6 giây để người xem kịp đọc con số 9 trên màn hình." } },
+    { text: "It still closed, inside both limits.", gap: 1.2,
+      moment: { en: "Begin scrolling to \"Try to break it\"", vi: "Bắt đầu cuộn xuống \"Try to break it\"" },
+      why: { vi: "1,2 giây là thời gian cuộn xuống, để tiếng và hình không đá nhau." } },
+  ],
+  4: [
+    { text: "Those were recordings. This is not.", gap: 0.8,
+      moment: { en: "\"Try to break it\" section in frame", vi: "Mục \"Try to break it\" trong khung" },
+      why: { vi: "Câu bẻ lái của cả video. Nghỉ 0,8 giây để người xem hiểu là sắp có gì đó thật." } },
+    { text: "I am setting the buyer's ceiling to six hundred,", gap: 0.4,
+      moment: { en: "CLICK the preset", vi: "BẤM nút preset" },
+      why: { vi: "Ngắt ngắn, vì câu chưa xong, chỉ tách ra để khớp đúng lúc bấm chuột." } },
+    { text: "new numbers, not the ones you just saw,", gap: 0.4,
+      moment: { en: "Result appears, page auto-scrolls", vi: "Kết quả hiện ra, trang tự cuộn" },
+      why: { vi: "Câu chèn để tránh nhầm với số 900 ở cảnh trước. Ngắt ngắn cho khỏi nặng nề." } },
+    { text: "against a seller floor of seven hundred, derived from its cost and margin.", gap: 0.7,
+      moment: { en: "Scroll up to the chart", vi: "Cuộn lên tới biểu đồ" },
+      why: { vi: "Nghỉ vừa phải, vì \"derived\" là ý quan trọng: sàn được tính ra chứ không phải gõ vào." } },
+    { text: "No price satisfies both owners.", gap: 0.8,
+      moment: { en: "HOLD on the no-overlap line", vi: "DỪNG ở dòng No overlap exists" },
+      why: { vi: "Câu ngắn, để dòng chữ trên màn hình nói thay. Nghỉ 0,8 giây cho người xem đọc nó." } },
+    { text: "Computed live on the server, and here it is:", gap: 0.4,
+      moment: { en: "Scroll down to the walk-away panel", vi: "Cuộn xuống bảng walk-away" },
+      why: { vi: "Ngắt ngắn vì câu còn dở, dấu hai chấm phải dẫn thẳng sang câu sau." } },
+    { text: "nine rounds, then the buyer walks away, and both sides file a post-mortem naming the limit that stopped them.", gap: 0.9,
+      moment: { en: "HOLD on both post-mortem cards", vi: "DỪNG ở cả hai thẻ post-mortem" },
+      why: { vi: "Nghỉ gần một giây để người xem nhìn thấy đủ hai thẻ BUYER và SELLER." } },
+    { text: "Nothing agreed. Nothing paid. That is the system refusing to break, not me promising it will not.", gap: 1.2,
+      moment: { en: "Still on the walk-away panel", vi: "Vẫn ở bảng walk-away" },
+      why: { vi: "Hai câu ngắn nằm chung một clip: dấu chấm giữa chúng đã tự tạo nhịp, không cần cắt rời. Nghỉ 1,2 giây vì đây là hết cảnh quan trọng nhất." } },
+  ],
+  5: [
+    { text: "And in code: a model that answers every prompt with an absurd price, ninety-nine million,", gap: 0.4,
+      moment: { en: "Terminal, test run starting", vi: "Terminal, test bắt đầu chạy" },
+      why: { vi: "Ngắt ngắn, câu chưa trọn ý." } },
+    { text: "across all three scenarios, puts zero out of band offers on the wire.", gap: 0.6,
+      moment: { en: "Pass list scrolling", vi: "Danh sách test đang chạy" },
+      why: { vi: "Nghỉ để chữ zero đọng lại, đó là con số đáng nhớ." } },
+    { text: "Property tests, an adversarial corpus, and prompt injection through the counterparty's own text.", gap: 0.5,
+      moment: { en: "Pass list still scrolling", vi: "Danh sách vẫn đang chạy" },
+      why: { vi: "Nhịp đều, đây là câu liệt kê." } },
+    { text: "One hundred forty-eight tests, all green.", gap: 1.2,
+      moment: { en: "HOLD on the final count", vi: "DỪNG ở con số tổng kết" },
+      why: { vi: "Nghỉ 1,2 giây để đọc kịp con số, và vì đây là hết cảnh." } },
+  ],
+  6: [
+    { text: "One real payment has run on Arc testnet:", gap: 0.4,
+      moment: { en: "Scenario A settlement panel", vi: "Bảng Settlement của kịch bản A" },
+      why: { vi: "Ngắt ngắn, dấu hai chấm dẫn sang con số." } },
+    { text: "nine point two three U S D C through Circle Gateway,", gap: 0.4, tts: true,
+      moment: { en: "Point at the amount", vi: "Chỉ vào số tiền" },
+      why: { vi: "Ngắt ngắn để cả cụm tên sản phẩm đi liền một mạch, không bị hụt hơi giữa chừng." } },
+    { text: "over the x four oh two flow its facilitator settles.", gap: 0.7, tts: true,
+      moment: { en: "Still on the settlement panel", vi: "Vẫn ở bảng Settlement" },
+      why: { vi: "Nghỉ 0,7 giây sau khi đọc xong danh sách tên công cụ của Circle, vì đó là phần ban giám khảo chấm điểm." } },
+    { text: "The buyer's Gateway balance dropped by exactly that amount.", gap: 0.7,
+      moment: { en: "Still on the settlement panel", vi: "Vẫn ở bảng Settlement" },
+      why: { vi: "Đây là bằng chứng thật sự của khoản thanh toán, nên cho nó một nhịp riêng." } },
+    { text: "Gateway settles in batches, so what an explorer shows is the deposit and the batch,", gap: 0.4,
+      moment: { en: "Point at the SIMULATED badge", vi: "Chỉ vào huy hiệu SIMULATED" },
+      why: { vi: "Ngắt ngắn vì câu chưa xong, phần quan trọng nằm ở vế sau." } },
+    { text: "not a line naming this deal, and the README says exactly that.", gap: 0.7,
+      moment: { en: "Hold on the badge", vi: "Dừng ở huy hiệu" },
+      why: { vi: "Nghỉ để câu thú nhận này đứng riêng. Nói trước điều bất lợi thì đáng tin hơn là để giám khảo tự phát hiện." } },
+    { text: "Every recording you saw today is labelled simulated on screen.", gap: 0.6,
+      moment: { en: "HOLD on \"SIMULATED: no real money moved\"", vi: "DỪNG ở dòng \"SIMULATED: no real money moved\"" },
+      why: { vi: "Tiếng phải khớp đúng lúc huy hiệu nằm giữa khung hình." } },
+    { text: "The run you watched me start was live,", gap: 0.5,
+      moment: { en: "Begin navigating back to the landing page", vi: "Bắt đầu quay về trang chủ" },
+      why: { vi: "Nghỉ nửa giây ngay sau chữ live, vì đó là chữ tách video này khỏi một bản quay màn hình thường." } },
+    { text: "and you can type your own numbers into that same form and get the same thing.", gap: 1.0,
+      moment: { en: "Landing page loading", vi: "Trang chủ đang mở lại" },
+      why: { vi: "1 giây để chuyển trang, và để lời mời kịp đọng lại trước đoạn im lặng." } },
+  ],
+  "6b": [],
+  7: [
+    { text: "Agents that discover the price, inside limits a human set, with the limits holding whatever the model says.", gap: 0.5,
+      moment: { en: "Landing hero, static, hands off", vi: "Trang chủ, đứng yên, bỏ tay khỏi chuột" },
+      why: { vi: "Nhịp bình thường, câu tóm tắt lại toàn bộ ý." } },
+    { text: "It is live at parley dash blond dot vercel dot app.", gap: 0.6,
+      moment: { en: "Address bar clearly in frame", vi: "Thanh địa chỉ nằm rõ trong khung" },
+      why: { vi: "Nghỉ 0,6 giây để người xem kịp nhìn địa chỉ trên thanh URL trong lúc vẫn nghe được nó." } },
+    { text: "Set your own limits and try to break it.", gap: 3.0,
+      moment: { en: "Static hold, silence, then stop recording", vi: "Giữ yên, im lặng, rồi mới tắt ghi hình" },
+      why: { vi: "3 giây im lặng cuối cùng là bắt buộc: giám khảo cần thời gian gõ lại địa chỉ mà không phải tua." } },
+  ],
+};
+
+/*
+ * The chunks must reconstruct the narration exactly. Without this, a chunk could
+ * be edited for pacing and quietly say something the script does not, which is
+ * the one class of error nobody would catch until the video was public.
+ */
+function assertChunksMatchNarration() {
+  const problems = [];
+  for (const shot of SHOTS) {
+    const chunks = CHUNKS[shot.id];
+    if (!chunks) {
+      problems.push(`shot ${shot.id}: no chunk list`);
+      continue;
+    }
+    const joined = chunks.map((c) => c.text).join(" ").replace(/\s+/g, " ").trim();
+    const target = shot.narration.replace(/\s+/g, " ").trim();
+    if (joined !== target) {
+      problems.push(
+        `shot ${shot.id}: chunks do not reconstruct the narration\n` +
+          `  chunks : ${joined}\n` +
+          `  script : ${target}`,
+      );
+    }
+  }
+  if (problems.length) {
+    console.error("\nCHUNK MISMATCH\n" + problems.join("\n"));
+    process.exit(1);
+  }
+}
+
+/** The hard CapCut limit, and the working ceiling this file holds itself to. */
+const CAPCUT_LIMIT = 500;
+const CHUNK_CEILING = 450;
+
+function assertChunkLengths() {
+  const over = [];
+  for (const shot of SHOTS) {
+    (CHUNKS[shot.id] || []).forEach((c, i) => {
+      if (c.text.length > CHUNK_CEILING) {
+        over.push(`shot ${shot.id} chunk ${i + 1}: ${c.text.length} chars`);
+      }
+    });
+  }
+  if (over.length) {
+    console.error(
+      `\nCHUNK TOO LONG (ceiling ${CHUNK_CEILING}, CapCut hard limit ${CAPCUT_LIMIT})\n` +
+        over.join("\n"),
+    );
+    process.exit(1);
+  }
+}
+
+// Run both gates before anything is rendered. A build that would ship a chunk
+// CapCut cannot convert, or one that no longer matches the script, should fail
+// loudly here rather than be discovered at 2am in the editor.
+assertChunksMatchNarration();
+assertChunkLengths();
+
 /** Header, banners and checklist, in both languages. */
 const UI = {
   subtitle: {
@@ -428,6 +637,22 @@ const UI = {
   },
   langBtn: { en: "Tiếng Việt", vi: "English" },
   shotWord: { en: "SHOT", vi: "CẢNH" },
+  tabRecord: { en: "Record", vi: "Quay" },
+  tabEdit: { en: "Edit", vi: "Dựng" },
+  chunkWord: { en: "chunk", vi: "đoạn" },
+  chars: { en: "chars", vi: "ký tự" },
+  gapAfter: { en: "gap after", vi: "nghỉ sau" },
+  overIt: { en: "sits over", vi: "đặt vào lúc" },
+  ttsFlag: {
+    en: "Speech spelling. Paste exactly as written; do not normalise it to USDC or x402.",
+    vi: "Đây là cách viết cho máy đọc. Dán y nguyên, đừng sửa lại thành USDC hay x402.",
+  },
+  silentShot: {
+    en: "SILENT. No audio clip at all. Leave the timeline empty here.",
+    vi: "IM LẶNG. Không có clip tiếng nào cả. Để trống chỗ này trên timeline.",
+  },
+  editChecklist: { en: "Before you export", vi: "Trước khi xuất video" },
+  timelinePlan: { en: "Timeline plan", vi: "Kế hoạch timeline" },
   saveAs: { en: "Save the clip as", vi: "Lưu clip với tên" },
   copyName: { en: "Copy filename", vi: "Chép tên file" },
   fields: {
@@ -635,6 +860,50 @@ const countWords = (s) => (s.trim() ? s.trim().split(/\s+/).length : 0);
 
 const totalWords = SHOTS.reduce((n, s) => n + countWords(s.narration), 0);
 
+/* ------------------------------------------------------------- edit tab */
+
+const EDIT_CHECKS = [
+  {
+    en: "Listen to EVERY generated clip once, all the way through, before placing it. The engine mangles numbers and product names more often than words: check nine point two three, x four oh two, U S D C, nine hundred, six hundred, seven hundred, and one hundred forty-eight.",
+    vi: "Nghe LẠI TỪNG clip máy đọc, nghe hết, trước khi kéo vào timeline. Máy hay đọc sai số và tên sản phẩm hơn là đọc sai chữ: kiểm tra nine point two three, x four oh two, U S D C, nine hundred, six hundred, seven hundred, và one hundred forty-eight.",
+  },
+  {
+    en: "Confirm the export is 1920x1080. CapCut can quietly export a project at the size of the first clip you dropped in.",
+    vi: "Kiểm tra xuất ra đúng 1920x1080. CapCut có thể tự lấy kích thước theo clip đầu tiên bạn kéo vào mà không báo gì.",
+  },
+  {
+    en: "Watch the whole thing at normal speed, looking for a leaked API key. Not scrubbing, not at double speed. One frame is enough.",
+    vi: "Xem lại toàn bộ ở tốc độ thường để soi xem có lộ API key không. Không tua, không xem nhanh gấp đôi. Chỉ một khung hình là đủ để lộ.",
+  },
+  {
+    en: "Confirm the exported runtime is under 3:00. Check the exported file, not the timeline: a trailing empty track can add a second.",
+    vi: "Kiểm tra file đã xuất dài dưới 3:00. Xem trên file thật chứ không xem trên timeline: một rãnh trống ở cuối cũng có thể cộng thêm một giây.",
+  },
+  {
+    en: "Confirm shot 6B has no audio under it, and that the three seconds of silence are actually silent, not room tone from another clip.",
+    vi: "Kiểm tra cảnh 6B không có tiếng nào bên dưới, và ba giây im lặng đó là im thật, không phải tiếng nền lẫn từ clip khác.",
+  },
+];
+
+/** Chunk counts and the silence budget, computed rather than stated. */
+const chunkStats = (() => {
+  let total = 0;
+  let longest = { chars: 0, shot: null, index: null };
+  let gapKept = 0;
+  let gapAll = 0;
+  for (const shot of SHOTS) {
+    (CHUNKS[shot.id] || []).forEach((c, i) => {
+      total += 1;
+      gapAll += c.gap;
+      if (!shot.optional) gapKept += c.gap;
+      if (c.text.length > longest.chars) {
+        longest = { chars: c.text.length, shot: shot.id, index: i + 1 };
+      }
+    });
+  }
+  return { total, longest, gapKept, gapAll };
+})();
+
 
 /*
  * Runtime is computed from the SCRIPT's word count, not this sheet's.
@@ -655,6 +924,100 @@ const runtime = (words, wpm) => {
   const s = Math.round((words / wpm) * 60);
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 };
+
+function renderEditShot(shot) {
+  const vi = VI[shot.id] || {};
+  const chunks = CHUNKS[shot.id] || [];
+  const clipName = CLIP_NAME[shot.id] || `parley-shot-${shot.id}`;
+
+  const head = `
+        <header class="shot-head">
+          <span class="shot-num"><span class="shot-word">${bi(
+            UI.shotWord.en,
+            UI.shotWord.vi,
+          )}</span><span class="shot-digit">${esc(
+            String(shot.id).toUpperCase(),
+          )}</span></span>
+          <div class="shot-title">
+            <h2>${bi(shot.name, vi.name)}</h2>
+          </div>
+          <span class="wc">${chunks.length} ${bi(
+            UI.chunkWord.en + (chunks.length === 1 ? "" : "s"),
+            UI.chunkWord.vi,
+          )}</span>
+        </header>`;
+
+  if (chunks.length === 0) {
+    return `
+      <section class="shot optional" id="edit-${shot.id}">
+        ${head}
+        <div class="silent-banner">${bi(
+          UI.silentShot.en,
+          UI.silentShot.vi,
+        )}</div>
+      </section>`;
+  }
+
+  const rows = chunks
+    .map((c, i) => {
+      const n = `${shot.id}.${i + 1}`;
+      const len = c.text.length;
+      const flag = c.tts
+        ? `<p class="chunk-flag">${bi(UI.ttsFlag.en, UI.ttsFlag.vi)}</p>`
+        : "";
+      const why = c.why
+        ? `<div class="gloss"><span class="gloss-label">${esc(
+            UI.glossLabel.vi,
+          )}</span><p>${esc(c.why.vi)}</p></div>`
+        : "";
+      return `
+          <div class="chunk">
+            <div class="chunk-head">
+              <span class="chunk-n">${esc(n)}</span>
+              <span class="chunk-len ${len > CHUNK_CEILING ? "bad" : "good"}">${len} ${bi(
+                UI.chars.en,
+                UI.chars.vi,
+              )}</span>
+              <span class="chunk-gap">${bi(
+                UI.gapAfter.en,
+                UI.gapAfter.vi,
+              )} ${c.gap.toFixed(1)}s</span>
+              <span class="chunk-moment">${bi(
+                UI.overIt.en,
+                UI.overIt.vi,
+              )}: ${bi(c.moment.en, c.moment.vi)}</span>
+            </div>
+            <div class="say-box">
+              <p class="narration" lang="en">${esc(c.text)}</p>
+              <button class="copy" data-copy="${escAttr(c.text)}"
+                      data-en="${escAttr(UI.copyBtn.en)}" data-vi="${escAttr(
+                        UI.copyBtn.vi,
+                      )}" data-done-en="${escAttr(
+                        UI.copied.en,
+                      )}" data-done-vi="${escAttr(UI.copied.vi)}">${
+                        UI.copyBtn.en
+                      }</button>
+            </div>
+            ${flag}
+            ${why}
+          </div>`;
+    })
+    .join("\n");
+
+  return `
+      <section class="shot${shot.hero ? " hero" : ""}${
+        shot.optional ? " optional" : ""
+      }" id="edit-${shot.id}">
+        ${head}
+        <div class="filename-row">
+          <span class="filename-label">${bi(UI.saveAs.en, UI.saveAs.vi)}</span>
+          <code class="filename">${esc(clipName)}.mp4</code>
+        </div>
+        <div class="chunk-list">
+${rows}
+        </div>
+      </section>`;
+}
 
 const html = `<!doctype html>
 <html lang="en">
@@ -804,6 +1167,75 @@ const html = `<!doctype html>
   .shot-title h2 { margin: 0; font-size: 1.05rem; }
   .time { font-family: Consolas, monospace; color: var(--accent); font-size: .95rem; }
   .wc { color: var(--dim); font-size: .8rem; white-space: nowrap; }
+
+  /* ---------- tabs ---------- */
+  .tabs { display: flex; gap: .4rem; margin: 0 0 1.2rem; border-bottom: 1px solid var(--line); }
+  .tab {
+    background: transparent;
+    color: var(--dim);
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    padding: .55rem 1.4rem;
+    font-size: .95rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab.active {
+    background: var(--panel);
+    color: var(--accent);
+    border-color: var(--line);
+    margin-bottom: -1px;
+  }
+  .tabpanel { display: none; }
+  .tabpanel.active { display: block; }
+
+  /* ---------- edit tab chunks ---------- */
+  .chunk-list { padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 1rem; }
+  .chunk { border-left: 2px solid var(--line); padding-left: .9rem; }
+  .chunk-head {
+    display: flex;
+    align-items: baseline;
+    gap: .8rem;
+    flex-wrap: wrap;
+    margin-bottom: .45rem;
+    font-size: .78rem;
+  }
+  .chunk-n {
+    font-family: Consolas, monospace;
+    font-weight: 700;
+    color: var(--accent);
+    font-size: .9rem;
+  }
+  .chunk-len {
+    font-family: Consolas, monospace;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: .05rem .4rem;
+  }
+  .chunk-len.good { color: var(--good); }
+  .chunk-len.bad { color: var(--warn); border-color: var(--warn); font-weight: 700; }
+  .chunk-gap { color: var(--accent); font-family: Consolas, monospace; }
+  .chunk-moment { color: var(--dim); }
+  .chunk-flag {
+    margin: .5rem 0 0;
+    font-size: .82rem;
+    color: var(--warn);
+    border: 1px dashed var(--warn);
+    border-radius: 4px;
+    padding: .35rem .6rem;
+  }
+  .silent-banner {
+    margin: 1rem 1.1rem;
+    padding: 1.1rem;
+    border: 1px dashed var(--dim);
+    border-radius: 6px;
+    text-align: center;
+    color: var(--dim);
+    font-size: 1rem;
+    letter-spacing: .04em;
+  }
 
   /* ---------- shot number and clip filename ----------
      The number is the loudest thing in the row on purpose: it is what the
@@ -987,6 +1419,19 @@ const html = `<!doctype html>
     "Ô lời thoại luôn giữ tiếng Anh ở cả hai chế độ, vì đó là chữ sẽ dán vào máy đọc và video là tiếng Anh. Tiếng Việt chỉ xuất hiện ở phần giải thích bên dưới mỗi ô. Tuyệt đối không dán phần giải thích vào máy đọc.",
   )}</p>
 
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-tab="record" role="tab">${bi(
+      UI.tabRecord.en,
+      UI.tabRecord.vi,
+    )}</button>
+    <button class="tab" data-tab="edit" role="tab">${bi(
+      UI.tabEdit.en,
+      UI.tabEdit.vi,
+    )}</button>
+  </div>
+
+<div id="tab-record" class="tabpanel active">
+
   <div class="progress"><strong id="done-count">0</strong> <span class="t-en">of ${
     SHOTS.length
   } ${UI.progress.en}</span><span class="t-vi">/ ${SHOTS.length} ${
@@ -1098,6 +1543,52 @@ ${SHOTS.map(renderShot).join("\n")}
     </ol>
   </div>
 
+</div><!-- /tab-record -->
+
+<div id="tab-edit" class="tabpanel">
+
+  <div class="banner">
+    <h2>${bi(UI.timelinePlan.en, UI.timelinePlan.vi)}</h2>
+    <dl class="facts">
+      <div><dt>${bi("Spoken", "Tiếng nói")}</dt><dd>2:48</dd></div>
+      <div><dt>${bi("Silent hold, shot 6B", "Đoạn im lặng, cảnh 6B")}</dt><dd>3.0s</dd></div>
+      <div><dt>${bi("Lands at", "Tổng cộng")}</dt><dd>2:51</dd></div>
+      <div><dt>${bi("Headroom to 3:00", "Còn dư tới 3:00")}</dt><dd>9s</dd></div>
+      <div><dt>${bi("Chunks to generate", "Số đoạn cần tạo")}</dt><dd>${
+        chunkStats.total
+      }</dd></div>
+      <div><dt>${bi("Longest chunk", "Đoạn dài nhất")}</dt><dd>${
+        chunkStats.longest.chars
+      } / ${CHUNK_CEILING}</dd></div>
+    </dl>
+    <p class="cmd-note">${bi(
+      `Where the nine seconds sit: they are not one block at the end, they are the gaps. The silences between chunks on the kept shots total ${chunkStats.gapKept.toFixed(
+        1,
+      )} seconds, and the closing hold is 3 of those. Generated speech runs faster than a person reading slowly, so the gaps are what carry the take from roughly 2:25 of raw audio up to 2:48. If your export comes in short, lengthen the gaps rather than slowing the voice: a slowed CapCut voice sounds drugged.`,
+      `Chín giây dư nằm ở đâu: không phải một cục ở cuối, mà nằm rải trong các khoảng nghỉ. Tổng các khoảng lặng giữa các đoạn của những cảnh được giữ là ${chunkStats.gapKept.toFixed(
+        1,
+      )} giây, trong đó 3 giây là đoạn giữ cuối video. Máy đọc nhanh hơn người đọc chậm, nên chính các khoảng nghỉ mới kéo video từ khoảng 2:25 tiếng thô lên 2:48. Nếu xuất ra bị ngắn quá thì kéo dài khoảng nghỉ, đừng làm chậm giọng đọc: giọng CapCut bị làm chậm nghe như người ngái ngủ.`,
+    )}</p>
+    <p class="cmd-note">${bi(
+      `CapCut refuses any block over ${CAPCUT_LIMIT} characters. Every chunk below is held under ${CHUNK_CEILING}, checked when this page is built, and the count is printed beside each one so you can see it rather than trust it. Bold and capitals are ignored by the engine, so all the pacing comes from where a chunk ends and what punctuation ends it.`,
+      `CapCut từ chối mọi khối chữ dài quá ${CAPCUT_LIMIT} ký tự. Mọi đoạn bên dưới đều được giữ dưới ${CHUNK_CEILING}, kiểm tra tự động lúc dựng trang này, và số ký tự in ngay cạnh từng đoạn để bạn nhìn thấy chứ không phải tin suông. Máy đọc bỏ qua chữ in đậm và chữ hoa, nên toàn bộ nhịp điệu nằm ở chỗ ngắt đoạn và dấu câu cuối đoạn.`,
+    )}</p>
+    <p class="cmd-note">${bi(
+      "Shot 5 is cut by default. If you cut it, skip its chunks entirely: they are shown here only so the decision stays reversible.",
+      "Cảnh 5 mặc định là cắt. Nếu cắt thì bỏ qua toàn bộ các đoạn của nó: chúng vẫn hiện ở đây chỉ để nếu đổi ý thì vẫn còn.",
+    )}</p>
+  </div>
+${SHOTS.map(renderEditShot).join("\n")}
+
+  <div class="banner stop" style="margin-top:1.6rem">
+    <h2>${bi(UI.editChecklist.en, UI.editChecklist.vi)}</h2>
+    <ol class="post">
+      ${EDIT_CHECKS.map((c) => `<li>${bi(c.en, c.vi)}</li>`).join("\n      ")}
+    </ol>
+  </div>
+
+</div><!-- /tab-edit -->
+
   <footer>${bi(
     "Generated from docs/demo-video-script.md by docs/build-recording-sheet.js. Narration transcribed from that script; substitutions for speech are marked on the row. Local working file: not deployed, not linked from the app, not part of the submission.",
     "Sinh ra từ docs/demo-video-script.md bằng docs/build-recording-sheet.js. Lời thoại chép từ kịch bản đó; chỗ nào viết lại cho máy đọc đều được ghi chú ngay trên dòng. Đây là file làm việc cá nhân: không triển khai, không có link nào trong ứng dụng trỏ tới, không nằm trong bài nộp.",
@@ -1147,6 +1638,28 @@ ${SHOTS.map(renderShot).join("\n")}
       copyText(b.getAttribute("data-copy"), b);
     });
   });
+
+  // ---------- tabs ----------
+  // The language toggle lives on <body>, above both panels, so switching tabs
+  // never resets it and both tabs are always in the chosen language.
+  var TAB_KEY = "parley-recording-sheet-tab";
+  function applyTab(name) {
+    document.querySelectorAll(".tab").forEach(function (t) {
+      t.classList.toggle("active", t.getAttribute("data-tab") === name);
+    });
+    document.querySelectorAll(".tabpanel").forEach(function (p) {
+      p.classList.toggle("active", p.id === "tab-" + name);
+    });
+    try { localStorage.setItem(TAB_KEY, name); } catch (e) {}
+  }
+  document.querySelectorAll(".tab").forEach(function (t) {
+    t.addEventListener("click", function () {
+      applyTab(t.getAttribute("data-tab"));
+    });
+  });
+  var savedTab = "record";
+  try { savedTab = localStorage.getItem(TAB_KEY) || "record"; } catch (e) {}
+  applyTab(savedTab);
 
   // ---------- language toggle ----------
   var LANG_KEY = "parley-recording-sheet-lang";
