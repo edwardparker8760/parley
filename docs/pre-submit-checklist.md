@@ -46,7 +46,7 @@ settlement. Items only a human can do are marked OWNER.
 | 16 | Every stub settlement carries `SIMULATED` on screen | PASS: badge renders from the persisted `isStub` column |
 | 17 | No README claim exceeds what runs | PASS: one real settlement claimed and evidenced, everything else stated as stub, LLM discretion stated as a 2% window |
 | 17a | The two settlement latencies are never conflated | PASS: README, deck, landing page and video script all state 857ms authorisation and 12m43s on-chain settlement separately |
-| 17b | Every claim of a real payment carries its transaction hash | PASS: `0xcccd6d68...f5be6aa`, re-checkable with `pnpm --filter @parley/settlement transfer-status cad9fe1e-7201-40d0-b4d9-ce6a7c3655d4` |
+| 17b | Every claim of a real payment says what is independently checkable, and links nothing that does not show it | PASS 2026-08-10, after failing. The README, deck and landing page all linked `0xcccd6d68` as the transfer. Checked against the chain: that transaction is Circle's own `submitBatch` from a Circle address, decodes to **zero** token transfers, and names neither 9.23 nor either wallet. The seller address has no on-chain token transfers at all. Now stated as: the payment moved inside Gateway's balance system, the buyer's Gateway balance fell by exactly 9,230,000 atomic units, and what an explorer independently shows is the 12.00 USDC deposit (`0x04dc69c7`) and Circle's batch (`0xcccd6d68`). A judge who clicks a link and finds nothing matching stops believing the rest |
 
 ## Video and submission
 

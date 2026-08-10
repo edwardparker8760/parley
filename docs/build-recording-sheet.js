@@ -225,10 +225,230 @@ const POST_CHECKS = [
   "Submit on the Encode platform.",
 ];
 
+/*
+ * ------------------------------------------------------------------ Vietnamese
+ *
+ * Keyed by shot id. `gloss` is an EXPLANATION of the narration, never a
+ * translation to be spoken: it says what the shot is FOR, so the presenter
+ * understands the point rather than just the clicks.
+ *
+ * ## The safety rule this file enforces
+ *
+ * The narration boxes stay English in BOTH languages, because that text is
+ * pasted into a text-to-speech engine and the video is in English. A Vietnamese
+ * string reaching the copy button would be spoken aloud in the submission. The
+ * gloss is therefore rendered OUTSIDE the copy box, below it, and marked as
+ * explanation. There is deliberately no Vietnamese `narration` field anywhere in
+ * this object: the shape makes the mistake impossible rather than forbidding it
+ * in a comment.
+ */
+const VI = {
+  1: {
+    name: "Điểm khác biệt, nói ngay câu đầu",
+    steps: [
+      "Mở cửa sổ trình duyệt mới ở parley-blond.vercel.app (TRANG CHỦ, không phải /app).",
+      "Cuộn lên trên cùng. Trong khung hình phải thấy: tiêu đề lớn, dòng chữ được tô sáng \"arithmetic, not instructions\", và bảng hội thoại mẫu bên phải.",
+      "Không chạm vào gì cả. Bắt đầu ghi hình. Thanh địa chỉ phải nằm trong khung hình.",
+    ],
+    verify:
+      "Mở ở trang chủ chứ không phải /app. Trang chủ đã sẵn có hình ảnh minh hoạ đúng những gì hai đoạn đầu nói. Còn /app lúc mới mở chỉ là một khối chữ giải thích, không có gì để người xem nhìn.",
+    imageNote:
+      "Chưa có ảnh chụp trang chủ. Canh khung sao cho tiêu đề, dòng chữ được tô sáng, và bảng hội thoại có dòng CLAMP cùng nằm trong một khung.",
+    gloss:
+      "Ý của đoạn này: giám khảo xem hàng chục video liên tiếp. Câu đầu tiên phải nói ngay điều khác biệt. Các demo khác cho agent TRẢ một cái giá người ta đã niêm yết sẵn. Parley cho hai agent TỰ MẶC CẢ ra giá.",
+  },
+  2: {
+    name: "Cơ chế: vì sao không ai lừa được agent",
+    steps: [
+      "Vẫn giữ nguyên khung hình trang chủ như cảnh 1.",
+      'Rê chuột tới dòng ">> CLAMP" trong bảng hội thoại đúng lúc đọc tới chữ "arithmetic disposes".',
+      'ĐÚNG LÚC đọc "so I will test it on screen", bấm nút "Open the dashboard".',
+      "Đừng bấm sớm. Cú bấm và bốn chữ cuối phải rơi cùng một lúc.",
+    ],
+    verify:
+      'Chính cú bấm là lý do chuyển cảnh sang /app, để người xem không thấy hụt hẫng. Nhãn nút đúng là "Open the dashboard".',
+    imageNote:
+      "Vẫn khung hình trang chủ như cảnh 1, cho tới lúc bấm. Việc chuyển sang /app chính là cầu nối vào cảnh 3.",
+    gloss:
+      "Ý của đoạn này: giới hạn mà người chủ đặt ra là một phép tính, không phải một câu dặn dò trong prompt. Model chỉ đề xuất, phép tính mới là thứ quyết định. Vì thế không lời lẽ nào dụ được agent vượt giới hạn. Nói xong câu đó là chuyển ngay sang phần chứng minh.",
+  },
+  3: {
+    name: "Kịch bản B: nhìn thấy giới hạn chặn thật",
+    steps: [
+      "Bạn vừa từ cú bấm ở cuối cảnh 2 sang đây.",
+      'Bấm "View scenario B" trong hàng ba nút trên cùng.',
+      "Chờ trang hiện ra. Trang được dựng sẵn từ máy chủ nên không có vòng xoay chờ.",
+      'Rê chuột tới cột người mua trong bảng "Owner limits".',
+      'Dừng lại ở dòng "guardrail overrode the strategy 9 times".',
+    ],
+    verify:
+      "Trần người mua 900, sàn người bán 855, người mua bị chặn 9 lần, người bán 0 lần, chốt ở 9.00 USDC. Đã đối chiếu với file negotiation-snapshot-b.json.",
+    imageNote: null,
+    gloss:
+      "Ý của đoạn này: cho người xem thấy giới hạn không phải lời hứa suông. Agent 9 lần muốn ra giá cao hơn trần của chủ nó, và cả 9 lần đều bị phép tính chặn lại. Cuối cùng vẫn chốt được, và chốt trong giới hạn của cả hai bên.",
+  },
+  4: {
+    name: "CẢNH QUAN TRỌNG NHẤT: thử phá ngay tại chỗ",
+    steps: [
+      'Cuộn xuống mục "Try to break it".',
+      'Bấm nút đầu tiên: "Ceiling below floor: 600 against 700".',
+      "Chạy ngay lập tức và trả kết quả trong một lần.",
+      "Trang tự cuộn: bảng hội thoại kéo dòng cuối vào tầm nhìn và kéo cả trang theo. Cứ để nó dừng hẳn.",
+      'Cuộn LÊN xem biểu đồ và dòng "No overlap exists", rồi cuộn XUỐNG một nhịp tới bảng walk-away ở cuối cột bên trái.',
+      "Dừng ở bảng walk-away. Bảng này giờ hiện đủ chiều cao với CẢ HAI thẻ, BUYER và SELLER.",
+    ],
+    verify:
+      "Đây là phần duy nhất trong cả video được máy chủ tính THẬT ngay lúc bấm, không phải bản ghi sẵn. Khi dựng phim phải giữ nguyên đoạn này, không cắt.",
+    imageNote:
+      "ẢNH GẦN ĐÚNG THÔI. Đây là kịch bản C đã ghi sẵn (trần 600 với sàn 951), không phải lần chạy 600 với 700. Hình dạng giống nhau nhưng con số sàn thì khác. Chỉ dùng để canh bố cục, tuyệt đối không dùng làm bằng chứng cho cảnh này.",
+    gloss:
+      "Ý của đoạn này: đây là bằng chứng mạnh nhất trong cả video. Người xem thấy chính bạn đặt trần người mua là 600 trong khi sàn người bán là 700. Không có mức giá nào làm hài lòng cả hai. Hệ thống không cố nặn ra một cái deal cho đẹp: hai agent nhận ra điều đó, bỏ đi, và mỗi bên ghi lại đúng giới hạn nào đã chặn mình. Nói cách khác, người xem thấy hệ thống TỪ CHỐI vỡ, chứ không phải nghe bạn hứa là nó sẽ không vỡ.",
+  },
+  5: {
+    name: "Cùng điều đó, chứng minh bằng test (MẶC ĐỊNH LÀ CẮT)",
+    steps: [
+      "ĐỪNG ALT-TAB TRONG LÚC ĐANG GHI. Xbox Game Bar chỉ ghi một cửa sổ; đổi cửa sổ là hỏng bản ghi.",
+      "Nếu vẫn muốn giữ: quay RIÊNG một clip khác, rồi ghép vào bằng CapCut.",
+      "Trong clip riêng đó: cửa sổ terminal thứ hai, đã xoá sạch màn hình, đang đứng ở thư mục gốc của repo.",
+      "Chạy: pnpm --filter @parley/orchestrator test",
+      "Để danh sách test chạy qua. Dừng ở con số tổng kết cuối cùng.",
+    ],
+    verify:
+      "Cắt đoạn này giờ là mặc định chứ không còn là phương án dự phòng. Với lời thoại mới ở cảnh 6, giữ đoạn này thì video dài 3:08, tức là đã quá 3 phút trước cả khi tính thời gian dừng tay bấm chuột. Cắt đi thì còn 2:48. Cảnh 4 vốn đã chứng minh đúng điều này, mà lại chứng minh trực tiếp trên màn hình.",
+    imageNote:
+      "Không có ảnh. Chỉ là màn hình terminal. Nhớ xoá sạch lịch sử lệnh trước khi quay: đây chính là cảnh dễ để lộ lệnh cũ nhất.",
+    gloss:
+      "Ý của đoạn này: giả sử model bị chiếm quyền hoàn toàn và mỗi lượt đều đòi một cái giá vô lý, thì vẫn không có lệnh nào vượt giới hạn lọt ra ngoài được. Đây là chứng minh bằng test, thay vì bằng lời nói.",
+  },
+  "6b": {
+    name: "Dừng 3 giây ở bảng so sánh (chỉ khi đã cắt cảnh 5)",
+    steps: [
+      "Quay lại trang chủ.",
+      "Cuộn tới bảng benchmark.",
+      "DỪNG YÊN 3 GIÂY. Không nói một chữ nào.",
+      "Sau đó cuộn lên đầu trang để đọc lời kết.",
+    ],
+    verify:
+      "Đây là điều duy nhất mà cả video không nói ở chỗ nào khác: với cùng một bộ giới hạn, agent thô sơ phải bị chặn 9 lần, còn agent thật sự thì không cần bị chặn lần nào. Bảng tự nó đã rõ, nên thêm lời thoại chỉ tốn thời gian mà không rõ hơn.",
+    imageNote:
+      "Không có ảnh. Canh khung sao cho đọc được cả hai dòng của kịch bản B: baseline cần giới hạn chặn 9 lần, engine 0 lần.",
+    gloss:
+      "Đoạn này im lặng hoàn toàn, không có lời thoại để dán vào phần đọc. Chỉ dừng hình 3 giây cho người xem tự đọc bảng.",
+  },
+  6: {
+    name: "Thanh toán và bộ công cụ Circle",
+    steps: [
+      "Alt-tab về trình duyệt.",
+      'Bấm "View scenario A".',
+      "Cuộn tới bảng Settlement.",
+      'Rê chuột tới huy hiệu màu hổ phách ghi "SIMULATED: no real money moved".',
+    ],
+    verify:
+      "Đừng gộp hai mốc thời gian làm một. Được chấp thuận mất 857 mili giây; lên chuỗi khối thì mất thêm 12 phút 43 giây. Cảnh này cũng là chỗ duy nhất đọc đủ năm tên công cụ của Circle: Arc, USDC, Gateway, x402, facilitator.",
+    imageNote:
+      "Chỉ dùng để canh bố cục. Trước khi đọc lời thoại, kiểm tra huy hiệu SIMULATED màu hổ phách đã nằm trong khung hình chưa.",
+    gloss:
+      "Ý của đoạn này: thừa nhận thẳng thắn cái gì là tiền thật và cái gì là mô phỏng. Đã có đúng một lần trả tiền thật 9.23 USDC qua Circle Gateway, và số dư Gateway của người mua tụt đúng bằng chừng đó. Nhưng tiền chạy bên trong hệ thống số dư của Gateway, không phải một giao dịch chuyển tiền trên chuỗi khối. Nên nếu giám khảo bấm vào link explorer, họ chỉ thấy khoản nạp 12.00 USDC vào Gateway và một lô gộp của Circle, chứ không thấy dòng nào ghi tên thương vụ này. Nói trước điều đó ngay trong video thì đáng tin hơn nhiều so với để họ tự phát hiện.",
+  },
+  7: {
+    name: "Kết: giữ yên màn hình có địa chỉ web",
+    steps: [
+      "Bạn đang ở TRANG CHỦ, đúng khung hình đã mở đầu video.",
+      "Thanh địa chỉ phải là parley-blond.vercel.app, không có đuôi nào phía sau.",
+      "BỎ TAY KHỎI CHUỘT. Không di chuyển gì cả.",
+      "Giữ yên đủ 20 giây.",
+      "Đọc xong còn giữ thêm 3 giây im lặng rồi mới tắt ghi hình.",
+    ],
+    verify:
+      "Kết thúc ở đúng nơi đã bắt đầu, và để địa chỉ gốc trên thanh URL thay vì một đường dẫn con.",
+    imageNote:
+      "Không có ảnh. Khung hình là trang chủ với thanh địa chỉ đọc được rõ. Giám khảo phải gõ được địa chỉ mà không cần tua lại.",
+    gloss:
+      "Ý của đoạn này: giám khảo phải đọc và gõ được địa chỉ mà không phải tua lại video. Câu cuối là lời mời họ tự vào đặt số của mình và thử phá.",
+  },
+};
+
+/** Header, banners and checklist, in both languages. */
+const UI = {
+  subtitle: {
+    en: "One shot at a time. Paste each line into CapCut text-to-speech, record the shot, tick it off.",
+    vi: "Làm từng cảnh một. Dán từng dòng lời thoại vào phần đọc của CapCut, quay cảnh đó, rồi tích vào ô.",
+  },
+  progress: { en: "shots recorded", vi: "cảnh đã quay xong" },
+  beforeRecord: { en: "Before you press record", vi: "Trước khi bấm ghi hình" },
+  theTake: { en: "The take", vi: "Thông số bản quay" },
+  afterRecord: {
+    en: "After recording, before submitting",
+    vi: "Sau khi quay xong, trước khi nộp bài",
+  },
+  doThis: { en: "Do this", vi: "Làm thế này" },
+  pasteInto: {
+    en: "Paste into text-to-speech",
+    vi: "Dán vào phần đọc (giữ nguyên tiếng Anh)",
+  },
+  screenLooks: { en: "Screen should look like", vi: "Màn hình phải trông như thế này" },
+  check: { en: "Check", vi: "Lưu ý" },
+  respelled: { en: "Respelled for speech", vi: "Viết lại cho máy đọc đúng" },
+  words: { en: "words", vi: "từ" },
+  silent: { en: "silent", vi: "im lặng" },
+  optional: { en: "optional", vi: "tuỳ chọn" },
+  noCopy: { en: "No capture for this shot", vi: "Cảnh này chưa có ảnh mẫu" },
+  nothingToSay: {
+    en: "Nothing to say. This beat is silent.",
+    vi: "Không có lời thoại. Đoạn này im lặng.",
+  },
+  copyBtn: { en: "Copy line", vi: "Chép dòng này" },
+  copied: { en: "Copied", vi: "Đã chép" },
+  glossLabel: {
+    en: "",
+    vi: "Giải thích (KHÔNG đọc, KHÔNG dán vào máy đọc)",
+  },
+  langBtn: { en: "Tiếng Việt", vi: "English" },
+  fields: {
+    resolution: { en: "Resolution", vi: "Độ phân giải" },
+    limit: { en: "Hard limit", vi: "Giới hạn cứng" },
+    wordsAll: { en: "Words, all beats", vi: "Số từ, giữ đủ cảnh" },
+    wordsCut: { en: "Words, shot 5 cut", vi: "Số từ, đã cắt cảnh 5" },
+    runAll: { en: "Runtime, all beats", vi: "Thời lượng, giữ đủ cảnh" },
+    runCut: { en: "Runtime, shot 5 cut", vi: "Thời lượng, đã cắt cảnh 5" },
+    host: { en: "Video host", vi: "Đăng video ở đâu" },
+  },
+};
+
+const PRE_VI = [
+  "Khung hình mở đầu là TRANG CHỦ, không phải /app. Quay vào địa chỉ NÀY, không phải localhost. Thanh địa chỉ phải nằm trong khung suốt cả bản quay: giám khảo nhìn thấy địa chỉ thì họ tự mở được, còn bản quay localhost là lời nói không ai kiểm chứng được.",
+  "Vào một lần cho nóng máy, rồi quay lại trang chủ. Route này dựng động, nên lần vào đầu tiên khi máy chủ còn nguội có thể chậm, và bạn không muốn cái chậm đó rơi đúng lúc chuyển cảnh ở giây thứ 32.",
+  "Chỉ dùng cho cảnh 5, mà cảnh 5 thì mặc định là cắt. Nếu vẫn giữ, hãy quay RIÊNG một clip: Xbox Game Bar chỉ ghi một cửa sổ, alt-tab giữa chừng là hỏng bản ghi.",
+];
+
+const POST_CHECKS_VI = [
+  "Xem lại toàn bộ video ở tốc độ thường, soi xem có lộ API key không. Chỉ một khung hình là mất key. Đã đăng lên rồi thì không cứu được.",
+  "Xem lại lần nữa xem có chỗ nào trình bày số liệu mô phỏng như thể là thật không. Mọi con số mô phỏng đều phải có nhãn trên màn hình.",
+  "Kiểm tra đủ năm tên công cụ Circle có được đọc thành tiếng không: Arc, USDC, Gateway, x402, facilitator.",
+  "Kiểm tra hai mốc thời gian không bị gộp làm một.",
+  "Kiểm tra thời lượng dưới 3:00.",
+  "Kiểm tra địa chỉ web ở cuối video đọc được và giữ đủ lâu để gõ theo.",
+  "Đăng lên YouTube ở chế độ KHÔNG CÔNG KHAI (unlisted). Kiểm tra link chạy được trong cửa sổ ẩn danh, lúc chưa đăng nhập.",
+  "Mở TẤT CẢ link sẽ nộp trong cửa sổ ẩn danh, chưa đăng nhập: video, repo, bộ slide, và parley-blond.vercel.app.",
+  "Kiểm tra bộ slide mở được mà không cần đăng nhập.",
+  "git status phải sạch và mọi thứ đã đẩy lên origin/main trước khi nộp.",
+  "Nộp bài trên nền tảng Encode.",
+];
+
 /* ------------------------------------------------------------------ render */
 
 const esc = (s) =>
   String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/**
+ * Emits both languages, one of which the stylesheet hides.
+ *
+ * Rendering both and toggling with CSS keeps the page a single static file with
+ * no rebuild and no fetch, and means a missing translation is visible as an
+ * empty box rather than silently falling back to English.
+ */
+const bi = (en, vi) =>
+  `<span class="t-en">${esc(en)}</span><span class="t-vi">${esc(vi ?? en)}</span>`;
 
 /** Copy text lives in an attribute, so quotes and newlines must be neutralised. */
 const escAttr = (s) => esc(s).replace(/"/g, "&quot;");
@@ -239,45 +459,74 @@ function renderShot(shot) {
     console.warn(`WARNING: ${shot.image} not found, shot ${shot.id} has no image`);
   }
 
+  const vi = VI[shot.id] || {};
+
   const steps = shot.steps
-    .map((s) => `<li>${esc(s)}</li>`)
+    .map((s, i) => `<li>${bi(s, vi.steps && vi.steps[i])}</li>`)
     .join("\n          ");
 
   const ttsNotes = shot.ttsNotes.length
-    ? `<p class="tts-note"><strong>Respelled for speech:</strong> ${shot.ttsNotes
-        .map(esc)
-        .join(" ")}</p>`
+    ? `<p class="tts-note"><strong>${bi(
+        UI.respelled.en,
+        UI.respelled.vi,
+      )}:</strong> ${shot.ttsNotes.map(esc).join(" ")}</p>`
     : "";
 
   const verify = shot.verify
-    ? `<p class="verify"><strong>Check:</strong> ${esc(shot.verify)}</p>`
+    ? `<p class="verify"><strong>${bi(UI.check.en, UI.check.vi)}:</strong> ${bi(
+        shot.verify,
+        vi.verify,
+      )}</p>`
     : "";
 
   const imageBlock = img
     ? `<img src="${img}" alt="Reference frame for shot ${shot.id}">`
-    : `<div class="no-image">No capture for this shot</div>`;
+    : `<div class="no-image">${bi(UI.noCopy.en, UI.noCopy.vi)}</div>`;
 
   const imageNote = shot.imageNote
     ? `<p class="${
         /APPROXIMATE|Closest/.test(shot.imageNote) ? "img-warn" : "img-note"
-      }">${esc(shot.imageNote)}</p>`
+      }">${bi(shot.imageNote, vi.imageNote)}</p>`
     : "";
 
   const wordCount = shot.narration.trim()
     ? shot.narration.trim().split(/\s+/).length
     : 0;
 
+  /*
+   * The gloss sits OUTSIDE the say-box, never inside it. The copy button reads
+   * `data-copy` off the English narration only, so no Vietnamese text can reach
+   * the clipboard and be spoken in the submission.
+   */
+  const gloss = vi.gloss
+    ? `<div class="gloss"><span class="gloss-label">${esc(
+        UI.glossLabel.vi,
+      )}</span><p>${esc(vi.gloss)}</p></div>`
+    : "";
+
   /* A silent beat gets no copy box: a copy button that yields an empty string
      is a trap at 2am. It says "no line" and explains why instead. */
   const sayBlock = wordCount
     ? `<div class="say-box">
-              <p class="narration">${esc(shot.narration)}</p>
-              <button class="copy" data-copy="${escAttr(shot.narration)}">Copy line</button>
+              <p class="narration" lang="en">${esc(shot.narration)}</p>
+              <button class="copy" data-copy="${escAttr(shot.narration)}"
+                      data-en="${escAttr(UI.copyBtn.en)}" data-vi="${escAttr(
+                        UI.copyBtn.vi,
+                      )}" data-done-en="${escAttr(
+                        UI.copied.en,
+                      )}" data-done-vi="${escAttr(UI.copied.vi)}">${
+                        UI.copyBtn.en
+                      }</button>
             </div>
-            ${ttsNotes}`
+            ${ttsNotes}
+            ${gloss}`
     : `<div class="say-box silent">
-              <p class="narration">Nothing to say. This beat is silent.</p>
-            </div>`;
+              <p class="narration">${bi(
+                UI.nothingToSay.en,
+                UI.nothingToSay.vi,
+              )}</p>
+            </div>
+            ${gloss}`;
 
   const classes = [
     "shot",
@@ -296,15 +545,26 @@ function renderShot(shot) {
           </label>
           <div class="shot-title">
             <span class="time">${esc(shot.time)}</span>
-            <h2>${esc(shot.name)}</h2>
-            ${shot.optional ? '<span class="badge-opt">optional</span>' : ""}
+            <h2>${bi(shot.name, vi.name)}</h2>
+            ${
+              shot.optional
+                ? `<span class="badge-opt">${bi(
+                    UI.optional.en,
+                    UI.optional.vi,
+                  )}</span>`
+                : ""
+            }
           </div>
-          <span class="wc">${wordCount ? wordCount + " words" : "silent"}</span>
+          <span class="wc">${
+            wordCount
+              ? wordCount + " " + UI.words.en
+              : bi(UI.silent.en, UI.silent.vi)
+          }</span>
         </header>
 
         <div class="shot-body">
           <div class="col-do">
-            <h3>Do this</h3>
+            <h3>${bi(UI.doThis.en, UI.doThis.vi)}</h3>
             <ol>
           ${steps}
             </ol>
@@ -312,12 +572,12 @@ function renderShot(shot) {
           </div>
 
           <div class="col-say">
-            <h3>Paste into text-to-speech</h3>
+            <h3>${bi(UI.pasteInto.en, UI.pasteInto.vi)}</h3>
             ${sayBlock}
           </div>
 
           <div class="col-see">
-            <h3>Screen should look like</h3>
+            <h3>${bi(UI.screenLooks.en, UI.screenLooks.vi)}</h3>
             ${imageBlock}
             ${imageNote}
           </div>
@@ -377,9 +637,62 @@ const html = `<!doctype html>
     color: var(--ink);
     font: 16px/1.6 -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
   }
-  .wrap { max-width: 1280px; margin: 0 auto; }
+  .wrap { max-width: 1280px; margin: 0 auto; position: relative; }
   h1 { font-size: 1.8rem; margin: 0 0 .3rem; }
-  .sub { color: var(--dim); margin: 0 0 2rem; }
+  .sub { color: var(--dim); margin: 0 0 .8rem; }
+
+  /* ---------- language toggle ----------
+     Both languages are in the DOM; one is hidden. No fetch, no rebuild, and a
+     missing translation shows as a gap rather than silently reading English. */
+  .t-vi { display: none; }
+  body.lang-vi .t-en { display: none; }
+  body.lang-vi .t-vi { display: inline; }
+
+  #lang-toggle {
+    position: absolute;
+    top: 0; right: 0;
+    background: var(--panel-2);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: .5rem .9rem;
+    font-size: .9rem;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 10;
+  }
+  #lang-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+  .lang-warning {
+    border: 1px solid var(--warn);
+    border-radius: 6px;
+    padding: .6rem .9rem;
+    margin: 0 0 1.4rem;
+    color: var(--warn);
+    font-size: .87rem;
+    line-height: 1.5;
+  }
+
+  /* The Vietnamese gloss. Deliberately OUTSIDE the copy box and visually unlike
+     it, so it never reads as something to paste. */
+  .gloss { display: none; }
+  body.lang-vi .gloss {
+    display: block;
+    margin-top: .7rem;
+    border-left: 3px solid var(--dim);
+    background: rgba(255,255,255,.03);
+    border-radius: 0 5px 5px 0;
+    padding: .6rem .8rem;
+  }
+  .gloss-label {
+    display: block;
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--warn);
+    margin-bottom: .35rem;
+  }
+  .gloss p { margin: 0; font-size: .92rem; line-height: 1.6; color: var(--ink); }
 
   .banner {
     background: var(--panel);
@@ -550,71 +863,130 @@ const html = `<!doctype html>
 <body>
 <div class="wrap">
 
-  <h1>Parley recording sheet</h1>
-  <p class="sub">One shot at a time. Paste each line into CapCut text-to-speech, record the shot, tick it off.</p>
+  <button id="lang-toggle" type="button"
+          data-en="${escAttr(UI.langBtn.en)}" data-vi="${escAttr(UI.langBtn.vi)}">${
+            UI.langBtn.en
+          }</button>
 
-  <div class="progress"><strong id="done-count">0</strong> of ${SHOTS.length} shots recorded</div>
+  <h1>Parley recording sheet</h1>
+  <p class="sub">${bi(UI.subtitle.en, UI.subtitle.vi)}</p>
+
+  <p class="lang-warning">${bi(
+    "The narration boxes stay in English in both languages, because that text is pasted into text-to-speech and the video is in English. Vietnamese appears only as an explanation below each box. Never paste the explanation.",
+    "Ô lời thoại luôn giữ tiếng Anh ở cả hai chế độ, vì đó là chữ sẽ dán vào máy đọc và video là tiếng Anh. Tiếng Việt chỉ xuất hiện ở phần giải thích bên dưới mỗi ô. Tuyệt đối không dán phần giải thích vào máy đọc.",
+  )}</p>
+
+  <div class="progress"><strong id="done-count">0</strong> <span class="t-en">of ${
+    SHOTS.length
+  } ${UI.progress.en}</span><span class="t-vi">/ ${SHOTS.length} ${
+    UI.progress.vi
+  }</span></div>
 
   <div class="banner stop">
-    <h2>Before you press record</h2>
+    <h2>${bi(UI.beforeRecord.en, UI.beforeRecord.vi)}</h2>
     <div class="cmd-row">
       <span class="cmd">https://parley-blond.vercel.app</span>
-      <p class="cmd-note">The opening frame is the LANDING PAGE hero, not /app. Record against this, NOT localhost. The address bar must be in frame for the whole take: a judge who can see the URL can open it, and a localhost recording is a claim nobody can check.</p>
+      <p class="cmd-note">${bi(
+        "The opening frame is the LANDING PAGE hero, not /app. Record against this, NOT localhost. The address bar must be in frame for the whole take: a judge who can see the URL can open it, and a localhost recording is a claim nobody can check.",
+        PRE_VI[0],
+      )}</p>
     </div>
     <div class="cmd-row">
       <span class="cmd">https://parley-blond.vercel.app/app</span>
-      <p class="cmd-note">Visit once to warm it, then go back to the landing page. The route is force-dynamic, so a cold first visit can be slow, and you do not want that on the cut at 0:32.</p>
+      <p class="cmd-note">${bi(
+        "Visit once to warm it, then go back to the landing page. The route is force-dynamic, so a cold first visit can be slow, and you do not want that on the cut at 0:32.",
+        PRE_VI[1],
+      )}</p>
     </div>
     <div class="cmd-row">
       <span class="cmd">pnpm --filter @parley/orchestrator test</span>
-      <p class="cmd-note">Only for shot 5, which is cut by default. If you keep it, capture it as a SEPARATE clip: Xbox Game Bar captures one window, so alt-tabbing mid-take breaks the recording.</p>
+      <p class="cmd-note">${bi(
+        "Only for shot 5, which is cut by default. If you keep it, capture it as a SEPARATE clip: Xbox Game Bar captures one window, so alt-tabbing mid-take breaks the recording.",
+        PRE_VI[2],
+      )}</p>
     </div>
-    <p class="cmd-note" style="margin-top:.9rem">
-      Close every editor window in case a dotenv file is in a tab. Close every terminal whose scrollback touched a dotenv file, provision-wallets, or a faucet page. Close every browser tab except this one recording target. Turn off notification popups.
-    </p>
-    <p class="cmd-note">
-      Rehearse shot 4 before recording anything. The result renders ABOVE the panel, and the page moves on its own when it arrives: the transcript scrolls its last row into view and takes the window with it. Let it settle, then scroll up to the chart and down once to the walk-away panel. That fumble on camera is the most likely retake.
-    </p>
+    <p class="cmd-note" style="margin-top:.9rem">${bi(
+      "Close every editor window in case a dotenv file is in a tab. Close every terminal whose scrollback touched a dotenv file, provision-wallets, or a faucet page. Close every browser tab except this one recording target. Turn off notification popups.",
+      "Đóng hết cửa sổ soạn thảo, phòng khi có file dotenv đang mở trong một tab. Đóng hết terminal nào từng chạy dotenv, provision-wallets, hay mở trang faucet. Đóng hết tab trình duyệt trừ đúng tab đang quay. Tắt thông báo bật lên.",
+    )}</p>
+    <p class="cmd-note">${bi(
+      "Rehearse shot 4 before recording anything. The result renders ABOVE the panel, and the page moves on its own when it arrives: the transcript scrolls its last row into view and takes the window with it. Let it settle, then scroll up to the chart and down once to the walk-away panel. That fumble on camera is the most likely retake.",
+      "Tập trước cảnh 4 rồi hãy quay bất cứ thứ gì. Kết quả hiện ra Ở TRÊN bảng nhập, và trang tự cuộn khi kết quả về: bảng hội thoại kéo dòng cuối vào tầm nhìn và kéo cả trang theo. Cứ để nó dừng hẳn, rồi cuộn lên xem biểu đồ, cuộn xuống một nhịp tới bảng walk-away. Lóng ngóng chỗ này là lý do phải quay lại nhiều nhất.",
+    )}</p>
   </div>
 
   <div class="banner">
-    <h2>The take</h2>
+    <h2>${bi(UI.theTake.en, UI.theTake.vi)}</h2>
     <dl class="facts">
-      <div><dt>Resolution</dt><dd>1920 x 1080</dd></div>
-      <div><dt>Hard limit</dt><dd>Under 3:00</dd></div>
-      <div><dt>Words, all beats</dt><dd>${SCRIPT_WORDS_ALL}</dd></div>
-      <div><dt>Words, shot 5 cut</dt><dd>${SCRIPT_WORDS_CUT}</dd></div>
-      <div><dt>Runtime, all beats</dt><dd>${runtime(SCRIPT_WORDS_ALL, 130)}</dd></div>
-      <div><dt>Runtime, shot 5 cut</dt><dd>${runtime(SCRIPT_WORDS_CUT, 130)}</dd></div>
-      <div><dt>Video host</dt><dd>YouTube, unlisted</dd></div>
-    </dl>
-    <p class="cmd-note">
-      Runtimes are the spoken track at 130 words per minute, a slow deliberate pace. With every beat kept the take lands at ${runtime(
+      <div><dt>${bi(
+        UI.fields.resolution.en,
+        UI.fields.resolution.vi,
+      )}</dt><dd>1920 x 1080</dd></div>
+      <div><dt>${bi(UI.fields.limit.en, UI.fields.limit.vi)}</dt><dd>${bi(
+        "Under 3:00",
+        "Dưới 3:00",
+      )}</dd></div>
+      <div><dt>${bi(
+        UI.fields.wordsAll.en,
+        UI.fields.wordsAll.vi,
+      )}</dt><dd>${SCRIPT_WORDS_ALL}</dd></div>
+      <div><dt>${bi(
+        UI.fields.wordsCut.en,
+        UI.fields.wordsCut.vi,
+      )}</dt><dd>${SCRIPT_WORDS_CUT}</dd></div>
+      <div><dt>${bi(UI.fields.runAll.en, UI.fields.runAll.vi)}</dt><dd>${runtime(
         SCRIPT_WORDS_ALL,
-        130
-      )}, which leaves two seconds: that is a coin toss, not a budget, because any pause for a click puts it over. <strong>Cutting shot 5 is the default</strong>, not the fallback. It removes the only alt-tab in the take, and three of the recovered twenty-one seconds pay for the benchmark hold.
-    </p>
-    <p class="cmd-note">
-      Per-shot word counts on the rows below total ${totalWords}, higher than the ${SCRIPT_WORDS_ALL} used above, because respelling for speech splits one token into several. It costs no time to say, so the runtime figures use the script's count.
-    </p>
-    <p class="cmd-note">
-      Never cut shot 4, the SIMULATED badge sentence in shot 6, or the static URL hold in shot 7.
-    </p>
+        130,
+      )}</dd></div>
+      <div><dt>${bi(UI.fields.runCut.en, UI.fields.runCut.vi)}</dt><dd>${runtime(
+        SCRIPT_WORDS_CUT,
+        130,
+      )}</dd></div>
+      <div><dt>${bi(UI.fields.host.en, UI.fields.host.vi)}</dt><dd>${bi(
+        "YouTube, unlisted",
+        "YouTube, không công khai",
+      )}</dd></div>
+    </dl>
+    <p class="cmd-note">${bi(
+      `Runtimes are the spoken track at 130 words per minute, a slow deliberate pace. With every beat kept the take lands at ${runtime(
+        SCRIPT_WORDS_ALL,
+        130,
+      )}, which is already over the 3:00 limit before a single pause for a click. Cutting shot 5 is no longer a choice: it brings the take to ${runtime(
+        SCRIPT_WORDS_CUT,
+        130,
+      )}, removes the only alt-tab, and three of the recovered seconds pay for the benchmark hold.`,
+      `Thời lượng tính theo tốc độ đọc 130 từ mỗi phút, tức là đọc chậm và rõ. Giữ đủ mọi cảnh thì video dài ${runtime(
+        SCRIPT_WORDS_ALL,
+        130,
+      )}, đã quá mốc 3:00 trước cả khi tính thời gian dừng tay bấm chuột. Cắt cảnh 5 giờ không còn là lựa chọn nữa: cắt đi thì còn ${runtime(
+        SCRIPT_WORDS_CUT,
+        130,
+      )}, bỏ được lần alt-tab duy nhất, và ba giây tiết kiệm được dùng cho đoạn dừng ở bảng so sánh.`,
+    )}</p>
+    <p class="cmd-note">${bi(
+      `Per-shot word counts on the rows below total ${totalWords}, higher than the ${SCRIPT_WORDS_ALL} used above, because respelling for speech splits one token into several. It costs no time to say, so the runtime figures use the script's count.`,
+      `Cộng số từ của từng cảnh bên dưới ra ${totalWords}, cao hơn con số ${SCRIPT_WORDS_ALL} dùng ở trên, vì viết lại cho máy đọc thì một chữ tách thành nhiều chữ. Đọc lên vẫn mất chừng ấy thời gian, nên phần thời lượng lấy theo con số của kịch bản.`,
+    )}</p>
+    <p class="cmd-note">${bi(
+      "Never cut shot 4, the SIMULATED badge sentence in shot 6, or the static URL hold in shot 7.",
+      "Tuyệt đối không cắt cảnh 4, câu nói về huy hiệu SIMULATED ở cảnh 6, và đoạn giữ yên màn hình có địa chỉ web ở cảnh 7.",
+    )}</p>
   </div>
 ${SHOTS.map(renderShot).join("\n")}
 
   <div class="banner stop" style="margin-top:1.6rem">
-    <h2>After recording, before submitting</h2>
+    <h2>${bi(UI.afterRecord.en, UI.afterRecord.vi)}</h2>
     <ol class="post">
-      ${POST_CHECKS.map((c) => `<li>${esc(c)}</li>`).join("\n      ")}
+      ${POST_CHECKS.map((c, i) => `<li>${bi(c, POST_CHECKS_VI[i])}</li>`).join(
+        "\n      ",
+      )}
     </ol>
   </div>
 
-  <footer>
-    Generated from docs/demo-video-script.md by docs/build-recording-sheet.js.
-    Narration transcribed from that script; substitutions for speech are marked on the row.
-    Local working file: not deployed, not linked from the app, not part of the submission.
-  </footer>
+  <footer>${bi(
+    "Generated from docs/demo-video-script.md by docs/build-recording-sheet.js. Narration transcribed from that script; substitutions for speech are marked on the row. Local working file: not deployed, not linked from the app, not part of the submission.",
+    "Sinh ra từ docs/demo-video-script.md bằng docs/build-recording-sheet.js. Lời thoại chép từ kịch bản đó; chỗ nào viết lại cho máy đọc đều được ghi chú ngay trên dòng. Đây là file làm việc cá nhân: không triển khai, không có link nào trong ứng dụng trỏ tới, không nằm trong bài nộp.",
+  )}</footer>
 </div>
 
 <script>
@@ -624,8 +996,9 @@ ${SHOTS.map(renderShot).join("\n")}
   // guaranteed, and a copy button that silently fails is worse than none.
   function copyText(text, button) {
     var done = function () {
-      var original = button.textContent;
-      button.textContent = "Copied";
+      var vi = document.body.classList.contains("lang-vi");
+      var original = button.getAttribute(vi ? "data-vi" : "data-en");
+      button.textContent = button.getAttribute(vi ? "data-done-vi" : "data-done-en");
       button.classList.add("copied");
       setTimeout(function () {
         button.textContent = original;
@@ -653,9 +1026,38 @@ ${SHOTS.map(renderShot).join("\n")}
 
   document.querySelectorAll(".copy").forEach(function (b) {
     b.addEventListener("click", function () {
+      // data-copy is always the ENGLISH narration. The language toggle never
+      // touches it, so the Vietnamese gloss cannot reach the clipboard and be
+      // spoken in the submitted video.
       copyText(b.getAttribute("data-copy"), b);
     });
   });
+
+  // ---------- language toggle ----------
+  var LANG_KEY = "parley-recording-sheet-lang";
+  var toggle = document.getElementById("lang-toggle");
+
+  function applyLang(lang) {
+    var vi = lang === "vi";
+    document.body.classList.toggle("lang-vi", vi);
+    document.documentElement.lang = vi ? "vi" : "en";
+    toggle.textContent = toggle.getAttribute(vi ? "data-vi" : "data-en");
+    // Copy buttons are chrome, not narration, so their label follows the UI.
+    document.querySelectorAll(".copy").forEach(function (b) {
+      if (!b.classList.contains("copied")) {
+        b.textContent = b.getAttribute(vi ? "data-vi" : "data-en");
+      }
+    });
+    try { localStorage.setItem(LANG_KEY, lang); } catch (e) {}
+  }
+
+  toggle.addEventListener("click", function () {
+    applyLang(document.body.classList.contains("lang-vi") ? "en" : "vi");
+  });
+
+  var savedLang = "en";
+  try { savedLang = localStorage.getItem(LANG_KEY) || "en"; } catch (e) {}
+  applyLang(savedLang);
 
   // Ticks persist in localStorage so closing the page mid-session does not lose
   // which shots are already in the can.

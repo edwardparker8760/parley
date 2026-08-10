@@ -295,11 +295,16 @@ export default function Page() {
                   <b>Real money has moved exactly once.</b>
                   <span>
                     One negotiated deal was paid on Arc Testnet on 6 August 2026:
-                    9.23 USDC, authorised in 857ms, settled on chain 12 minutes
-                    and 43 seconds later. Every other settlement figure anywhere
-                    in this project, including all three recorded runs on this
-                    site, comes from the local stub, and the interface says so on
-                    screen.
+                    9.23 USDC through Circle Gateway, authorised in 857ms. The
+                    buyer&apos;s Gateway balance dropped by exactly 9,230,000
+                    atomic units. It moved inside Gateway&apos;s balance system
+                    rather than as a transfer on chain, so an explorer shows the
+                    12.00 USDC deposit into Gateway and Circle&apos;s batch 12
+                    minutes later, not a line naming this deal.
+                    {" "}
+                    Every other settlement figure anywhere in this project,
+                    including all three recorded runs on this site, comes from
+                    the local stub, and the interface says so on screen.
                   </span>
                 </li>
                 <li>

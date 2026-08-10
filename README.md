@@ -144,11 +144,13 @@ Selecting `arc-x402` without funded wallet keys **fails at startup**. It never
 downgrades quietly to the stub, because a silent downgrade is how a fabricated
 transaction hash ends up in a demo.
 
-One deal has been settled for real: 9.23 USDC on 2026-08-06, authorised in
-857ms, batch settled on chain 12 min 43 s later, transaction
-`0xcccd6d68ed7395faf486bac891df2bf135bdd6c71fdda012009667170f5be6aa`. **Every
-other recorded settlement is a stub**, including the three bundled dashboard
-recordings, and each is labelled `SIMULATED` on screen.
+One deal has been paid for real: 9.23 USDC on 2026-08-06, authorised in 857ms
+through Circle Gateway. The payment moved inside Gateway's balance system, not
+as a buyer-to-seller transfer on chain, so read
+["What an explorer can and cannot show you"](#what-an-explorer-can-and-cannot-show-you)
+before quoting a hash. **Every other recorded settlement is a stub**, including
+the three bundled dashboard recordings, and each is labelled `SIMULATED` on
+screen.
 
 The two latencies are separate and stay separate: Circle batches and there is
 no flush, so "authorised in 857ms" is not "confirmed in 857ms". Run
@@ -215,26 +217,42 @@ Phases 01-08 of the implementation plan are complete. See:
 ## Honest limitations
 
 - Arc **testnet** only. No mainnet configuration exists in this repo.
-- **One real settlement has been executed on Arc Testnet, and it landed on
-  chain.** On 2026-08-06 a funded buyer paid a real negotiated deal through
-  Circle Gateway x402: 9.23 USDC, buyer `0x38D6faC8...` to seller
-  `0x4Fc4cec3...`, Circle transfer `cad9fe1e-7201-40d0-b4d9-ce6a7c3655d4`. The
-  buyer's Gateway balance fell by exactly 9,230,000 atomic units, so this is
-  not a stub figure.
+- **One real payment has been made on Arc Testnet.** On 2026-08-06 a funded
+  buyer paid a real negotiated deal through Circle Gateway x402: 9.23 USDC,
+  Circle transfer `cad9fe1e-7201-40d0-b4d9-ce6a7c3655d4`, authorised in
+  **857 ms**. The buyer's Gateway balance fell from 12,000,000 to 2,770,000
+  atomic units, a drop of exactly **9,230,000**, which is the deal amount to the
+  unit. That is why this is not a stub figure.
 
-  Two latencies, and they are not interchangeable:
+  ### What an explorer can and cannot show you
 
-  | | |
+  **The payment did not move as a buyer-to-seller transfer on chain.** It moved
+  inside Circle Gateway's balance system, and Gateway settles in batches. So do
+  not expect to find a transaction naming this deal. Checked against Arc Testnet
+  on 2026-08-10:
+
+  | Independently checkable | What it is |
   |---|---|
-  | authorisation accepted | **857 ms** |
-  | batch settled on chain | **12 min 43 s** later |
-  | transaction | [`0xcccd6d68...f5be6aa`](https://testnet.arcscan.app/tx/0xcccd6d68ed7395faf486bac891df2bf135bdd6c71fdda012009667170f5be6aa) |
+  | [`0x04dc69c7...`](https://testnet.arcscan.app/tx/0x04dc69c755c4d2601e28fe2c7dc42e6eaa8a60a5949809eac182a4336e3376d2) | The buyer depositing **12.00 USDC into Circle Gateway** at 07:52, which funded the payment |
+  | [`0xcccd6d68...`](https://testnet.arcscan.app/tx/0xcccd6d68ed7395faf486bac891df2bf135bdd6c71fdda012009667170f5be6aa) | **Circle's own `submitBatch`**, succeeded in block 55578053 at 08:11, the batch our authorisation was settled in |
 
-  Circle batches and there is no flush, so the run that pays exits long before
-  the hash exists. "Authorised in 857 ms, settled on chain 12 minutes later" is
-  the accurate sentence; "confirmed in 857 ms" is not. `pnpm --filter
-  @parley/settlement transfer-status <id>` is how the hash is retrieved after
-  the fact.
+  **What those two do NOT show**, stated plainly so nobody clicks expecting it:
+  the batch transaction is sent from a Circle address to the Gateway contract,
+  decodes to **zero token transfers**, and mentions neither 9.23 nor either of
+  our wallets. The seller address `0x4Fc4cec3...` has **no on-chain token
+  transfers at all**. The buyer address has exactly two, the faucet top-up and
+  the Gateway deposit above, and neither is 9.23.
+
+  The authoritative record of the payment itself is Circle's, not the chain's:
+
+  ```bash
+  pnpm --filter @parley/settlement transfer-status cad9fe1e-7201-40d0-b4d9-ce6a7c3655d4
+  ```
+
+  Two latencies, and they are not interchangeable: the authorisation was
+  accepted in **857 ms**, and the batch containing it landed on chain
+  **12 min 43 s** later. "Authorised in 857 ms" is the accurate sentence;
+  "confirmed in 857 ms" is not, and neither is "settled on chain in 857 ms".
 
   Everything **else** in this repo, including every figure in the dashboard and
   the three bundled recordings, still comes from the local stub and is labelled

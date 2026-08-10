@@ -166,23 +166,32 @@ Whichever you pick, do not discover this by alt-tabbing during the real take.
 
 Screen: click **View scenario A**, point at the settlement panel and the badge.
 
-> One real payment has run on **Arc testnet**. Nine point two three **USDC**,
-> through **Circle Gateway**, over the **x402** flow its **facilitator**
-> settles. Permission was granted in under one second. The money reached the
-> chain about thirteen minutes later, because Circle settles in batches. Every
-> recording you saw today is labelled simulated on screen. The run you watched
-> me start was live, and you can type your own numbers into that same form and
-> get the same thing.
+This line is written in speech spelling, because it is pasted into a
+text-to-speech engine. "U S D C" and "x four oh two" are how the product names
+have to be written to come out right; read aloud they are USDC and x402.
 
-Do not compress those two latencies into one number. "Permission granted in
-under one second" is the authorisation (857ms). Landing on chain took 12m43s,
-which "about thirteen minutes" rounds fairly. "Confirmed in one second" is false.
+> One real payment has run on Arc testnet: nine point two three U S D C through
+> Circle Gateway, over the x four oh two flow its facilitator settles. The
+> buyer's Gateway balance dropped by exactly that amount. Gateway settles in
+> batches, so what an explorer shows is the deposit and the batch, not a line
+> naming this deal, and the README says exactly that. Every recording you saw
+> today is labelled simulated on screen. The run you watched me start was live,
+> and you can type your own numbers into that same form and get the same thing.
+
+**Why this no longer claims a latency or an on-chain transfer.** Checked against
+the chain on 2026-08-10: transaction `0xcccd6d68` is real and succeeded, but it
+is Circle's own `submitBatch`, from a Circle address, with **zero decoded token
+transfers**. The seller address has **no** on-chain token transfers at all, and
+the buyer address has exactly two, neither of them 9.23. The payment moved
+inside Gateway's balance system. Saying "the money reached the chain" invited a
+judge to click through and find nothing matching, which is the fastest way to
+lose credit for everything else.
 
 Two things this wording is carrying, so do not trim them casually:
 
-1. **`x402` and `facilitator` are spoken only here.** Cut this clause and the
-   video names two fewer Circle tools than the project uses, against a rubric
-   that lists them.
+1. **`x402` and `facilitator` are spoken only here**, as "x four oh two" and
+   "facilitator". Cut this clause and the video names two fewer Circle tools
+   than the project uses, against a rubric that lists them.
 2. **"The run you watched me start was live" is the sentence that separates
    this from a screen recording.** An earlier draft said everything but the
    payment was a recording, which was false and gave away the hero beat. The
@@ -202,8 +211,8 @@ currently invisible to a viewer.
 
 | | Words | At 130 wpm | Room for a 3s hold? |
 |---|---|---|---|
-| As written, terminal beat kept | 387 | 2:59 | **No.** Over the limit before a single pause |
-| Terminal beat cut | 342 | 2:38 | **Yes**, ends about 2:41 |
+| As written, terminal beat kept | 408 | 3:08 | **No.** Already over the limit on its own |
+| Terminal beat cut | 363 | 2:48 | **Yes**, ends about 2:51 |
 
 So it is one or the other, not both. Given the terminal beat now also carries
 the Game Bar problem, cutting it and spending three of the recovered twenty
@@ -247,18 +256,21 @@ true and the stronger ask.
 
 ## Budget
 
-387 spoken words with the terminal beat, 342 without it.
+408 spoken words with the terminal beat, 363 without it.
 
-| Reading pace | All beats (387) | Terminal beat cut (342) |
+| Reading pace | All beats (408) | Terminal beat cut (363) |
 |---|---|---|
-| 130 wpm, slow and deliberate | 2:59 | 2:38 |
-| 140 wpm | 2:46 | 2:27 |
-| 150 wpm | 2:35 | 2:17 |
+| 130 wpm, slow and deliberate | **3:08, over** | 2:48 |
+| 140 wpm | 2:55 | 2:36 |
+| 150 wpm | 2:43 | 2:25 |
 
-**At 130 wpm the full script is 2:59, which leaves one second.** That is not a
-budget, it is a coin toss: any pause for a click or a scroll puts the take over
-3:00. Treat the full version as viable only at 140 wpm or faster, and treat
-cutting the terminal beat as the default rather than the fallback.
+**Cutting the terminal beat is no longer a choice.** At 130 wpm the full script
+is 3:08, which is over the limit before a single pause for a click. The honest
+settlement wording in shot 6 cost 21 words, and it is worth them. Cut shot 5 and
+the take is 2:48, with room for the three-second benchmark hold at 2:51.
+
+If you keep shot 5 anyway, you must read at 140 wpm or faster and you will land
+at 2:55 with no margin. Do not plan on that.
 
 If your first take runs long, it is the pauses, not the words. Use the cut order
 rather than talking faster.

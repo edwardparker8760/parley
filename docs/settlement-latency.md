@@ -59,12 +59,41 @@ Measured:
 | Gateway balance | 12,000,000 to 2,770,000 atomic units, a fall of exactly 9,230,000 |
 | **batch latency** | **12 min 43 s** (created 07:58:22Z, completed 08:11:05Z) |
 | final status | `completed` |
-| **on-chain tx hash** | `0xcccd6d68ed7395faf486bac891df2bf135bdd6c71fdda012009667170f5be6aa` |
+| **batch tx hash** | `0xcccd6d68ed7395faf486bac891df2bf135bdd6c71fdda012009667170f5be6aa` |
 | explorer | `https://testnet.arcscan.app/tx/0xcccd6d68...f5be6aa` |
 
 So the money left the buyer's Gateway balance, Circle held a transfer from
 buyer to seller for the exact agreed amount, and the batch then landed on chain.
 Both halves are now measured: **857 ms to authorise, 12 min 43 s to settle.**
+
+## What that hash is, and what it is not
+
+Checked against Arc Testnet on 2026-08-10, because the row above was being read
+as "the transaction that shows our payment". It is not that.
+
+| | |
+|---|---|
+| `0xcccd6d68` decodes to | `submitBatch`, status success, block 55578053 |
+| sent from | `0xc73eF0D8...`, a Circle address, not the buyer |
+| sent to | `0x0077777d...`, the Gateway contract |
+| token transfers decoded | **0** |
+| mentions 9.23, the buyer or the seller | **no** |
+| seller `0x4Fc4cec3...` on-chain token transfers, all time | **0** |
+| buyer `0x38D6faC8...` on-chain token transfers, all time | 2: faucet 20.00 in, Gateway deposit 12.00 out. Neither is 9.23 |
+
+It is the batch our authorisation was settled in, which is a real and useful
+fact, but it is not evidence of this deal on its own. The evidence for the
+payment is the Gateway balance falling by exactly 9,230,000 atomic units and the
+Circle transfer record, which is retrieved with `transfer-status`.
+
+The one on-chain transaction that genuinely belongs to this story is the
+**deposit**: `0x04dc69c755c4d2601e28fe2c7dc42e6eaa8a60a5949809eac182a4336e3376d2`,
+12.00 USDC from the buyer into Gateway at 07:52, which funded the payment.
+
+Anywhere this project describes the payment, it must say the payment moved
+inside Gateway's balance system and point at those two transactions for what
+they actually are. Linking the batch as though it showed the transfer sends a
+judge to a page that contradicts us.
 
 The two numbers are separate on purpose and must stay separate when described.
 The demo sees the first one; the second happens long after the run has exited.

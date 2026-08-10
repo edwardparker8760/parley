@@ -381,6 +381,11 @@ status completed
 explorer https://testnet.arcscan.app/tx/0xcccd6d68...
 ```
 
+That explorer link is the **Circle batch** your authorisation was settled in,
+not a transfer naming your deal. It decodes to zero token transfers and is sent
+from a Circle address. See
+[`settlement-latency.md`](settlement-latency.md#what-that-hash-is-and-what-it-is-not).
+
 If `arc-x402` is selected without funded keys it **fails at startup** rather
 than quietly falling back to the stub. That is deliberate: a silent downgrade
 is how a fake transaction hash ends up in a demo.
