@@ -368,6 +368,29 @@ const VI = {
   },
 };
 
+/*
+ * The filename each clip is saved under, keyed by shot id.
+ *
+ * Clips get recorded out of order and spliced later: shot 5 is captured
+ * separately because of the window-capture problem, and shot 6b only exists if
+ * shot 5 was cut. A folder of "recording (3).mp4" is unsortable by then, so the
+ * sheet names every clip up front and the number is zero-padded to keep the
+ * edit order the same as the sort order.
+ *
+ * The ids are display labels too: "6b" sits between 6 and 7 in recording order,
+ * so it is numbered 6B rather than renumbering everything after it.
+ */
+const CLIP_NAME = {
+  1: "parley-01-differentiator",
+  2: "parley-02-mechanism",
+  3: "parley-03-scenario-b-clamp",
+  4: "parley-04-hero-break-it-live",
+  5: "parley-05-test-terminal",
+  6: "parley-06-settlement",
+  "6b": "parley-06b-benchmark-hold",
+  7: "parley-07-close-url",
+};
+
 /** Header, banners and checklist, in both languages. */
 const UI = {
   subtitle: {
@@ -404,6 +427,9 @@ const UI = {
     vi: "Giải thích (KHÔNG đọc, KHÔNG dán vào máy đọc)",
   },
   langBtn: { en: "Tiếng Việt", vi: "English" },
+  shotWord: { en: "SHOT", vi: "CẢNH" },
+  saveAs: { en: "Save the clip as", vi: "Lưu clip với tên" },
+  copyName: { en: "Copy filename", vi: "Chép tên file" },
   fields: {
     resolution: { en: "Resolution", vi: "Độ phân giải" },
     limit: { en: "Hard limit", vi: "Giới hạn cứng" },
@@ -460,6 +486,7 @@ function renderShot(shot) {
   }
 
   const vi = VI[shot.id] || {};
+  const clipName = CLIP_NAME[shot.id] || `parley-shot-${shot.id}`;
 
   const steps = shot.steps
     .map((s, i) => `<li>${bi(s, vi.steps && vi.steps[i])}</li>`)
@@ -543,6 +570,12 @@ function renderShot(shot) {
             <input type="checkbox" data-shot="${shot.id}">
             <span class="tickbox" aria-hidden="true"></span>
           </label>
+          <span class="shot-num"><span class="shot-word">${bi(
+            UI.shotWord.en,
+            UI.shotWord.vi,
+          )}</span><span class="shot-digit">${esc(
+            String(shot.id).toUpperCase(),
+          )}</span></span>
           <div class="shot-title">
             <span class="time">${esc(shot.time)}</span>
             <h2>${bi(shot.name, vi.name)}</h2>
@@ -561,6 +594,19 @@ function renderShot(shot) {
               : bi(UI.silent.en, UI.silent.vi)
           }</span>
         </header>
+
+        <div class="filename-row">
+          <span class="filename-label">${bi(UI.saveAs.en, UI.saveAs.vi)}</span>
+          <code class="filename">${esc(clipName)}.mp4</code>
+          <button class="copy-name" data-copy="${escAttr(clipName)}.mp4"
+                  data-en="${escAttr(UI.copyName.en)}" data-vi="${escAttr(
+                    UI.copyName.vi,
+                  )}" data-done-en="${escAttr(
+                    UI.copied.en,
+                  )}" data-done-vi="${escAttr(UI.copied.vi)}">${
+                    UI.copyName.en
+                  }</button>
+        </div>
 
         <div class="shot-body">
           <div class="col-do">
@@ -758,6 +804,71 @@ const html = `<!doctype html>
   .shot-title h2 { margin: 0; font-size: 1.05rem; }
   .time { font-family: Consolas, monospace; color: var(--accent); font-size: .95rem; }
   .wc { color: var(--dim); font-size: .8rem; white-space: nowrap; }
+
+  /* ---------- shot number and clip filename ----------
+     The number is the loudest thing in the row on purpose: it is what the
+     presenter matches against the file they are about to save. */
+  .shot-num {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 62px;
+    padding: .3rem .5rem;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    line-height: 1.05;
+  }
+  .shot.hero .shot-num { border-color: var(--accent); }
+  .shot-word {
+    font-size: .58rem;
+    letter-spacing: .12em;
+    color: var(--dim);
+  }
+  .shot-digit {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .filename-row {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    flex-wrap: wrap;
+    padding: .55rem 1.1rem;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+  .filename-label {
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--dim);
+  }
+  .filename {
+    font-family: "Cascadia Mono", Consolas, monospace;
+    font-size: .9rem;
+    color: var(--good);
+    background: #0f1115;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: .25rem .55rem;
+    word-break: break-all;
+  }
+  .copy-name {
+    background: transparent;
+    color: var(--dim);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: .25rem .6rem;
+    font-size: .78rem;
+    cursor: pointer;
+  }
+  .copy-name:hover { color: var(--accent); border-color: var(--accent); }
+  .copy-name.copied { color: var(--good); border-color: var(--good); }
 
   .tick { cursor: pointer; display: flex; }
   .tick input { position: absolute; opacity: 0; width: 0; height: 0; }
@@ -971,6 +1082,10 @@ const html = `<!doctype html>
       "Never cut shot 4, the SIMULATED badge sentence in shot 6, or the static URL hold in shot 7.",
       "Tuyệt đối không cắt cảnh 4, câu nói về huy hiệu SIMULATED ở cảnh 6, và đoạn giữ yên màn hình có địa chỉ web ở cảnh 7.",
     )}</p>
+    <p class="cmd-note">${bi(
+      "Every row below carries its shot number and the filename to save that clip under. Save each clip the moment you finish it, using the name on its row: clips get recorded out of order (shot 5 separately, shot 6b only if shot 5 was cut) and a folder of \"recording (3).mp4\" is unsortable by editing time. The numbers are zero-padded so the sort order matches the edit order.",
+      "Mỗi dòng bên dưới đều có số cảnh và tên file để lưu clip đó. Quay xong cảnh nào thì lưu ngay cảnh đó theo đúng tên trên dòng của nó. Các cảnh không quay theo thứ tự (cảnh 5 quay riêng, cảnh 6B chỉ có nếu đã cắt cảnh 5), nên tới lúc dựng mà cả thư mục toàn \"recording (3).mp4\" thì không biết cái nào là cái nào. Số được thêm số 0 phía trước để thứ tự sắp xếp file trùng với thứ tự dựng phim.",
+    )}</p>
   </div>
 ${SHOTS.map(renderShot).join("\n")}
 
@@ -1024,11 +1139,11 @@ ${SHOTS.map(renderShot).join("\n")}
     }
   }
 
-  document.querySelectorAll(".copy").forEach(function (b) {
+  document.querySelectorAll(".copy, .copy-name").forEach(function (b) {
     b.addEventListener("click", function () {
-      // data-copy is always the ENGLISH narration. The language toggle never
-      // touches it, so the Vietnamese gloss cannot reach the clipboard and be
-      // spoken in the submitted video.
+      // data-copy is always the ENGLISH narration, or an ASCII filename. The
+      // language toggle never touches it, so the Vietnamese gloss cannot reach
+      // the clipboard and be spoken in the submitted video.
       copyText(b.getAttribute("data-copy"), b);
     });
   });
@@ -1043,7 +1158,7 @@ ${SHOTS.map(renderShot).join("\n")}
     document.documentElement.lang = vi ? "vi" : "en";
     toggle.textContent = toggle.getAttribute(vi ? "data-vi" : "data-en");
     // Copy buttons are chrome, not narration, so their label follows the UI.
-    document.querySelectorAll(".copy").forEach(function (b) {
+    document.querySelectorAll(".copy, .copy-name").forEach(function (b) {
       if (!b.classList.contains("copied")) {
         b.textContent = b.getAttribute(vi ? "data-vi" : "data-en");
       }
