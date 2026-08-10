@@ -38,6 +38,13 @@ export function SiteNav() {
             ))}
           </ul>
 
+          {/* Outside the section list on purpose: those are in-page anchors
+              that drop out on a phone, and the deck is a real destination a
+              judge may want on any screen size. */}
+          <a className="site-nav-deck" href="/deck.pdf">
+            Deck
+          </a>
+
           <a className="button button-primary site-nav-cta" href="/app">
             Open the dashboard
           </a>

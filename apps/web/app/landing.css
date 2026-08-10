@@ -87,6 +87,24 @@ html {
   border-bottom-color: var(--accent-lime-strong);
 }
 
+/* Matches the section links, but survives the mobile breakpoint they do not. */
+.site-nav-deck {
+  font-size: 16px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding-bottom: 2px;
+  border-bottom: 2px solid transparent;
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.site-nav-deck:hover,
+.site-nav-deck:focus-visible {
+  color: var(--text-primary);
+  border-bottom-color: var(--accent-lime-strong);
+}
+
 /* The nav CTA is the same button, one step smaller: it is a persistent offer,
    not the hero's call to action, and should not compete with it. */
 .site-nav-cta {
@@ -113,8 +131,8 @@ html {
   left: 0;
 }
 
-/* Below this the four section links go and the wordmark plus the one real
-   action stay. */
+/* Below this the four in-page section links go; the wordmark, the deck and the
+   one real action stay. */
 @media (max-width: 720px) {
   .site-nav-links {
     display: none;
